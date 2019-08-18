@@ -5,9 +5,9 @@ from dataclasses import dataclass
 from os import scandir, DirEntry
 from pathlib import Path
 from shutil import rmtree, copytree, copy
-from typing import Iterator, overload
+from typing import Iterator, overload, List
 
-import misaka
+import misaka  # type: ignore # no typings
 from jinja2 import Environment, FileSystemLoader
 
 
@@ -42,6 +42,7 @@ class Create(Content):
 
 
 class Site:
+    commands: List[Content]
 
     def __init__(self, out: str = 'out'):
         self.env = Environment(loader=FileSystemLoader('templates'))
@@ -49,18 +50,19 @@ class Site:
         self.commands = []
 
     @overload
-    def include(self, path: str):
+    def include(self, path_str: str):
         """Include file or directory."""
         ...
 
     @overload
-    def include(self, path: str, content: str):
+    def include(self, path_str: str, content: str):
         """Create a file at path with content."""
         ...
 
-    def include(self, path: str, content: str = None):
-        path = Path(path)
+    def include(self, path_str: str, content: str = None):
+        path = Path(path_str)
         target = self.out.joinpath(path)
+        command: Content
         if content is None:
             command = Copy(path, target)
         else:
