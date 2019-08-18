@@ -1,11 +1,4 @@
-certifi==2019.6.16
-cffi==1.12.3
-chardet==3.0.4
-idna==2.8
 Jinja2==2.10.1
-MarkupSafe==1.1.1
 misaka==2.1.1
-pycparser==2.19
 requests==2.22.0
 serious==1.0.0.dev18
-urllib3==1.25.3
