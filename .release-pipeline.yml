@@ -60,7 +60,7 @@ stages:
           - template: .use-python.yml
           - script: |
               python setup.py sdist bdist_wheel
-              twine upload dist/* -u lightspeed -p $(PYPI_PASSWORD)
+              twine upload dist/* -u serious -p $(PYPI_PASSWORD)
             displayName: 'Publish to PyPI'
     dependsOn:
       - Check
