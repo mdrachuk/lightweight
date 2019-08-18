@@ -1,0 +1,15 @@
+site_name: serious
+repo_url: https://github.com/mdrachuk/lightspeed/
+repo_name: GitHub
+site_author: mdrachuk
+site_description: Static site generator i actually can use.
+nav:
+  - Quickstart: quickstart.md
+  - Examples: examples.md
+  - Zen: zen.md
+
+theme: readthedocs
+
+markdown_extensions:
+  - toc:
+      permalink: "#"

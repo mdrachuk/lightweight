@@ -1,0 +1,93 @@
+# Python package
+# Create and test a Python package on multiple Python versions.
+# Add steps that analyze code, save the dist with the build record, publish to a PyPI-compatible index, and more:
+# https://docs.microsoft.com/azure/devops/pipelines/languages/python
+
+trigger:
+  - master
+pr: none
+
+
+stages:
+  - stage: Check
+    jobs:
+      - job: Tests
+        pool:
+          vmImage: 'Ubuntu-16.04'
+        strategy:
+          matrix:
+            Python37:
+              python.version: '3.7'
+        steps:
+          - template: .use-python.yml
+          - script: pytest tests
+            displayName: 'Test'
+
+      - job: Typings
+        pool:
+          vmImage: 'Ubuntu-16.04'
+        strategy:
+          matrix:
+            Python37:
+              python.version: '3.7'
+        steps:
+          - template: .use-python.yml
+          - script: mypy lightspeed.py
+            displayName: 'Check typings'
+
+      - job: Version
+        pool:
+          vmImage: 'Ubuntu-16.04'
+        strategy:
+          matrix:
+            Python37:
+              python.version: '3.7'
+        steps:
+          - template: .use-python.yml
+          - script: python version.py
+            displayName: 'Check version changed'
+
+  - stage: Publish
+    jobs:
+      - job: PyPI
+        pool:
+          vmImage: 'Ubuntu-16.04'
+        strategy:
+          matrix:
+            Python37:
+              python.version: '3.7'
+        steps:
+          - template: .use-python.yml
+          - script: |
+              python setup.py sdist bdist_wheel
+              twine upload dist/* -u lightspeed -p $(PYPI_PASSWORD)
+            displayName: 'Publish to PyPI'
+    dependsOn:
+      - Check
+    condition: succeeded('Check')
+
+  - stage: Report
+    jobs:
+      - job: TestCoverage
+        pool:
+          vmImage: 'Ubuntu-16.04'
+        strategy:
+          matrix:
+            Python37:
+              python.version: '3.7'
+        steps:
+          - template: .use-python.yml
+
+          - script: git checkout master
+            displayName: 'Checkout master'
+
+          - script: pytest tests --cov=lightspeed --cov-report=html
+            displayName: 'Test with coverage'
+
+          - script: coveralls
+            displayName: 'Save code coverage'
+            env:
+              COVERALLS_REPO_TOKEN: $(COVERALLS_REPO_TOKEN)
+    dependsOn:
+      - Check
+    condition: succeeded('Check')

@@ -1,4 +1,10 @@
+coveralls==1.8.2
 Jinja2==2.10.1
 misaka==2.1.1
+mkdocs==1.0.4
+pytest==4.4.1
+pytest-cov==2.6.1
 requests==2.22.0
 serious==1.0.0.dev18
+twine==1.13.0
+wheel==0.33.6
