@@ -1,6 +1,6 @@
 # lightspeed
 [![PyPI](https://img.shields.io/pypi/v/lightspeed)][pypi]
-[![Build Status](https://img.shields.io/azure-devops/build/misha-drachuk/lightspeed/2)](https://dev.azure.com/misha-drachuk/lightspeed/_build/latest?definitionId=1&branchName=master)
+[![Build Status](https://img.shields.io/azure-devops/build/misha-drachuk/lightspeed/5)](https://dev.azure.com/misha-drachuk/lightspeed/_build/latest?definitionId=5&branchName=master)
 [![Test Coverage](https://img.shields.io/coveralls/github/mdrachuk/lightspeed/master)](https://coveralls.io/github/mdrachuk/lightspeed)
 [![Supported Python](https://img.shields.io/pypi/pyversions/lightspeed)][pypi]
 [![Documentation](https://img.shields.io/readthedocs/lightspeed)][docs]
