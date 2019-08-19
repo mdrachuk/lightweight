@@ -11,7 +11,6 @@ def readme():
 setup(
     name='lightweight',
     version=version.__version__,
-    py_modules=['lightweight'],
     packages=find_packages(exclude=("tests*",)),
     author='mdrachuk',
     author_email='misha@drach.uk',
