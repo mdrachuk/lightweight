@@ -32,7 +32,7 @@ stages:
               python.version: '3.7'
         steps:
           - template: .use-python.yml
-          - script: mypy lightspeed.py
+          - script: mypy lightweight.py
             displayName: 'Check typings'
 
       - job: Version
@@ -62,7 +62,7 @@ stages:
           - script: git checkout $(System.PullRequest.SourceBranch)
             displayName: 'Checkout branch'
 
-          - script: pytest tests --cov=lightspeed --cov-report=html
+          - script: pytest tests --cov=lightweight --cov-report=html
             displayName: 'Test with coverage'
 
           - script: coveralls

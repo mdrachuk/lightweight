@@ -9,23 +9,23 @@ def readme():
 
 
 setup(
-    name='lightspeed',
+    name='lightweight',
     version=version.__version__,
-    py_modules=['lightspeed'],
+    py_modules=['lightweight'],
     packages=find_packages(exclude=("tests*",)),
     author='mdrachuk',
     author_email='misha@drach.uk',
     description="Static site generator i actually can use.",
     long_description=readme(),
     long_description_content_type='text/markdown',
-    url="https://github.com/mdrachuk/lightspeed",
+    url="https://github.com/mdrachuk/lightweight",
     license="Unlicense",
     keywords="dataclasses json serialization",
     python_requires=">=3.7",
     project_urls={
-        'Pipelines': 'https://dev.azure.com/misha-drachuk/lightspeed',
-        'Source': 'https://github.com/mdrachuk/lightspeed/',
-        'Issues': 'https://github.com/mdrachuk/lightspeed/issues',
+        'Pipelines': 'https://dev.azure.com/misha-drachuk/lightweight',
+        'Source': 'https://github.com/mdrachuk/lightweight/',
+        'Issues': 'https://github.com/mdrachuk/lightweight/issues',
     },
     extras_require={
         "dev": ["pytest", "mypy"]

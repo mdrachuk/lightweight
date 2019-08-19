@@ -1,7 +1,7 @@
 import requests
 from pkg_resources import safe_version
 
-__version__ = '0.1.0.dev3'
+__version__ = '0.1.0.dev4'
 
 __doc__ = """
 This module is querying PyPI to check if the current version set to package is already present on PyPI.
@@ -51,4 +51,4 @@ def check_unique(name: str, version: str):
 
 
 if __name__ == '__main__':
-    check_unique('lightspeed', __version__)
+    check_unique('lightweight', __version__)
