@@ -11,7 +11,6 @@ def readme():
 setup(
     name='lightweight',
     version=version.__version__,
-    py_modules=['lightweight'],
     packages=find_packages(exclude=("tests*",)),
     author='mdrachuk',
     author_email='misha@drach.uk',
@@ -27,6 +26,10 @@ setup(
         'Source': 'https://github.com/mdrachuk/lightweight/',
         'Issues': 'https://github.com/mdrachuk/lightweight/issues',
     },
+    install_requires=[
+        'Jinja2>=2.10.1',
+        'misaka>=2.1.1',
+    ],
     extras_require={
         "dev": ["pytest", "mypy"]
     },

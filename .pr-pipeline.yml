@@ -32,7 +32,7 @@ stages:
               python.version: '3.7'
         steps:
           - template: .use-python.yml
-          - script: mypy lightweight.py
+          - script: mypy lightweight
             displayName: 'Check typings'
 
       - job: Version
