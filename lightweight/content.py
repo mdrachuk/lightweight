@@ -7,7 +7,7 @@ from pathlib import Path
 from shutil import copytree, copy
 from typing import Optional, TYPE_CHECKING
 
-import misaka
+import misaka  # type: ignore # missing type annotations
 from jinja2 import Template
 
 from lightweight.files import strip_extension
