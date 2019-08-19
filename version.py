@@ -51,4 +51,4 @@ def check_unique(name: str, version: str):
 
 
 if __name__ == '__main__':
-    check_unique('lightspeed', __version__)
+    check_unique('lightweight', __version__)
