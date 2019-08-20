@@ -18,7 +18,7 @@ setup(
     long_description=readme(),
     long_description_content_type='text/markdown',
     url="https://github.com/mdrachuk/lightweight",
-    license="Unlicense",
+    license="MIT",
     keywords="static-site-generator",
     python_requires=">=3.7",
     project_urls={
