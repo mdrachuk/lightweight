@@ -19,7 +19,7 @@ setup(
     long_description_content_type='text/markdown',
     url="https://github.com/mdrachuk/lightweight",
     license="Unlicense",
-    keywords="dataclasses json serialization",
+    keywords="static-site-generator",
     python_requires=">=3.7",
     project_urls={
         'Pipelines': 'https://dev.azure.com/misha-drachuk/lightweight',
@@ -28,11 +28,9 @@ setup(
     },
     install_requires=[
         'Jinja2>=2.10.1',
-        'misaka>=2.1.1',
+        'python-slugify>=3.0.3',
+        'mistune>=0.8.4',
     ],
-    extras_require={
-        "dev": ["pytest", "mypy"]
-    },
     classifiers=[
         "Intended Audience :: Developers",
         "Topic :: Utilities",
