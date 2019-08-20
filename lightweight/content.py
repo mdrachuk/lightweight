@@ -7,10 +7,10 @@ from pathlib import Path
 from shutil import copytree, copy
 from typing import Optional, TYPE_CHECKING
 
-import misaka  # type: ignore # missing type annotations
 from jinja2 import Template
 
 from lightweight.files import strip_extension
+from lightweight.lw_markdown import LwMarkdown
 
 if TYPE_CHECKING:
     from lightweight.site import Site
@@ -21,63 +21,63 @@ class Content(ABC):
     site: Site
 
     @abstractmethod
-    def render(self):
+    def render(self, path: Path, site: Site):
         pass
-
-    def register(self, path: Path, site: Site):
-        self.path = path
-        self.site = site
-        return self
 
 
 @dataclass
 class DirectoryCopy(Content):
 
-    def render(self):
-        target = self.site.out / self.path
-        copytree(str(self.path), str(target))
+    def render(self, path: Path, site: Site):
+        target = site.out / path
+        copytree(str(path), str(target))
 
 
 @dataclass
 class FileCopy(Content):
 
-    def render(self):
-        target = self.site.out / self.path
-        copy(str(self.path), str(target))
+    def render(self, path: Path, site: Site):
+        target = site.out / path
+        target.parent.mkdir(parents=True, exist_ok=True)
+        copy(str(path), str(target))
 
 
 @dataclass
-class Markdown(Content):
+class MarkdownSource(Content):
     file_name: str  # name of markdown file without extension
-    markdown: str  # the contents of a file
-
+    content: str  # the contents of a file
     template: Template
 
-    @property
-    def title(self) -> Optional[str]:
-        # TODO:mdrachuk:2019-08-19: extract title from YAML Front Matter
-        # TODO:mdrachuk:2019-08-19: extract title from first heading
-        return None
+    def render(self, path: Path, site: Site):
+        html, toc_html = LwMarkdown().render(self.content)
+        page = self.template.render(
+            site=site,
+            markdown=RenderedMarkdown(
+                html=html,
+                toc_html=toc_html,
+                # TODO:mdrachuk:2019-08-19: extract title from YAML Front Matter
+                # TODO:mdrachuk:2019-08-19: extract title from first heading
+                title=None,
+                updated=None,
+                created=None,
+                file_name=self.file_name,
+                source_text=self.content,
+            ))
+        out = site.out / path
+        out.parent.mkdir(parents=True, exist_ok=True)
+        with out.open('w') as f:
+            f.write(page)
 
-    @property
-    def created(self) -> Optional[date]:
-        return None
 
-    @property
-    def updated(self) -> Optional[date]:
-        return None
-
-    @property
-    def html(self):
-        return misaka.html(self.markdown)
-
-    @property
-    def toc(self):
-        # TODO:mdrachuk:2019-08-19: extract Markdown table of contents
-        return None
-
-    def render(self):
-        self.template.render(site=self.site, markdown=self)
+@dataclass
+class RenderedMarkdown:
+    html: str
+    toc_html: str
+    title: Optional[str]
+    updated: Optional[date]
+    created: Optional[date]
+    file_name: str
+    source_text: str
 
 
 def markdown(path: str, rendered_by: Template):
@@ -86,8 +86,8 @@ def markdown(path: str, rendered_by: Template):
     name = strip_extension(path_.name)
     with path_.open() as f:
         content = f.read()
-    return Markdown(
+    return MarkdownSource(
         file_name=name,
-        markdown=content,
+        content=content,
         template=rendered_by
     )

@@ -1,6 +1,6 @@
 from pathlib import Path
 from shutil import rmtree
-from typing import List, overload, Union
+from typing import overload, Union, Dict
 
 from jinja2 import Environment, FileSystemLoader
 
@@ -8,12 +8,12 @@ from lightweight.content import Content, FileCopy, DirectoryCopy
 
 
 class Site:
-    content: List[Content]
+    content: Dict[Path, Content]
 
     def __init__(self, out: Union[str, Path] = 'out'):
         self.env = Environment(loader=FileSystemLoader('templates'))
         self.out = Path(out)
-        self.content = []
+        self.content = {}
 
     @overload
     def include(self, path_: str):
@@ -31,8 +31,7 @@ class Site:
             if not path.exists():
                 raise FileNotFoundError()
             content = FileCopy() if path.is_file() else DirectoryCopy()
-        content.register(path, self)
-        self.content.append(content)
+        self.content[path] = content
 
     def template(self, name):
         return self.env.get_template(name)
@@ -41,4 +40,4 @@ class Site:
         if self.out.exists():
             rmtree(self.out)
         self.out.mkdir()
-        [content.render() for content in self.content]
+        [content.render(path, self) for path, content in self.content.items()]
