@@ -1,8 +1,8 @@
 from collections import namedtuple
 from typing import List
 
-import mistune
-from slugify import slugify
+import mistune  # type: ignore # no typings
+from slugify import slugify  # type: ignore # no typings
 
 TocEntry = namedtuple('TocEntry', ['slug', 'text', 'level'])
 
