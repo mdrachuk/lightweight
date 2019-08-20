@@ -20,7 +20,7 @@ stages:
               python.version: '3.7'
         steps:
           - template: .use-python.yml
-          - script: pytest tests
+          - script: cd tests && pytest
             displayName: 'Test'
 
       - job: Typings
@@ -62,7 +62,7 @@ stages:
           - script: git checkout $(System.PullRequest.SourceBranch)
             displayName: 'Checkout branch'
 
-          - script: pytest tests --cov=lightweight --cov-report=html
+          - script: cd tests && pytest --cov=lightweight --cov-report=html
             displayName: 'Test with coverage'
 
           - script: coveralls
