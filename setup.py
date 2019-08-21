@@ -1,6 +1,6 @@
 from setuptools import setup, find_packages
 
-import version
+import lightweight
 
 
 def readme():
@@ -10,15 +10,17 @@ def readme():
 
 setup(
     name='lightweight',
-    version=version.__version__,
+    version=lightweight.__version__,
     packages=find_packages(exclude=("tests*",)),
+    package_data={"lighweight": ["py.typed"]},
+    zip_safe=False,
     author='mdrachuk',
     author_email='misha@drach.uk',
     description="Static site generator i actually can use.",
     long_description=readme(),
     long_description_content_type='text/markdown',
     url="https://github.com/mdrachuk/lightweight",
-    license="Unlicense",
+    license="MIT",
     keywords="static-site-generator",
     python_requires=">=3.7",
     project_urls={
