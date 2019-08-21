@@ -1,6 +1,6 @@
 from setuptools import setup, find_packages
 
-import version
+import lightweight
 
 
 def readme():
@@ -10,7 +10,7 @@ def readme():
 
 setup(
     name='lightweight',
-    version=version.__version__,
+    version=lightweight.__version__,
     packages=find_packages(exclude=("tests*",)),
     author='mdrachuk',
     author_email='misha@drach.uk',
