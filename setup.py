@@ -12,6 +12,8 @@ setup(
     name='lightweight',
     version=lightweight.__version__,
     packages=find_packages(exclude=("tests*",)),
+    package_data={"lighweight": ["py.typed"]},
+    zip_safe=False,
     author='mdrachuk',
     author_email='misha@drach.uk',
     description="Static site generator i actually can use.",
