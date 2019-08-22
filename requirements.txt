@@ -1,5 +1,5 @@
 coveralls==1.8.2
-cv==1.0.0.dev5
+cv==1.0.0.dev6
 Jinja2==2.10.1
 python-slugify==3.0.3
 mistune==0.8.4
