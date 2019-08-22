@@ -9,8 +9,11 @@ def create_file(path: Path, *, content: str):
         f.write(content)
 
 
-def paths(path: str) -> Iterator[Path]:
-    return map(Path, iglob(path, recursive=True))
+def paths(glob_path: str) -> Iterator[Path]:
+    """An iterator of paths matching the provided `glob`_ pattern.
+
+    _glob: https://en.wikipedia.org/wiki/Glob_(programming)"""
+    return map(Path, iglob(glob_path, recursive=True))
 
 
 def strip_extension(file_name: str):
