@@ -5,6 +5,7 @@ from typing import overload, Union, Dict
 from jinja2 import Environment, FileSystemLoader
 
 from lightweight.content import Content, FileCopy, DirectoryCopy
+from lightweight.files import paths
 
 
 class Site:
@@ -26,12 +27,14 @@ class Site:
         ...
 
     def include(self, path_: str, content: Content = None):
-        path = Path(path_)
         if content is None:
-            if not path.exists():
+            contents = {path: _file_or_dir(path) for path in paths(path_)}
+            if not len(contents):
                 raise FileNotFoundError()
-            content = FileCopy() if path.is_file() else DirectoryCopy()
-        self.content[path] = content
+            self.content.update(contents)
+        else:
+            path = Path(path_)
+            self.content[path] = content
 
     def template(self, name):
         return self.env.get_template(name)
@@ -41,3 +44,7 @@ class Site:
             rmtree(self.out)
         self.out.mkdir()
         [content.render(path, self) for path, content in self.content.items()]
+
+
+def _file_or_dir(path: Path):
+    return FileCopy() if path.is_file() else DirectoryCopy()

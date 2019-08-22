@@ -44,3 +44,14 @@ def test_include_directory(tmp_path: Path):
 
     assert (out_path / src_location).exists()
     assert (out_path / src_location).read_text() == src_content
+
+
+def test_include_glob(tmp_path: Path):
+    out_path = tmp_path / 'out'
+    site = Site(out_path)
+    site.include('resources/glob/**/*.html')
+    site.render()
+    result = out_path / 'resources' / 'glob'
+    assert (result / 'a.html').exists()
+    assert (result / 'b.html').exists()
+    assert (result / 'dir' / '1.html').exists()
