@@ -10,7 +10,7 @@ def create_file(path: Path, *, content: str):
 
 
 def paths(path: str) -> Iterator[Path]:
-    return iglob(path, recursive=True)
+    return map(Path, iglob(path, recursive=True))
 
 
 def strip_extension(file_name: str):
