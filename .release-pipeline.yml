@@ -84,7 +84,7 @@ stages:
           - script: cd tests && pytest --cov=lightweight --cov-report=html
             displayName: 'Test with coverage'
 
-          - script: coveralls
+          - script: cd tests && coveralls
             displayName: 'Save code coverage'
             env:
               COVERALLS_REPO_TOKEN: $(COVERALLS_REPO_TOKEN)
