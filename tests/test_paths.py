@@ -4,19 +4,19 @@ from lightweight import paths
 
 
 def test_dir():
-    assert set(paths('glob-resources')) == {Path('glob-resources')}
+    assert set(paths('resources/glob')) == {Path('resources/glob')}
 
 
 def test_file():
-    assert set(paths('glob-resources/a.md')) == {Path('glob-resources/a.md')}
+    assert set(paths('resources/glob/a.md')) == {Path('resources/glob/a.md')}
 
 
 def test_files():
-    assert set(paths('glob-resources/*.html')) == {Path('glob-resources/a.html'),
-                                                   Path('glob-resources/b.html')}
+    assert set(paths('resources/glob/*.html')) == {Path('resources/glob/a.html'),
+                                                   Path('resources/glob/b.html')}
 
 
 def test_recursive_files():
-    assert set(paths('glob-resources/**/*.md')) == {Path('glob-resources/a.md'),
-                                                    Path('glob-resources/b.md'),
-                                                    Path('glob-resources/dir/1.md')}
+    assert set(paths('resources/glob/**/*.md')) == {Path('resources/glob/a.md'),
+                                                    Path('resources/glob/b.md'),
+                                                    Path('resources/glob/dir/1.md')}
