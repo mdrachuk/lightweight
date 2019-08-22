@@ -5,7 +5,7 @@ from dataclasses import dataclass
 from datetime import date
 from pathlib import Path
 from shutil import copytree, copy
-from typing import Optional, TYPE_CHECKING
+from typing import Optional, TYPE_CHECKING, Union
 
 from jinja2 import Template
 
@@ -48,6 +48,10 @@ class MarkdownSource(Content):
     content: str  # the contents of a file
     template: Template
 
+    @property
+    def name(self):
+        return strip_extension(self.file_name)
+
     def render(self, path: Path, site: Site):
         html, toc_html = LwMarkdown().render(self.content)
         page = self.template.render(
@@ -80,7 +84,7 @@ class RenderedMarkdown:
     source_text: str
 
 
-def markdown(path: str, rendered_by: Template):
+def markdown(path: Union[str, Path], rendered_by: Template):
     path_ = Path(path)
 
     name = strip_extension(path_.name)
