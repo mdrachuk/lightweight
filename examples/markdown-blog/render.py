@@ -1,32 +1,20 @@
 from __future__ import annotations
 
-import os
-import sys
-from pathlib import Path
+from locate_lightweight_for_example import *  # FIXME: This is only to run from inside of "lightweight" repository.
+
+from lightweight import Site, markdown, paths, render, template
 
 
-def _fix_path():
-    _fp = Path(os.path.realpath(__file__))
-    os.chdir(_fp.parent)
-    sys.path.append(str(_fp.parent.parent.parent))
-
-
-# FIXME: This is only to run from inside of "lightweight" repository.
-_fix_path()
-
-from lightweight import Site, markdown, paths
-
-
-def blog_posts(site):
-    template = site.template('blog-post.html')
-    return (markdown(path, template) for path in paths('blog/**.md'))
+def blog_posts():
+    post_template = template('blog-post.html')
+    return (markdown(path, post_template) for path in paths('blog/**.md'))
 
 
 def main():
     site = Site()
 
-    site.include('index.html')
-    [site.include(f'post/{post.name}.html', post) for post in blog_posts(site)]
+    site.include(render('index.html'))
+    [site.include(f'posts/{post.name}.html', post) for post in blog_posts()]
     site.include('static')
 
     site.render()
