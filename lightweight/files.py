@@ -1,6 +1,6 @@
 from glob import iglob
 from pathlib import Path
-from typing import Iterator
+from typing import Iterator, Optional
 
 
 def create_file(path: Path, *, content: str):
@@ -16,5 +16,15 @@ def paths(glob_path: str) -> Iterator[Path]:
     return map(Path, iglob(glob_path, recursive=True))
 
 
-def strip_extension(file_name: str):
-    return file_name.rsplit('.', 1)[0]
+def strip_extension(file_name: str) -> str:
+    split = file_name.rsplit('.', 1)
+    if not len(split[0]) or not len(split[1]):
+        return file_name
+    return split[0]
+
+
+def extension(file_name: str) -> Optional[str]:
+    split = file_name.rsplit('.', 1)
+    if len(split) < 2 or not len(split[0]) or not len(split[1]):
+        return None
+    return split[1]
