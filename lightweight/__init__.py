@@ -1,4 +1,4 @@
-from .content import Content, markdown
+from .content import markdown, render, template
 from .files import paths
 from .site import Site
 

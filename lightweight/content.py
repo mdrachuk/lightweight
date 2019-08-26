@@ -5,15 +5,23 @@ from dataclasses import dataclass
 from datetime import date
 from pathlib import Path
 from shutil import copytree, copy
-from typing import Optional, TYPE_CHECKING, Union
+from typing import Optional, TYPE_CHECKING, Union, Any, Dict
 
-from jinja2 import Template
+from jinja2 import Template, Environment, FileSystemLoader
 
-from lightweight.files import strip_extension
+from lightweight.files import create_file, extension, strip_extension
 from lightweight.lw_markdown import LwMarkdown
 
 if TYPE_CHECKING:
     from lightweight.site import Site
+
+jinja_templates = Environment(loader=FileSystemLoader('templates', followlinks=True))
+jinja_cwd = Environment(loader=FileSystemLoader('./.', followlinks=True))
+
+
+def template(name: Union[str, Path]) -> Template:
+    """A shorthand for loading a Jinja2 template from `templates` directory."""
+    return jinja_templates.get_template(str(name))
 
 
 class Content(ABC):
@@ -22,7 +30,7 @@ class Content(ABC):
 
     @abstractmethod
     def render(self, path: Path, site: Site):
-        pass
+        ...
 
 
 @dataclass
@@ -42,20 +50,28 @@ class FileCopy(Content):
         copy(str(path), str(target))
 
 
-@dataclass
-class MarkdownSource(Content):
-    file_name: str  # name of markdown file without extension
-    content: str  # the contents of a file
-    template: Template
+class FileName(str):
 
     @property
     def name(self):
-        return strip_extension(self.file_name)
+        return strip_extension(self)
+
+    @property
+    def extension(self):
+        return extension(self)
+
+
+@dataclass
+class MarkdownSource(Content):
+    file: FileName  # name of markdown file
+    source_path: Optional[Path]
+    content: str  # the contents of a file
+    template: Template
 
     def render(self, path: Path, site: Site):
         html, toc_html = LwMarkdown().render(self.content)
-        page = self.template.render(
-            site=site,
+        render_to_file(
+            self.template, path, site,
             markdown=RenderedMarkdown(
                 html=html,
                 toc_html=toc_html,
@@ -63,14 +79,22 @@ class MarkdownSource(Content):
                 # TODO:mdrachuk:2019-08-19: extract title from first heading
                 title=None,
                 updated=None,
-                created=None,
-                file_name=self.file_name,
-                source_text=self.content,
-            ))
-        out = site.out / path
-        out.parent.mkdir(parents=True, exist_ok=True)
-        with out.open('w') as f:
-            f.write(page)
+                created=None
+            ),
+            source=self,
+        )
+
+
+def markdown(md_path: Union[str, Path], template: Template) -> MarkdownSource:
+    path = Path(md_path)
+    with path.open() as f:
+        content = f.read()
+    return MarkdownSource(
+        file=FileName(path.name),
+        source_path=path,
+        content=content,
+        template=template
+    )
 
 
 @dataclass
@@ -80,18 +104,33 @@ class RenderedMarkdown:
     title: Optional[str]
     updated: Optional[date]
     created: Optional[date]
-    file_name: str
-    source_text: str
 
 
-def markdown(path: Union[str, Path], rendered_by: Template):
-    path_ = Path(path)
+@dataclass
+class JinjaSource(Content):
+    file: FileName
+    source_path: Optional[Path]
+    params: Dict[str, Any]
+    template: Template
 
-    name = strip_extension(path_.name)
-    with path_.open() as f:
-        content = f.read()
-    return MarkdownSource(
-        file_name=name,
-        content=content,
-        template=rendered_by
+    def render(self, path: Path, site: Site):
+        render_to_file(self.template, path, site, source=self, **self.params)
+
+
+def render(template_path: Union[str, Path], **params) -> JinjaSource:
+    """Renders the page at path with provided parameters.
+
+    Templates are resolved from current directory (NOT `./templates/`)."""
+    path = Path(template_path)
+    return JinjaSource(
+        file=FileName(path.name),
+        source_path=path,
+        params=params,
+        template=jinja_cwd.get_template(str(path))
     )
+
+
+def render_to_file(template: Template, path: Path, site: Site, **kwargs) -> None:
+    out_path = site.out / path
+    out_content = template.render(site=site, **kwargs)
+    create_file(out_path, content=out_content)
