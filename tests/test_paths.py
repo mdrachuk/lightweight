@@ -20,3 +20,7 @@ def test_recursive_files():
     assert set(paths('resources/glob/**/*.md')) == {Path('resources/glob/a.md'),
                                                     Path('resources/glob/b.md'),
                                                     Path('resources/glob/dir/1.md')}
+
+
+def test_path():
+    assert set(paths(Path('resources/test.html'))) == {Path('resources/test.html')}
