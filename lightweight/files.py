@@ -1,6 +1,6 @@
 from glob import iglob
 from pathlib import Path
-from typing import Iterator, Optional
+from typing import Iterator, Optional, Union
 
 
 def create_file(path: Path, *, content: str):
@@ -9,10 +9,12 @@ def create_file(path: Path, *, content: str):
         f.write(content)
 
 
-def paths(glob_path: str) -> Iterator[Path]:
+def paths(glob_path: Union[str, Path]) -> Iterator[Path]:
     """An iterator of paths matching the provided `glob`_ pattern.
 
     _glob: https://en.wikipedia.org/wiki/Glob_(programming)"""
+    if isinstance(glob_path, Path):
+        return iter([glob_path])
     return map(Path, iglob(glob_path, recursive=True))
 
 
