@@ -30,7 +30,7 @@ class Content(ABC):
 
     @abstractmethod
     def render(self, path: Path, site: Site):
-        ...
+        """Render..."""
 
 
 @dataclass
