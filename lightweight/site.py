@@ -2,7 +2,8 @@ from pathlib import Path
 from shutil import rmtree
 from typing import overload, Union, Dict, Optional
 
-from lightweight.content import Content, FileCopy, DirectoryCopy
+from lightweight.content import Content
+from lightweight.content.copy import FileCopy, DirectoryCopy
 from lightweight.errors import NoSourcePath
 from lightweight.files import paths
 
