@@ -8,7 +8,7 @@ from lightweight.errors import NoSourcePath
 
 
 def test_render_jinja(tmp_path: Path):
-    src_location = 'resources/title.html'
+    src_location = 'resources/jinja/title.html'
     out_location = 'title.html'
 
     out_path = tmp_path / 'out'
@@ -18,12 +18,12 @@ def test_render_jinja(tmp_path: Path):
     site.render()
 
     assert (out_path / out_location).exists()
-    with open('expected/lightweight-rules.html') as expected:
+    with open('expected/jinja/params.html') as expected:
         assert (out_path / out_location).read_text() == expected.read()
 
 
 def test_render_jinja_shortcut(tmp_path: Path):
-    location = 'resources/title.html'
+    location = 'resources/jinja/title.html'
 
     out_path = tmp_path / 'out'
     site = Site(out_path)
@@ -32,13 +32,13 @@ def test_render_jinja_shortcut(tmp_path: Path):
     site.render()
 
     assert (out_path / location).exists()
-    with open('expected/lightweight-rules.html') as expected:
+    with open('expected/jinja/params.html') as expected:
         assert (out_path / location).read_text() == expected.read()
 
 
 def test_render_jinja_file(tmp_path: Path):
-    src_location = 'resources/jinja-file.html'
-    out_location = 'jinja-file.html'
+    src_location = 'resources/jinja/file.html'
+    out_location = 'jinja/file.html'
 
     out_path = tmp_path / 'out'
     site = Site(out_path)
@@ -47,7 +47,7 @@ def test_render_jinja_file(tmp_path: Path):
     site.render()
 
     assert (out_path / out_location).exists()
-    with open('expected/jinja-file.html') as expected:
+    with open('expected/jinja/file.html') as expected:
         assert (out_path / out_location).read_text() == expected.read()
 
 
