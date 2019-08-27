@@ -1,0 +1,11 @@
+@import "../css/style";
+
+.lightweight {
+  a {
+    color: lightgoldenrodyellow;
+
+    &:hover {
+      color: lightyellow;
+    }
+  }
+}
