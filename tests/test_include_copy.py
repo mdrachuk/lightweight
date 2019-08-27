@@ -31,7 +31,7 @@ def test_include_not_found(tmp_path: Path):
 
 
 def test_include_directory(tmp_path: Path):
-    src_location = 'resources/test1/test2/test3/test.html'
+    src_location = 'resources/test_nested/test2/test3/test.html'
     src_path = Path(src_location)
     with src_path.open() as f:
         src_content = f.read()
@@ -39,7 +39,7 @@ def test_include_directory(tmp_path: Path):
     out_path = tmp_path / 'out'
     site = Site(out_path)
 
-    site.include('resources/test1')
+    site.include('resources/test_nested')
     site.render()
 
     assert (out_path / src_location).exists()
