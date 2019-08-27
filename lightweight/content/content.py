@@ -17,7 +17,7 @@ class Content(ABC):
     site: Site
 
     @abstractmethod
-    def render(self, path: Path, site: Site):
+    def render(self, path: Path, site: Site) -> None:
         """Render..."""
 
 
