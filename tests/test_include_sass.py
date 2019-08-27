@@ -7,7 +7,7 @@ from lightweight import Site, sass
 
 def test_render_scss_file(tmp_path: Path):
     src_location = 'resources/sass/style.scss'
-    out_location = 'css'
+    out_location = 'css/style.css'
 
     out = tmp_path / 'out'
     site = Site(out)
@@ -22,7 +22,7 @@ def test_render_scss_file(tmp_path: Path):
 
 def test_render_scss_directory(tmp_path: Path):
     src_location = 'resources/sass/styles'
-    out_location = 'css'
+    out_location = 'css/nested'
 
     out = tmp_path / 'out'
     site = Site(out)
@@ -69,7 +69,7 @@ def test_render_scss_directory_sourcemaps(tmp_path: Path):
     site.include(out_location, sass(src_location))
     site.render()
 
-    with open('expected/sass/nested/tes1.css.map') as expected:
-        assert (out / 'css/nested/test1.css.map').read_text() == expected.read()
+    with open('expected/sass/nested/test1.css.map') as expected:
+        assert (out / 'css/test1.css.map').read_text() == expected.read()
     with open('expected/sass/nested/nested/test2.css.map') as expected:
-        assert (out / 'css/nested/nested/test2.css.map').read_text() == expected.read()
+        assert (out / 'css/nested/test2.css.map').read_text() == expected.read()

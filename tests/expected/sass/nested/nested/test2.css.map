@@ -1,0 +1,10 @@
+{
+	"version": 3,
+	"file": "test2.css",
+	"sourceRoot": "resources/sass/styles/nested",
+	"sources": [
+		"test2.scss"
+	],
+	"names": [],
+	"mappings": "AAAA,AAEI,IAFA,CACF,QAAQ,AACL,MAAM,CAAC,EACN,MAAM,EAAE,IAAI,GACb"
+}

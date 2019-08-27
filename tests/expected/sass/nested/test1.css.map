@@ -1,0 +1,10 @@
+{
+	"version": 3,
+	"file": "test1.css",
+	"sourceRoot": "resources/sass/styles",
+	"sources": [
+		"test1.scss"
+	],
+	"names": [],
+	"mappings": "AAAA,AAEI,IAFA,CACF,GAAG,AACA,UAAU,EAFf,IAAI,CACG,IAAI,AACN,UAAU,EAFf,IAAI,CACS,CAAC,AACT,UAAU,CAAC,EACV,KAAK,EAAE,oBAAoB,GAC5B"
+}
