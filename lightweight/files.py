@@ -30,3 +30,14 @@ def extension(file_name: str) -> Optional[str]:
     if len(split) < 2 or not len(split[0]) or not len(split[1]):
         return None
     return split[1]
+
+
+class FileName(str):
+
+    @property
+    def name(self):
+        return strip_extension(self)
+
+    @property
+    def extension(self):
+        return extension(self)
