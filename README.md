@@ -17,6 +17,7 @@ Static site generator i actually can use.
 - [ ] Markdown links
 - [x] Sass/SCSS rendering
 - [ ] RSS/Atom feeds
+- [ ] Dev server
 
 ## Installation
 Available from [PyPI][pypi]:
