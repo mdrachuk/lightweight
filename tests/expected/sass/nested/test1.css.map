@@ -5,6 +5,9 @@
 	"sources": [
 		"test1.scss"
 	],
+	"sourcesContent": [
+		"body {\n  div, span, a {\n    &.highlight {\n      color: lightgoldenrodyellow;\n    }\n  }\n}"
+	],
 	"names": [],
 	"mappings": "AAAA,AAEI,IAFA,CACF,GAAG,AACA,UAAU,EAFf,IAAI,CACG,IAAI,AACN,UAAU,EAFf,IAAI,CACS,CAAC,AACT,UAAU,CAAC,EACV,KAAK,EAAE,oBAAoB,GAC5B"
 }

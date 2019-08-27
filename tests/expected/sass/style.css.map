@@ -5,6 +5,9 @@
 	"sources": [
 		"style.scss"
 	],
+	"sourcesContent": [
+		"body {\n  p {\n    &.working-scss {\n      color: lightgoldenrodyellow;\n    }\n  }\n}"
+	],
 	"names": [],
 	"mappings": "AAAA,AAEI,IAFA,CACF,CAAC,AACE,aAAa,CAAC,EACb,KAAK,EAAE,oBAAoB,GAC5B"
 }
