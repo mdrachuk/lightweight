@@ -2,7 +2,7 @@ from __future__ import annotations
 
 from locate_lightweight_for_example import *  # FIXME: This is only to run from inside of "lightweight" repository.
 
-from lightweight import Site, markdown, paths, render, template
+from lightweight import Site, markdown, paths, render, template, sass
 
 
 def blog_posts():
@@ -14,8 +14,9 @@ def main():
     site = Site()
 
     site.include(render('index.html'))
-    [site.include(f'posts/{post.name}.html', post) for post in blog_posts()]
-    site.include('static')
+    [site.include(f'posts/{post.file.name}.html', post) for post in blog_posts()]
+    site.include('static/css/style.css', sass('static/scss/lightweight.scss'))
+    site.include('static/img')
 
     site.render()
 

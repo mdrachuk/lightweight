@@ -1,8 +1,9 @@
 from __future__ import annotations
 
 from dataclasses import dataclass
+from distutils.dir_util import copy_tree
 from pathlib import Path
-from shutil import copytree, copy
+from shutil import copy
 from typing import TYPE_CHECKING
 
 from .content import Content
@@ -16,7 +17,7 @@ class DirectoryCopy(Content):
 
     def render(self, path: Path, site: Site):
         target = site.out / path
-        copytree(str(path), str(target))
+        copy_tree(str(path), str(target))
 
 
 @dataclass
