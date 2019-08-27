@@ -5,6 +5,9 @@
 	"sources": [
 		"test2.scss"
 	],
+	"sourcesContent": [
+		"body {\n  textarea {\n    &.plain {\n      border: none;\n    }\n  }\n}"
+	],
 	"names": [],
 	"mappings": "AAAA,AAEI,IAFA,CACF,QAAQ,AACL,MAAM,CAAC,EACN,MAAM,EAAE,IAAI,GACb"
 }
