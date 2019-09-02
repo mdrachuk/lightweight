@@ -10,7 +10,7 @@ from lightweight.files import FileName
 from .content import render_to_file, Content
 
 if TYPE_CHECKING:
-    from lightweight.site import SitePath
+    from lightweight import SitePath
 
 jinja_cwd = Environment(loader=FileSystemLoader('./.', followlinks=True))
 

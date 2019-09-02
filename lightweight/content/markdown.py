@@ -12,7 +12,7 @@ from .content import Content, render_to_file
 from .lwmd import LwMarkdown
 
 if TYPE_CHECKING:
-    from lightweight import Site
+    from lightweight import SitePath
 
 
 @dataclass(frozen=True)
@@ -22,7 +22,7 @@ class MarkdownSource(Content):
     content: str  # the contents of a file
     template: Template
 
-    def render(self, path: Path):
+    def render(self, path: SitePath):
         html, toc_html = LwMarkdown().render(self.content)
         render_to_file(
             self.template, path,

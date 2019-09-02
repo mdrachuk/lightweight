@@ -2,7 +2,7 @@ from __future__ import annotations
 
 from pathlib import Path, PurePath
 from shutil import rmtree
-from typing import overload, Union, Dict, Optional, Mapping, Any, Tuple
+from typing import overload, Union, Optional, Tuple, Dict
 
 from lightweight.content import Content
 from lightweight.content.copy import FileCopy, DirectoryCopy
@@ -25,7 +25,7 @@ class SitePath:
         return self.relative_path.name
 
     @property
-    def parts(self) -> Tuple[str]:
+    def parts(self) -> Tuple[str, ...]:
         return self.relative_path.parts
 
     @property
@@ -42,6 +42,7 @@ class SitePath:
         return self.real_path.mkdir(mode=mode, parents=parents, exist_ok=exist_ok)
 
     def __truediv__(self, other: Union[SitePath, PurePath]):
+        other_path: PurePath
         if isinstance(other, SitePath):
             other_path = other.relative_path
         elif isinstance(other, PurePath):
@@ -63,23 +64,11 @@ class SitePath:
         return self.site.path(self.relative_path.with_suffix(suffix))
 
 
-class ContentCollection:
-
-    def __init__(self, content: Mapping[SitePath, Content]):
-        self.content = dict(content)
-
-    def __getitem__(self, path_part: str) -> ContentAtPath:
-        return ContentAtPath(Path(path_part), {
-            path: content
-            for path, content in self.content.items()
-            if path.parts[0] == path_part
-        }, self)
-
-
-class Site(ContentCollection):
+class Site:
+    content: Dict[SitePath, Content]
 
     def __init__(self, out: Union[str, Path] = 'out'):
-        super().__init__({})
+        self.content = {}
         self.out = Path(out)
 
     @overload
@@ -123,23 +112,3 @@ class Site(ContentCollection):
 
 def _file_or_dir(path: Path):
     return FileCopy(path) if path.is_file() else DirectoryCopy(path)
-
-
-class ContentAtPath(ContentCollection):
-
-    def __init__(self, path: SitePath, content: Dict[SitePath, Content], source: Any):
-        super().__init__(content)
-        self.rel_path = path
-        self.base_size = len(self.rel_path.parts)
-
-        self.id = self.rel_path
-        self.title = path
-        self.author_name = getattr(source, 'author_name', None)
-        self.author_email = getattr(source, 'author_email', None)
-
-    def __getitem__(self, path_part: str):
-        return ContentAtPath(Path(path_part), {
-            path: content
-            for path, content in self.content.items()
-            if path.parts[self.base_size] == path_part
-        }, self)

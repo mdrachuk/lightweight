@@ -1,4 +1,4 @@
-from .site import Site, ContentCollection, ContentAtPath
+from .site import Site, SitePath
 from .content import Content, markdown, render, sass
 from .files import paths
 from .template import template

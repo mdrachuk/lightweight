@@ -9,8 +9,7 @@ from jinja2 import Template
 from lightweight.files import create_file
 
 if TYPE_CHECKING:
-    from lightweight import Site
-    from lightweight.site import SitePath
+    from lightweight import Site, SitePath
 
 
 class Content(ABC):

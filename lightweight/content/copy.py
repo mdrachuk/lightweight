@@ -9,7 +9,7 @@ from typing import TYPE_CHECKING
 from .content import Content
 
 if TYPE_CHECKING:
-    from lightweight.site import SitePath
+    from lightweight import SitePath
 
 
 @dataclass(frozen=True)
