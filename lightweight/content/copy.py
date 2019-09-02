@@ -9,21 +9,21 @@ from typing import TYPE_CHECKING
 from .content import Content
 
 if TYPE_CHECKING:
-    from lightweight import Site
+    from lightweight.site import SitePath
 
 
-@dataclass
+@dataclass(frozen=True)
 class DirectoryCopy(Content):
+    source: Path
 
-    def render(self, path: Path, site: Site):
-        target = site.out / path
-        copy_tree(str(path), str(target))
+    def render(self, path: SitePath):
+        copy_tree(str(self.source), str(path.absolute()))
 
 
-@dataclass
+@dataclass(frozen=True)
 class FileCopy(Content):
+    source: Path
 
-    def render(self, path: Path, site: Site):
-        target = site.out / path
-        target.parent.mkdir(parents=True, exist_ok=True)
-        copy(str(path), str(target))
+    def render(self, path: SitePath):
+        path.parent.mkdir(parents=True, exist_ok=True)
+        copy(str(self.source), str(path.absolute()))

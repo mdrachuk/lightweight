@@ -15,17 +15,17 @@ if TYPE_CHECKING:
     from lightweight import Site
 
 
-@dataclass
+@dataclass(frozen=True)
 class MarkdownSource(Content):
     file: FileName  # name of markdown file
     source_path: Optional[Path]
     content: str  # the contents of a file
     template: Template
 
-    def render(self, path: Path, site: Site):
+    def render(self, path: Path):
         html, toc_html = LwMarkdown().render(self.content)
         render_to_file(
-            self.template, path, site,
+            self.template, path,
             markdown=RenderedMarkdown(
                 html=html,
                 toc_html=toc_html,
@@ -51,7 +51,7 @@ def markdown(md_path: Union[str, Path], template: Template) -> MarkdownSource:
     )
 
 
-@dataclass
+@dataclass(frozen=True)
 class RenderedMarkdown:
     html: str
     toc_html: str
