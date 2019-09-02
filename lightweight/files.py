@@ -3,12 +3,6 @@ from pathlib import Path
 from typing import Iterator, Optional, Union
 
 
-def create_file(path: Path, *, content: str):
-    path.parent.mkdir(parents=True, exist_ok=True)
-    with path.open('w') as f:
-        f.write(content)
-
-
 def paths(glob_path: Union[str, Path]) -> Iterator[Path]:
     """An iterator of paths matching the provided `glob`_ pattern.
 

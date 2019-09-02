@@ -8,6 +8,17 @@ if TYPE_CHECKING:
 
 
 class SitePath:
+    """An implementation of Path interface.
+    File system operations performed on real_path; relative path is used for all other operations.
+
+    `__str__` returns relative path representation.
+
+    Changed defaults:
+    - mkdir -- parents and exists_ok are made `True`.
+
+    Added:
+    - create -- create file with contents.
+    """
 
     def __init__(self, path: Union[Path, str], site: Site):
         self.site = site
@@ -59,3 +70,8 @@ class SitePath:
 
     def with_suffix(self, suffix: str) -> SitePath:
         return self.site.path(self.relative_path.with_suffix(suffix))
+
+    def create(self, content: str) -> None:
+        self.parent.mkdir()
+        with self.open('w') as f:
+            f.write(content)

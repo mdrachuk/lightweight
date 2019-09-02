@@ -17,6 +17,7 @@ class DirectoryCopy(Content):
     source: Path
 
     def render(self, path: SitePath):
+        path.parent.mkdir()
         copy_tree(str(self.source), str(path.absolute()))
 
 
@@ -25,5 +26,5 @@ class FileCopy(Content):
     source: Path
 
     def render(self, path: SitePath):
-        path.parent.mkdir(parents=True, exist_ok=True)
+        path.parent.mkdir()
         copy(str(self.source), str(path.absolute()))
