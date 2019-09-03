@@ -7,10 +7,10 @@ from typing import Optional, Dict, Any, Union, TYPE_CHECKING
 from jinja2 import Environment, FileSystemLoader, Template
 
 from lightweight.files import FileName
-from .content import render_to_file, Content
+from .content import Content
 
 if TYPE_CHECKING:
-    from lightweight import Site
+    from lightweight import SitePath
 
 jinja_cwd = Environment(loader=FileSystemLoader('./.', followlinks=True))
 
@@ -22,8 +22,10 @@ class JinjaSource(Content):
     params: Dict[str, Any]
     template: Template
 
-    def render(self, path: Path, site: Site):
-        render_to_file(self.template, path, site, source=self, **self.params)
+    def render(self, path: SitePath):
+        path.create(self.template.render(
+            site=path.site, source=self, **self.params
+        ))
 
 
 def render(template_path: Union[str, Path], **params) -> JinjaSource:

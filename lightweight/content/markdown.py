@@ -8,24 +8,25 @@ from typing import Optional, Union, TYPE_CHECKING
 from jinja2 import Template
 
 from lightweight.files import FileName
-from .content import Content, render_to_file
+from .content import Content
 from .lwmd import LwMarkdown
 
 if TYPE_CHECKING:
-    from lightweight import Site
+    from lightweight import SitePath
 
 
-@dataclass
+@dataclass(frozen=True)
 class MarkdownSource(Content):
     file: FileName  # name of markdown file
     source_path: Optional[Path]
     content: str  # the contents of a file
     template: Template
 
-    def render(self, path: Path, site: Site):
+    def render(self, path: SitePath):
         html, toc_html = LwMarkdown().render(self.content)
-        render_to_file(
-            self.template, path, site,
+        path.create(self.template.render(
+            site=path.site,
+            source=self,
             markdown=RenderedMarkdown(
                 html=html,
                 toc_html=toc_html,
@@ -34,9 +35,8 @@ class MarkdownSource(Content):
                 title=None,
                 updated=None,
                 created=None
-            ),
-            source=self,
-        )
+            )
+        ))
 
 
 def markdown(md_path: Union[str, Path], template: Template) -> MarkdownSource:
@@ -51,7 +51,7 @@ def markdown(md_path: Union[str, Path], template: Template) -> MarkdownSource:
     )
 
 
-@dataclass
+@dataclass(frozen=True)
 class RenderedMarkdown:
     html: str
     toc_html: str

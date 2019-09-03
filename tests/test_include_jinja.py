@@ -52,7 +52,7 @@ def test_render_jinja_file(tmp_path: Path):
 
 
 class NoopContent(Content):
-    def render(self, path: Path, site: Site):
+    def render(self, path: Path):
         pass
 
 
