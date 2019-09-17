@@ -1,7 +1,7 @@
 from __future__ import annotations
 
-import datetime
 from abc import ABC
+from datetime import datetime
 from pathlib import Path
 from typing import Mapping, Dict, TYPE_CHECKING, Collection, Iterator, Any, Tuple
 

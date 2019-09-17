@@ -5,11 +5,10 @@ from datetime import datetime, timezone
 from pathlib import Path
 from typing import TYPE_CHECKING, TypeVar, Any, Optional, Iterator, Union, Tuple
 
-from feedgen.entry import FeedEntry
-from feedgen.feed import FeedGenerator
+from feedgen.entry import FeedEntry  # type: ignore
+from feedgen.feed import FeedGenerator  # type: ignore
 
 from lightweight.content import Content
-from lightweight.content.content import Entry
 
 if TYPE_CHECKING:
     from lightweight import ContentCollection, SitePath
@@ -88,25 +87,25 @@ def feeds(content: ContentCollection, include_content=True) -> Feeds:
     )
 
 
-def fill_entry(path: Path, entry: Entry, feed_entry: FeedEntry, author: Any, *, include_content: bool):
-    link = get(entry, 'url', default=str(path))  # TODO:mdrachuk:9/11/19: make absolute
+def fill_entry(path: Path, content: Content, feed_entry: FeedEntry, author: Any, *, include_content: bool):
+    link = get(content, 'url', default=str(path))  # TODO:mdrachuk:9/11/19: make absolute
     feed_entry.id(link)
     feed_entry.link(href=link, rel='alternate')
 
-    feed_entry.title(get(entry, 'title', default=str(path)))
+    feed_entry.title(get(content, 'title', default=str(path)))
 
     if include_content:
         # TODO:mdrachuk:2019-09-02: support tags (categories)
         # TODO:mdrachuk:2019-09-02: support summary/content
         # TODO:mdrachuk:2019-09-02: rich media (videos, audio)
-        feed_entry.content(entry.content)
+        feed_entry.content(required(content, 'content'))
 
-    feed_entry.author(getattr(entry, 'author', author))
+    feed_entry.author(getattr(content, 'author', author))
     # TODO:mdrachuk:2019-09-02: support contributors
 
-    created = get(entry, 'created', default=datetime.now(tz=timezone.utc))
+    created = get(content, 'created', default=datetime.now(tz=timezone.utc))
     feed_entry.published(created)
-    feed_entry.updated(get(entry, 'updated', default=created))
+    feed_entry.updated(get(content, 'updated', default=created))
 
 
 T = TypeVar('T')
@@ -125,4 +124,4 @@ def get(obj, field: str, *, default: Optional[T]) -> Optional[T]:
 
 
 def truncate(string: Union[str, bytes], size=16) -> str:
-    return f'{string[:size]}..' if len(string) > size else string
+    return f'{string[:size]}..' if len(string) > size else str(string)
