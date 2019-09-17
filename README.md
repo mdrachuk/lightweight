@@ -16,7 +16,7 @@ Static site generator i actually can use.
 - [x] Markdown rendering
 - [ ] Markdown links
 - [x] Sass/SCSS rendering
-- [ ] RSS/Atom feeds
+- [x] RSS/Atom feeds
 - [ ] Dev server
 
 ## Installation
@@ -43,6 +43,9 @@ site.include('index.html', render('index.html'))
 
 # Render list of Markdown files.
 [site.include(f'posts/{post.file.stem}.html', post) for post in blog_posts()]
+
+# Syndicate RSS and Atom feeds.
+[site.include(f'posts.{type}.xml', feed) for type, feed in feeds(site['posts'])]
 
 # Render SCSS.
 site.include('static/css/style.css', sass('static/scss/lightweight.scss'))
