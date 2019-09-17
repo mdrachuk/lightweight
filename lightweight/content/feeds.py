@@ -3,16 +3,17 @@ from __future__ import annotations
 from dataclasses import dataclass
 from datetime import datetime, timezone
 from pathlib import Path
-from typing import TYPE_CHECKING, TypeVar, Any, Optional, Iterator, Union, Tuple
+from typing import TYPE_CHECKING, TypeVar, Any, Optional, Iterator, Tuple
 from urllib.parse import urljoin
 
 from feedgen.entry import FeedEntry  # type: ignore
 from feedgen.feed import FeedGenerator  # type: ignore
 
 from lightweight.content import Content
+from lightweight.content.content import ByteContent
 
 if TYPE_CHECKING:
-    from lightweight import ContentCollection, SitePath
+    from lightweight import ContentCollection
 
 # Type aliases for clear type definitions
 Url = str
@@ -20,25 +21,12 @@ LanguageCode = str
 Email = str
 
 
-class FeedString(Content, bytes):
-
-    def render(self, path: SitePath):
-        path.create(self)
-
-    def __repr__(self):
-        return f'<Feeds {truncate(self)}>'
+class RssFeed(ByteContent):
+    """An immutable RSS feed content that can be saved to a file."""
 
 
-class RssFeed(FeedString):
-
-    def __repr__(self):
-        return f'<RssFeed {truncate(self)}>'
-
-
-class AtomFeed(FeedString):
-
-    def __repr__(self):
-        return f'<AtomFeed {truncate(self)}>'
+class AtomFeed(ByteContent):
+    """An immutable Atom feed content that can be saved to a file."""
 
 
 @dataclass(frozen=True)
@@ -46,7 +34,7 @@ class Feeds:
     rss: RssFeed
     atom: AtomFeed
 
-    def __iter__(self) -> Iterator[Tuple[str, FeedString]]:
+    def __iter__(self) -> Iterator[Tuple[str, ByteContent]]:
         return iter([
             ('rss', self.rss),
             ('atom', self.atom),
@@ -54,13 +42,14 @@ class Feeds:
 
 
 def feeds(content: ContentCollection, include_content=True) -> Feeds:
-    """Create a content feed"""
+    """Create RSS and Atom feeds."""
     gen = FeedGenerator()
 
     # TODO:mdrachuk:9/10/19: better error messages
     # TODO:mdrachuk:9/10/19: document behaviour (take after pattern)
-    gen.id(required(content, 'url'))
-    gen.link(href=required(content, 'url'), rel='alternate')
+    url = required(content, 'url')
+    gen.id(url)
+    gen.link(href=url, rel='alternate')
     gen.icon(get(content, 'icon_url', default=None))
     gen.title(required(content, 'title'))
     gen.description(required(content, 'description'))
@@ -80,7 +69,7 @@ def feeds(content: ContentCollection, include_content=True) -> Feeds:
 
     for path, entry in content.content.items():
         feed_entry = gen.add_entry()
-        fill_entry(path, entry, feed_entry, author, content.url, include_content=include_content)
+        fill_entry(path, entry, feed_entry, author, url, include_content=include_content)
 
     return Feeds(
         RssFeed(gen.rss_str(pretty=True)),
@@ -122,16 +111,16 @@ T = TypeVar('T')
 
 
 def required(obj, field: str) -> Any:
+    """Get a field from object, raising a Value error if its not present, None, or empty."""
     value = getattr(obj, field, None)
-    if value is None:
+    if not value and value is not False and value != 0:
         raise ValueError(f'"{field}" can’t be missing or None.')
     return value
 
 
 def get(obj, field: str, *, default: Optional[T]) -> Optional[T]:
+    """Get a field from object, with a default value in case its not present, None, or empty."""
     value = getattr(obj, field, None)
-    return value if value is not None else default
-
-
-def truncate(string: Union[str, bytes], size=16) -> str:
-    return f'{string[:size]}..' if len(string) > size else str(string)
+    if not value and value is not False and value != 0:
+        return default
+    return value
