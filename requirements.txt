@@ -1,5 +1,6 @@
 coveralls==1.8.2
 cv==1.0.0.dev6
+feedgen==0.7.0
 Jinja2==2.10.1
 libsass==0.19.2
 mistune==0.8.4
