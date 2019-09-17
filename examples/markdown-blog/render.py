@@ -17,7 +17,7 @@ def main():
     site.include(render('index.html'))
 
     # Render markdown blog posts.
-    [site.include(f'posts/{post.file.name}.html', post) for post in blog_posts()]
+    [site.include(f'posts/{post.file.stem}.html', post) for post in blog_posts()]
 
     # Syndicate RSS and Atom feeds.
     [site.include(f'posts.{type}.xml', feed) for type, feed in feeds(site['posts'])]

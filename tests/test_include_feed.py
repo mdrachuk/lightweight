@@ -16,7 +16,7 @@ def test_create_atom(tmp_path: Path):
     site = Site(url='https://example.com', out=test_out, title='Tests')
     site.updated = apr_20
 
-    [site.include(f'posts/{md.file.name}.html', md) for md in md_posts('resources/md/collection/*.md')]
+    [site.include(f'posts/{md.file.stem}.html', md) for md in md_posts('resources/md/collection/*.md')]
     posts = feeds(site['posts'])
     site.include('posts.atom.xml', posts.atom)
 
@@ -32,7 +32,7 @@ def test_create_rss(tmp_path: Path):
     site = Site(url='https://example.com', out=test_out, title='Tests')
     site.updated = apr_20
 
-    [site.include(f'posts/{md.file.name}.html', md) for md in md_posts('resources/md/collection/*.md')]
+    [site.include(f'posts/{md.file.stem}.html', md) for md in md_posts('resources/md/collection/*.md')]
     posts = feeds(site['posts'])
     site.include('posts.rss.xml', posts.rss)
 

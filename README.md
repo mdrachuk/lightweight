@@ -42,7 +42,7 @@ site = Site()
 site.include('index.html', render('index.html')) 
 
 # Render list of Markdown files.
-[site.include(f'posts/{post.file.name}.html', post) for post in blog_posts()]
+[site.include(f'posts/{post.file.stem}.html', post) for post in blog_posts()]
 
 # Render SCSS.
 site.include('static/css/style.css', sass('static/scss/lightweight.scss'))
