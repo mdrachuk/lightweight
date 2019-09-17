@@ -77,8 +77,8 @@ class ContentAtPath(EntriesCollection, ContentCollection):
         self.base_size = len(self.relative_path.parts)
 
         self.take_after(root)
-        if hasattr(root, 'url'):
-            self.url = urljoin(root.url, str(path))
+        root_url = getattr(root, 'url', '')
+        self.url = urljoin(root_url, str(path))
         self.description = f'{self.title} | {self.relative_path}'
 
     def __getitem__(self, path_part: str):
