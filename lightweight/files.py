@@ -29,8 +29,7 @@ def extension(file_name: str) -> Optional[str]:
 class FileName(str):
 
     @property
-    def name(self):
-        # TODO:mdrachuk:2019-09-01: rename to stem
+    def stem(self):
         return strip_extension(self)
 
     @property

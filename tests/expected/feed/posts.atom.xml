@@ -1,0 +1,30 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<feed xmlns="http://www.w3.org/2005/Atom">
+  <id>https://example.com/posts</id>
+  <title>Tests</title>
+  <updated>2020-04-20T16:20:00-07:00</updated>
+  <link href="https://example.com/posts" rel="alternate"/>
+  <generator uri="http://lkiesow.github.io/python-feedgen" version="0.7.0">python-feedgen</generator>
+  <subtitle>Tests | posts</subtitle>
+  <entry>
+    <id>https://example.com/posts/post-1.html</id>
+    <title>posts/post-1.html</title>
+    <updated>2020-04-20T16:20:00-07:00</updated>
+    <content># This is a test
+One.
+
+## Second heading
+## Second heading part 2
+### Third heading
+#### 4th heading
+##### 5th heading
+###### 6th heading!
+
+## And Back
+
+
+</content>
+    <link href="https://example.com/posts/post-1.html" rel="alternate"/>
+    <published>2020-04-20T16:20:00-07:00</published>
+  </entry>
+</feed>

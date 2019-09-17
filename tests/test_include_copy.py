@@ -12,19 +12,18 @@ def test_include_file(tmp_path: Path):
     with src_path.open() as f:
         src_content = f.read()
 
-    out_path = tmp_path / 'out'
-    site = Site(out_path)
+    test_out = tmp_path / 'out'
+    site = Site(url='https://example.com', out=test_out)
 
     site.include(src_location)
     site.render()
 
-    assert (out_path / src_location).exists()
-    assert (out_path / src_location).read_text() == src_content
+    assert (test_out / src_location).exists()
+    assert (test_out / src_location).read_text() == src_content
 
 
 def test_include_not_found(tmp_path: Path):
-    out_path = tmp_path / 'out'
-    site = Site(out_path)
+    site = Site(url='https://example.com', out=tmp_path / 'out')
 
     with pytest.raises(FileNotFoundError):
         site.include(str(uuid4()))
@@ -36,22 +35,22 @@ def test_include_directory(tmp_path: Path):
     with src_path.open() as f:
         src_content = f.read()
 
-    out_path = tmp_path / 'out'
-    site = Site(out_path)
+    test_out = tmp_path / 'out'
+    site = Site(url='https://example.com', out=test_out)
 
     site.include('resources/test_nested')
     site.render()
 
-    assert (out_path / src_location).exists()
-    assert (out_path / src_location).read_text() == src_content
+    assert (test_out / src_location).exists()
+    assert (test_out / src_location).read_text() == src_content
 
 
 def test_include_glob(tmp_path: Path):
-    out_path = tmp_path / 'out'
-    site = Site(out_path)
+    test_out = tmp_path / 'out'
+    site = Site(url='https://example.com', out=test_out)
     site.include('resources/glob/**/*.html')
     site.render()
-    result = out_path / 'resources' / 'glob'
+    result = test_out / 'resources' / 'glob'
     assert (result / 'a.html').exists()
     assert (result / 'b.html').exists()
     assert (result / 'dir' / '1.html').exists()

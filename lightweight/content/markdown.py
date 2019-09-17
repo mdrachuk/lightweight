@@ -1,7 +1,7 @@
 from __future__ import annotations
 
 from dataclasses import dataclass
-from datetime import date
+from datetime import date, datetime
 from pathlib import Path
 from typing import Optional, Union, TYPE_CHECKING
 
@@ -22,6 +22,10 @@ class MarkdownSource(Content):
     content: str  # the contents of a file
     template: Template
 
+    title: Optional[str] = None
+    created: Optional[datetime] = None
+    updated: Optional[datetime] = None
+
     def render(self, path: SitePath):
         html, toc_html = LwMarkdown().render(self.content)
         path.create(self.template.render(
@@ -32,14 +36,14 @@ class MarkdownSource(Content):
                 toc_html=toc_html,
                 # TODO:mdrachuk:2019-08-19: extract title from YAML Front Matter
                 # TODO:mdrachuk:2019-08-19: extract title from first heading
-                title=None,
-                updated=None,
-                created=None
+                title=self.title,
+                created=self.created,
+                updated=self.updated,
             )
         ))
 
 
-def markdown(md_path: Union[str, Path], template: Template) -> MarkdownSource:
+def markdown(md_path: Union[str, Path], template: Template, **fields) -> MarkdownSource:
     path = Path(md_path)
     with path.open() as f:
         content = f.read()
@@ -47,7 +51,8 @@ def markdown(md_path: Union[str, Path], template: Template) -> MarkdownSource:
         file=FileName(path.name),
         source_path=path,
         content=content,
-        template=template
+        template=template,
+        **fields
     )
 
 
