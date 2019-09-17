@@ -62,7 +62,7 @@ class ContentCollection:
         return content in self.content.values()
 
 
-class EntriesCollection(ABC):
+class EntryCollection(ABC):
     """A specification of an Entry Collection interface. Entry collection has properties like url, title, author,
      datetime of update which allow it to be used by other components, e.g. feeds.
     """
@@ -90,7 +90,7 @@ class EntriesCollection(ABC):
             setattr(self, field, value)
 
     @classmethod
-    def field_value(cls, collection: EntriesCollection, fields: Collection[str]) -> Iterator[Tuple[str, Any]]:
+    def field_value(cls, collection: EntryCollection, fields: Collection[str]) -> Iterator[Tuple[str, Any]]:
         return (
             (field, getattr(collection, field))
             for field in fields
@@ -98,7 +98,7 @@ class EntriesCollection(ABC):
         )
 
 
-class ContentAtPath(EntriesCollection, ContentCollection):
+class ContentAtPath(EntryCollection, ContentCollection):
     """Content Collection retrieved by accessing other content collection by path:
 
             :Example:
