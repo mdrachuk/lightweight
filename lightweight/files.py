@@ -30,7 +30,6 @@ class FileName(str):
 
     @property
     def stem(self):
-        # TODO:mdrachuk:2019-09-01: rename to stem
         return strip_extension(self)
 
     @property
