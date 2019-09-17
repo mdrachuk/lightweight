@@ -4,6 +4,7 @@ from dataclasses import dataclass
 from datetime import datetime, timezone
 from pathlib import Path
 from typing import TYPE_CHECKING, TypeVar, Any, Optional, Iterator, Union, Tuple
+from urllib.parse import urljoin
 
 from feedgen.entry import FeedEntry  # type: ignore
 from feedgen.feed import FeedGenerator  # type: ignore
@@ -79,7 +80,7 @@ def feeds(content: ContentCollection, include_content=True) -> Feeds:
 
     for path, entry in content.content.items():
         feed_entry = gen.add_entry()
-        fill_entry(path, entry, feed_entry, author, include_content=include_content)
+        fill_entry(path, entry, feed_entry, author, content.url, include_content=include_content)
 
     return Feeds(
         RssFeed(gen.rss_str(pretty=True)),
@@ -87,10 +88,19 @@ def feeds(content: ContentCollection, include_content=True) -> Feeds:
     )
 
 
-def fill_entry(path: Path, content: Content, feed_entry: FeedEntry, author: Any, *, include_content: bool):
-    link = get(content, 'url', default=str(path))  # TODO:mdrachuk:9/11/19: make absolute
-    feed_entry.id(link)
-    feed_entry.link(href=link, rel='alternate')
+def fill_entry(
+        path: Path,
+        content: Content,
+        feed_entry: FeedEntry,
+        author: Any,
+        root_url: Url,
+        *,
+        include_content: bool
+):
+    """Fill the provided FeedEntry with content."""
+    url = get(content, 'url', default=urljoin(root_url, str(path)))
+    feed_entry.id(url)
+    feed_entry.link(href=url, rel='alternate')
 
     feed_entry.title(get(content, 'title', default=str(path)))
 

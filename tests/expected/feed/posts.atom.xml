@@ -7,7 +7,7 @@
   <generator uri="http://lkiesow.github.io/python-feedgen" version="0.7.0">python-feedgen</generator>
   <subtitle>Tests | posts</subtitle>
   <entry>
-    <id>posts/post-1.html</id>
+    <id>https://example.com/posts/post-1.html</id>
     <title>posts/post-1.html</title>
     <updated>2020-04-20T16:20:00-07:00</updated>
     <content># This is a test
@@ -24,7 +24,7 @@ One.
 
 
 </content>
-    <link href="posts/post-1.html" rel="alternate"/>
+    <link href="https://example.com/posts/post-1.html" rel="alternate"/>
     <published>2020-04-20T16:20:00-07:00</published>
   </entry>
 </feed>

@@ -9,7 +9,7 @@
     <lastBuildDate>Mon, 20 Apr 2020 16:20:00 -0700</lastBuildDate>
     <item>
       <title>posts/post-1.html</title>
-      <link>posts/post-1.html</link>
+      <link>https://example.com/posts/post-1.html</link>
       <description># This is a test
 One.
 
@@ -24,7 +24,7 @@ One.
 
 
 </description>
-      <guid isPermaLink="false">posts/post-1.html</guid>
+      <guid isPermaLink="false">https://example.com/posts/post-1.html</guid>
       <pubDate>Mon, 20 Apr 2020 16:20:00 -0700</pubDate>
     </item>
   </channel>
