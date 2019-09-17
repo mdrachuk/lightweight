@@ -63,7 +63,9 @@ class ContentCollection:
 
 
 class EntriesCollection(ABC):
-    """An entries collection that """
+    """A specification of an Entry Collection interface. Entry collection has properties like url, title, author,
+     datetime of update which allow it to be used by other components, e.g. feeds.
+    """
 
     take_after_fields = frozenset({
         'url', 'icon_url', 'title', 'description', 'author_name', 'author_email', 'language', 'copyright', 'updated'
@@ -78,7 +80,9 @@ class EntriesCollection(ABC):
     copyright: str  # Full notice.
     updated: datetime
 
-    def take_after(self, source: Any = None, **custom: Mapping[str, Any]) -> None:
+    def take_after(self, source: Any = None, **custom: Any) -> None:
+        """A simple way to copy Entry Collection properties from one object to another."""
+
         if source:
             for field, value in self.field_value(source, self.take_after_fields - custom.keys()):
                 setattr(self, field, value)
@@ -119,10 +123,11 @@ class ContentAtPath(EntriesCollection, ContentCollection):
         super().__init__(content)
         self.relative_path = path
 
-        self.take_after(source)
         root_url = getattr(source, 'url', '')
-        self.url = urljoin(root_url, str(path))
-        self.description = f'{self.title} | {self.relative_path}'
+        url = urljoin(root_url, str(path))
+        source_title = getattr(source, 'title', None)
+        description = f'{source_title} | {self.relative_path}' if source_title else url
+        self.take_after(source, url=url, description=description)
 
     def __getitem__(self, path_part: str):
         path = self.relative_path / path_part
