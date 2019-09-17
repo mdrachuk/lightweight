@@ -27,7 +27,7 @@ pip install lightweight
 
 ## Quick Example
 ```python
-from lightweight import Site, markdown, paths, render, template, sass
+from lightweight import Site, markdown, paths, render, template, feeds, sass
 
 
 def blog_posts():
@@ -36,7 +36,7 @@ def blog_posts():
     return (markdown(path, post_template) for path in paths('blog/**.md'))
 
 
-site = Site()
+site = Site(url='https://example.com')
 
 # Render a Jinja2 template.
 site.include('index.html', render('index.html')) 
