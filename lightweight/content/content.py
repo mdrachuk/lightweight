@@ -23,7 +23,9 @@ class Content(ABC):
 
 
 class Entry(ABC):
-    link: Url
+    """A definition of an Entry interface. Properties defined by Entry can be used by other modules, e.g. feed."""
+
+    url: Url
     title: str
     content: str
     author_name: str
