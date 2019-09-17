@@ -45,8 +45,6 @@ def feeds(content: ContentCollection, include_content=True) -> Feeds:
     """Create RSS and Atom feeds."""
     gen = FeedGenerator()
 
-    # TODO:mdrachuk:9/10/19: better error messages
-    # TODO:mdrachuk:9/10/19: document behaviour (take after pattern)
     url = required(content, 'url')
     gen.id(url)
     gen.link(href=url, rel='alternate')
@@ -114,7 +112,7 @@ def required(obj, field: str) -> Any:
     """Get a field from object, raising a Value error if its not present, None, or empty."""
     value = getattr(obj, field, None)
     if not value and value is not False and value != 0:
-        raise ValueError(f'"{field}" can’t be missing or None.')
+        raise ValueError(f'"{field}" is required to construct a feed. It cannot be missing, None, or empty.')
     return value
 
 
