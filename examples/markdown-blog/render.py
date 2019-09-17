@@ -11,7 +11,7 @@ def blog_posts():
 
 
 def main():
-    site = Site()
+    site = Site(url='https://example.com')
 
     # Render Jinja template.
     site.include(render('index.html'))

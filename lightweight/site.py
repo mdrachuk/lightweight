@@ -3,6 +3,7 @@ from __future__ import annotations
 from pathlib import Path
 from shutil import rmtree
 from typing import overload, Union, Optional, Dict
+from urllib.parse import urlparse
 
 from lightweight.content import Content, ContentCollection
 from lightweight.content.copy import FileCopy, DirectoryCopy
@@ -14,9 +15,15 @@ from lightweight.path import SitePath
 class Site(ContentCollection):
     content: Dict[Path, Content]
 
-    def __init__(self, out: Union[str, Path] = 'out', title: str = 'Lightweight Site'):
+    def __init__(self, *,
+                 url: str,
+                 out: Union[str, Path] = 'out',
+                 title: Optional[str] = None):
         super().__init__({})
-        self.title = title
+        url_parts = urlparse(url)
+        assert url_parts.scheme, 'Missing scheme in Site URL.'
+        self.title = title or url_parts.netloc
+        self.url = url
         self.out = Path(out)
 
     @overload

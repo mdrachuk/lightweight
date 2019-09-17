@@ -4,6 +4,7 @@ from abc import ABC
 from datetime import datetime
 from pathlib import Path
 from typing import Mapping, Dict, TYPE_CHECKING, Collection, Iterator, Any, Tuple
+from urllib.parse import urlparse, urlunparse, urljoin
 
 if TYPE_CHECKING:
     from lightweight import Content
@@ -36,6 +37,8 @@ class ContentCollection:
 
 
 class EntriesCollection(ABC):
+    """An entries collection that """
+
     take_after_fields = frozenset({
         'url', 'icon_url', 'title', 'description', 'author_name', 'author_email', 'language', 'copyright', 'updated'
     })
@@ -74,7 +77,8 @@ class ContentAtPath(EntriesCollection, ContentCollection):
         self.base_size = len(self.relative_path.parts)
 
         self.take_after(root)
-        self.url = str(path)  # TODO:mdrachuk:9/11/19: switch for an absolute url
+        if hasattr(root, 'url'):
+            self.url = urljoin(root.url, str(path))
         self.description = f'{self.title} | {self.relative_path}'
 
     def __getitem__(self, path_part: str):

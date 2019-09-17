@@ -1,9 +1,9 @@
 <?xml version='1.0' encoding='UTF-8'?>
 <feed xmlns="http://www.w3.org/2005/Atom">
-  <id>posts</id>
+  <id>https://example.com/posts</id>
   <title>Tests</title>
   <updated>2020-04-20T16:20:00-07:00</updated>
-  <link href="posts" rel="alternate"/>
+  <link href="https://example.com/posts" rel="alternate"/>
   <generator uri="http://lkiesow.github.io/python-feedgen" version="0.7.0">python-feedgen</generator>
   <subtitle>Tests | posts</subtitle>
   <entry>

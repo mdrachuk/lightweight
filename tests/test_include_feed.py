@@ -12,8 +12,8 @@ def md_posts(location):
 
 
 def test_create_rss(tmp_path: Path):
-    out_path = tmp_path / 'out'
-    site = Site(out_path, title='Tests')
+    test_out = tmp_path / 'out'
+    site = Site(url='https://example.com', out=test_out, title='Tests')
     site.updated = apr_20
 
     [site.include(f'posts/{md.file.name}.html', md) for md in md_posts('resources/md/collection/*.md')]
@@ -22,14 +22,14 @@ def test_create_rss(tmp_path: Path):
 
     site.render()
 
-    assert (out_path / 'posts.rss.xml').exists()
+    assert (test_out / 'posts.rss.xml').exists()
     with open('expected/feed/posts.rss.xml') as expected:
-        assert (out_path / 'posts.rss.xml').read_text() == expected.read()
+        assert (test_out / 'posts.rss.xml').read_text() == expected.read()
 
 
 def test_create_atom(tmp_path: Path):
-    out_path = tmp_path / 'out'
-    site = Site(out_path, title='Tests')
+    test_out = tmp_path / 'out'
+    site = Site(url='https://example.com', out=test_out, title='Tests')
     site.updated = apr_20
 
     [site.include(f'posts/{md.file.name}.html', md) for md in md_posts('resources/md/collection/*.md')]
@@ -38,6 +38,6 @@ def test_create_atom(tmp_path: Path):
 
     site.render()
 
-    assert (out_path / 'posts.atom.xml').exists()
+    assert (test_out / 'posts.atom.xml').exists()
     with open('expected/feed/posts.atom.xml') as expected:
-        assert (out_path / 'posts.atom.xml').read_text() == expected.read()
+        assert (test_out / 'posts.atom.xml').read_text() == expected.read()
