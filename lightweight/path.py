@@ -71,7 +71,8 @@ class SitePath:
     def with_suffix(self, suffix: str) -> SitePath:
         return self.site.path(self.relative_path.with_suffix(suffix))
 
-    def create(self, content: str) -> None:
+    def create(self, content: Union[str, bytes]) -> None:
         self.parent.mkdir()
-        with self.open('w') as f:
+        binary_mode = isinstance(content, bytes)
+        with self.open('wb' if binary_mode else 'w') as f:
             f.write(content)

@@ -4,18 +4,19 @@ from pathlib import Path
 from shutil import rmtree
 from typing import overload, Union, Optional, Dict
 
-from lightweight.path import SitePath
-from lightweight.content import Content
+from lightweight.content import Content, ContentCollection
 from lightweight.content.copy import FileCopy, DirectoryCopy
 from lightweight.errors import NoSourcePath
 from lightweight.files import paths
+from lightweight.path import SitePath
 
 
-class Site:
-    content: Dict[SitePath, Content]
+class Site(ContentCollection):
+    content: Dict[Path, Content]
 
-    def __init__(self, out: Union[str, Path] = 'out'):
-        self.content = {}
+    def __init__(self, out: Union[str, Path] = 'out', title: str = 'Lightweight Site'):
+        super().__init__({})
+        self.title = title
         self.out = Path(out)
 
     @overload
@@ -39,12 +40,12 @@ class Site:
 
         pattern_or_path = arg  # type: Union[str, Path]
         if content is None:
-            contents = {self.path(path): _file_or_dir(path) for path in paths(pattern_or_path)}
+            contents = {path: _file_or_dir(path) for path in paths(pattern_or_path)}
             if not len(contents):
                 raise FileNotFoundError()
             self.content.update(contents)
         else:
-            path = self.path(pattern_or_path)
+            path = Path(pattern_or_path)
             self.content[path] = content
 
     def path(self, p: Union[Path, str]) -> SitePath:
@@ -54,7 +55,7 @@ class Site:
         if self.out.exists():
             rmtree(self.out)
         self.out.mkdir(parents=True, exist_ok=True)
-        [content.render(path) for path, content in self.content.items()]
+        [content.render(self.path(p)) for p, content in self.content.items()]
 
 
 def _file_or_dir(path: Path):
