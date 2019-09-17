@@ -3,7 +3,7 @@ from __future__ import annotations
 from dataclasses import dataclass
 from datetime import datetime, timezone
 from pathlib import Path
-from typing import TYPE_CHECKING, TypeVar, Any, Optional
+from typing import TYPE_CHECKING, TypeVar, Any, Optional, Iterator, Union, Tuple
 
 from feedgen.entry import FeedEntry
 from feedgen.feed import FeedGenerator
@@ -26,7 +26,7 @@ class FeedString(Content, bytes):
         path.create(self)
 
     def __repr__(self):
-        return f'<Feed {truncate(self)}>'
+        return f'<Feeds {truncate(self)}>'
 
 
 class RssFeed(FeedString):
@@ -42,12 +42,18 @@ class AtomFeed(FeedString):
 
 
 @dataclass(frozen=True)
-class Feed:
+class Feeds:
     rss: RssFeed
     atom: AtomFeed
 
+    def __iter__(self) -> Iterator[Tuple[str, FeedString]]:
+        return iter([
+            ('rss', self.rss),
+            ('atom', self.atom),
+        ])
 
-def feed(content: ContentCollection, include_content=True) -> Feed:
+
+def feeds(content: ContentCollection, include_content=True) -> Feeds:
     """Create a content feed"""
     gen = FeedGenerator()
 
@@ -76,7 +82,7 @@ def feed(content: ContentCollection, include_content=True) -> Feed:
         feed_entry = gen.add_entry()
         fill_entry(path, entry, feed_entry, author, include_content=include_content)
 
-    return Feed(
+    return Feeds(
         RssFeed(gen.rss_str(pretty=True)),
         AtomFeed(gen.atom_str(pretty=True))
     )
@@ -118,5 +124,5 @@ def get(obj, field: str, *, default: Optional[T]) -> Optional[T]:
     return value if value is not None else default
 
 
-def truncate(string: str, size=16) -> str:
+def truncate(string: Union[str, bytes], size=16) -> str:
     return f'{string[:size]}..' if len(string) > size else string

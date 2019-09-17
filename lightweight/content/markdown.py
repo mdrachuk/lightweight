@@ -15,7 +15,7 @@ if TYPE_CHECKING:
     from lightweight import SitePath
 
 
-@dataclass
+@dataclass(frozen=True)
 class MarkdownSource(Content):
     file: FileName  # name of markdown file
     source_path: Optional[Path]
@@ -56,7 +56,7 @@ def markdown(md_path: Union[str, Path], template: Template, **fields) -> Markdow
     )
 
 
-@dataclass
+@dataclass(frozen=True)
 class RenderedMarkdown:
     html: str
     toc_html: str
