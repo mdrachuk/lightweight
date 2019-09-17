@@ -39,5 +39,5 @@ def test_create_atom(tmp_path: Path):
     site.render()
 
     assert (out_path / 'posts.atom.xml').exists()
-    with open('expected/feeds/posts.atom.xml') as expected:
+    with open('expected/feed/posts.atom.xml') as expected:
         assert (out_path / 'posts.atom.xml').read_text() == expected.read()
