@@ -22,6 +22,9 @@ class TocMixin(object):
         return rv
 
     def render_toc(self, level=3):
+        toc_items = list(self._iter_toc(level))
+        if len(toc_items) < 5:
+            return ''
         return ''.join(self._iter_toc(level))
 
     def _iter_toc(self, level):
