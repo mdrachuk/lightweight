@@ -33,16 +33,17 @@ from lightweight import Site, markdown, paths, render, template, feeds, sass
 def blog_posts():
     post_template = template('blog-post.html')
     # Use globs to select files.
-    return (markdown(path, post_template) for path in paths('blog/**.md'))
+    return (markdown(path, post_template) for path in paths('posts/**.md'))
 
 
 site = Site(url='https://example.com')
 
 # Render a Jinja2 template.
-site.include('index.html', render('index.html')) 
+site.include('index.html', render('pages/index.html')) 
 
 # Render list of Markdown files.
-[site.include(f'posts/{post.file.stem}.html', post) for post in blog_posts()]
+site.include('posts.html', render('pages/posts.html'))
+[site.include(f'posts/{post.filename.stem}.html', post) for post in blog_posts()]
 
 # Syndicate RSS and Atom feeds.
 [site.include(f'posts.{type}.xml', feed) for type, feed in feeds(site['posts'])]

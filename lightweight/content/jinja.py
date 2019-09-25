@@ -16,7 +16,7 @@ if TYPE_CHECKING:
 
 @dataclass
 class JinjaSource(Content):
-    file: FileName
+    filename: FileName
     source_path: Optional[Path]
     params: Dict[str, Any]
     template: Template
@@ -33,7 +33,7 @@ def render(template_path: Union[str, Path], **params) -> JinjaSource:
     Templates are resolved from current directory (NOT `./templates/`)."""
     path = Path(template_path)
     return JinjaSource(
-        file=FileName(path.name),
+        filename=FileName(path.name),
         source_path=path,
         params=params,
         template=template(path, base_dir='.')
