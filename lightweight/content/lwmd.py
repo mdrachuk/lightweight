@@ -28,6 +28,7 @@ class TocMixin(object):
         return ''.join(self._iter_toc(level))
 
     def _iter_toc(self, level):
+        # TODO:mdrachuk:9/26/19: return structured model of ToC instead of HTML. Let users define how to render it.
         first_level = 0
         last_level = 0
 
