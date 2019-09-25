@@ -98,7 +98,8 @@ class EntryCollection(ABC):
         )
 
 
-class ContentAtPath(EntryCollection, ContentCollection):
+class \
+        ContentAtPath(EntryCollection, ContentCollection):
     """Content Collection retrieved by accessing other content collection by path:
 
             :Example:
