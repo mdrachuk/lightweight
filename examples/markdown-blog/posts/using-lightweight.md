@@ -9,7 +9,7 @@ def blog_posts(site):
     return (markdown(path, template) for path in paths('posts/**.md'))
 
 
-site = Site('https://example.org')
+site = Site(url='https://example.org')
 
 site.include('index.html')
 [site.include(f'post/{post.filename.stem}.html', post) for post in blog_posts(site)]

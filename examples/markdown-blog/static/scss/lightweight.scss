@@ -1,11 +1,90 @@
-@import "../css/style";
+$accent: rgb(250, 160, 0);
+$black: #000000;
+$black-alt: #010101; // A workaround for Safari issue with underline and hover.
+$black-down: #3f3f3f;
 
-.lightweight {
+body, html {
+  font-size: 1.1rem;
+  background-color: #f8f8f8;
+  font-family: Georgia, serif;
+  -ms-text-size-adjust: 100%;
+  -webkit-text-size-adjust: 100%;
+  margin: 0;
+
+  p {
+    line-height: 1.5rem;
+  }
+
   a {
-    color: lightgoldenrodyellow;
+    color: $accent;
 
-    &:hover {
-      color: lightyellow;
+    h1, span {
+      color: $black;
     }
+
+    &:hover, &:hover * {
+      color: $black-alt;
+    }
+
+    &:active, &:active * {
+      color: $black-down;
+    }
+  }
+
+  main {
+    max-width: 800px;
+    margin: auto;
+
+    @media screen and (max-width: 840px) {
+      margin: 1em;
+
+    }
+
+    .double-container {
+      @media screen and (max-width: 700px) {
+        display: block;
+      }
+
+      display: flex;
+      flex-direction: row;
+
+      div {
+        flex: auto;
+      }
+    }
+  }
+
+  header {
+    h1 {
+      display: inline;
+    }
+
+    @media screen and (max-width: 940px) {
+      margin: 1em;
+    }
+    max-width: 900px;
+    margin: 1em auto;
+
+    nav {
+      @media screen and (max-width: 700px) {
+        float: none;
+        font-size: 1.6em;
+        margin-top: 0.3em;
+        margin-left: -0.15em;
+      }
+
+      float: right;
+      font-size: 2em;
+
+      a {
+        padding: 0 0.15em;
+        text-decoration: underline;
+        text-transform: lowercase;
+      }
+    }
+  }
+
+  .bash:before {
+    content: '$ ';
   }
 }

@@ -4,20 +4,35 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no"/>
     <link type="text/css" rel="stylesheet" href="/static/css/style.css" media="screen,projection">
+    <link type="text/css" rel="stylesheet"
+          href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/9.15.10/styles/ocean.min.css">
     <link rel="alternate" type="application/rss+xml" title="New Posts" href="/posts.rss.xml"/>
     <link rel="alternate" type="application/atom+xml" title="New Posts" href="/posts.atom.xml"/>
-    <title>{% block title %} Lightweight Example {% endblock %}</title>
+    <title>{% block title %} Lightweight {% endblock %}</title>
 </head>
 <body>
 
-<nav>
-    <a href="/">index</a>
-    <a href="/posts">posts</a>
-</nav>
+<header>
+    <a href="/"><h1>Lightweight</h1></a>
+    <nav>
+        <a href="/posts"><span>Blog</span></a>
+        <a href="https://lightweight.readthedocs.io"><span>Docs</span></a>
+        <a href="https://pypi.org/project/lightweight/"><span>PyPI</span></a>
+        <a href="https://github.com/mdrachuk/lightweight"><span>GitHub</span></a>
+    </nav>
+</header>
 
 <main>
     {% block main %} {% endblock %}
 </main>
 
 </body>
+
+<script charset="UTF-8" src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/9.15.10/highlight.min.js"></script>
+<script>hljs.initHighlightingOnLoad();</script>
+
+{% if DEV_ENVIRONMENT %}
+    <script type="application/javascript" src="/static/js/dev-reload.js"></script>
+{% endif %}
+
 </html>

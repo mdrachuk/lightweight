@@ -1,6 +1,10 @@
 from __future__ import annotations
 
-from lightweight import Site, markdown, paths, render, template, sass, feeds
+from dataclasses import dataclass
+from uuid import uuid4
+
+from lightweight import Site, markdown, paths, render, template, sass, feeds, Content, SitePath
+from lightweight.template import jinja
 
 
 def blog_posts():
@@ -8,10 +12,24 @@ def blog_posts():
     return (markdown(path, post_template) for path in paths('posts/**.md'))
 
 
-def main():
-    site = Site(url='https://example.com')
+@dataclass
+class File(Content):
+    content: str
 
-    # Render Jinja template.
+    def render(self, path: SitePath):
+        path.create(self.content)
+
+
+def file(text: str) -> File:
+    return File(content=text)
+
+
+def dev():
+    jinja.globals['DEV_ENVIRONMENT'] = True
+
+    site = Site(url='http://localhost:8080')
+
+    # Render an index page from Jinja2 template.
     site.include('index.html', render('pages/index.html'))
 
     # Render markdown blog posts.
@@ -25,10 +43,16 @@ def main():
     site.include('static/css/style.css', sass('static/scss/lightweight.scss'))
 
     # Include directory with its contents.
+    site.include('static/js')
     site.include('static/img')
+
+    # A unique id to queried to check if the site was updated.
+    site.include('id', file(str(uuid4())))
 
     site.render()
 
+    jinja.globals['DEV_ENVIRONMENT'] = False
+
 
 if __name__ == '__main__':
-    main()
+    dev()
