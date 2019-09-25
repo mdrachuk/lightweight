@@ -1,23 +1,22 @@
 from __future__ import annotations
 
-from locate_lightweight_for_example import *  # FIXME: This is only to run from inside of "lightweight" repository.
-
 from lightweight import Site, markdown, paths, render, template, sass, feeds
 
 
 def blog_posts():
     post_template = template('blog-post.html')
-    return (markdown(path, post_template) for path in paths('blog/**.md'))
+    return (markdown(path, post_template) for path in paths('posts/**.md'))
 
 
 def main():
     site = Site(url='https://example.com')
 
     # Render Jinja template.
-    site.include(render('index.html'))
+    site.include('index.html', render('pages/index.html'))
 
     # Render markdown blog posts.
-    [site.include(f'posts/{post.file.stem}.html', post) for post in blog_posts()]
+    [site.include(f'posts/{post.filename.stem}.html', post) for post in blog_posts()]
+    site.include('posts.html', render('pages/posts.html'))
 
     # Syndicate RSS and Atom feeds.
     [site.include(f'posts.{type}.xml', feed) for type, feed in feeds(site['posts'])]

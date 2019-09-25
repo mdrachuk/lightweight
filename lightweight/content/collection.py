@@ -61,6 +61,10 @@ class ContentCollection:
     def __contains__(self, content: Content) -> bool:
         return content in self.content.values()
 
+    def items(self):
+        return self.content.items()
+
+
 
 class EntryCollection(ABC):
     """A specification of an Entry Collection interface. Entry collection has properties like url, title, author,

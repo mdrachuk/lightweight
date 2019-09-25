@@ -1,0 +1,9 @@
+{% extends "templates/base.html" %}
+
+{% block main %}
+    <ul>
+        {%- for path, post in site['posts'].items() %}
+            <li><a href="{{ path }}">{{ post.filename }}</a></li>
+        {%- endfor %}
+    </ul>
+{% endblock %}

@@ -6,18 +6,17 @@
     <link type="text/css" rel="stylesheet" href="/static/css/style.css" media="screen,projection">
     <link rel="alternate" type="application/rss+xml" title="New Posts" href="/posts.rss.xml"/>
     <link rel="alternate" type="application/atom+xml" title="New Posts" href="/posts.atom.xml"/>
-    <title>Lightweight Example</title>
+    <title>{% block title %} Lightweight Example {% endblock %}</title>
 </head>
 <body>
 
 <nav>
     <a href="/">index</a>
-    <a href="/posts.html">posts</a>
+    <a href="/posts">posts</a>
 </nav>
 
 <main>
-    <h1>Hello World</h1>
-    <p>This is an <code>index.html</code> page</p>
+    {% block main %} {% endblock %}
 </main>
 
 </body>
