@@ -5,9 +5,24 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no"/>
     <link type="text/css" rel="stylesheet" href="/static/css/style.css" media="screen,projection">
     <link type="text/css" rel="stylesheet"
-          href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/9.15.10/styles/ocean.min.css">
+          href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/9.15.10/styles/ocean.min.css"
+          media="none" onload="media='all'"> <!-- aka "do not block load"  -->
     <link rel="alternate" type="application/rss+xml" title="New Posts" href="/posts.rss.xml"/>
     <link rel="alternate" type="application/atom+xml" title="New Posts" href="/posts.atom.xml"/>
+    <link rel="apple-touch-icon" sizes="57x57" href="/static/img/apple-icon-57x57.png">
+    <link rel="apple-touch-icon" sizes="60x60" href="/static/img/apple-icon-60x60.png">
+    <link rel="apple-touch-icon" sizes="72x72" href="/static/img/apple-icon-72x72.png">
+    <link rel="apple-touch-icon" sizes="76x76" href="/static/img/apple-icon-76x76.png">
+    <link rel="apple-touch-icon" sizes="114x114" href="/static/img/apple-icon-114x114.png">
+    <link rel="apple-touch-icon" sizes="120x120" href="/static/img/apple-icon-120x120.png">
+    <link rel="apple-touch-icon" sizes="144x144" href="/static/img/apple-icon-144x144.png">
+    <link rel="apple-touch-icon" sizes="152x152" href="/static/img/apple-icon-152x152.png">
+    <link rel="apple-touch-icon" sizes="180x180" href="/static/img/apple-icon-180x180.png">
+    <link rel="icon" type="image/png" sizes="192x192" href="/static/img/android-icon-192x192.png">
+    <link rel="icon" type="image/png" sizes="32x32" href="/static/img/favicon-32x32.png">
+    <link rel="icon" type="image/png" sizes="96x96" href="/static/img/favicon-96x96.png">
+    <link rel="icon" type="image/png" sizes="16x16" href="/static/img/favicon-16x16.png">
+    <meta name="msapplication-TileImage" content="/static/img/ms-icon-144x144.png">
     <title>{% block title %} Lightweight {% endblock %}</title>
 </head>
 <body>
@@ -26,13 +41,16 @@
     {% block main %} {% endblock %}
 </main>
 
-</body>
+<footer>
+    <p>© <a href="https://drach.uk"><span>Misha Drachuk</span></a> 2019</p>
+</footer>
 
-<script charset="UTF-8" src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/9.15.10/highlight.min.js"></script>
-<script>hljs.initHighlightingOnLoad();</script>
+<script async charset="UTF-8" src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/9.15.10/highlight.min.js"
+        onload="hljs.initHighlightingOnLoad()"></script>
 
 {% if DEV_ENVIRONMENT %}
     <script type="application/javascript" src="/static/js/dev-reload.js"></script>
 {% endif %}
 
+</body>
 </html>

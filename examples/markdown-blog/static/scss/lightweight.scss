@@ -3,7 +3,7 @@ $black: #000000;
 $black-alt: #010101; // A workaround for Safari issue with underline and hover.
 $black-down: #3f3f3f;
 
-body, html {
+body {
   font-size: 1.1rem;
   background-color: #f8f8f8;
   font-family: Georgia, serif;
@@ -82,6 +82,11 @@ body, html {
         text-transform: lowercase;
       }
     }
+  }
+
+  footer {
+    margin: 1em;
+    text-align: center;
   }
 
   .bash:before {
