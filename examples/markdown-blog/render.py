@@ -40,7 +40,7 @@ def dev():
     [site.include(f'posts.{type}.xml', feed) for type, feed in feeds(site['posts'])]
 
     # Render SASS to CSS.
-    site.include('static/css/style.css', sass('static/scss/lightweight.scss'))
+    site.include('static/css/lightweight.css', sass('static/scss/lightweight.scss'))
 
     # Include directory with its contents.
     site.include('static/js')
