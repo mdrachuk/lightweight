@@ -5,9 +5,6 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no"/>
 
     <link type="text/css" rel="stylesheet" href="/styles/lightweight.css" media="screen,projection">
-    <link type="text/css" rel="stylesheet"
-          href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/9.15.10/styles/ocean.min.css"
-          media="none" onload="media='all'"> <!-- aka "do not block load"  -->
 
     <link rel="alternate" type="application/rss+xml" title="New Posts" href="/posts.rss.xml"/>
     <link rel="alternate" type="application/atom+xml" title="New Posts" href="/posts.atom.xml"/>
@@ -50,10 +47,7 @@
     <p>© <a href="https://drach.uk"><span>Misha Drachuk</span></a> 2019</p>
 </footer>
 
-<script async
-        charset="UTF-8"
-        src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/9.15.10/highlight.min.js"
-        onload="hljs.initHighlightingOnLoad()"></script>
+<script async charset="UTF-8" src="/js/highlight.pack.js" onload="hljs.initHighlightingOnLoad()"></script>
 
 {% if DEV_ENVIRONMENT %}
     <script type="application/javascript" src="/js/dev-reload.js"></script>
