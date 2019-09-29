@@ -49,10 +49,11 @@ site.include('posts.html', render('pages/posts.html'))
 [site.include(f'posts.{type}.xml', feed) for type, feed in feeds(site['posts'])]
 
 # Render SCSS.
-site.include('static/css/style.css', sass('static/scss/lightweight.scss'))
+site.include('css/style.css', sass('styles/style.scss'))
 
 # Include a copy of a directory.
-site.include('static/img')
+site.include('img')
+site.include('js')
 
 # Execute all included content. 
 site.render()

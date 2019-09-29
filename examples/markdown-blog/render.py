@@ -40,11 +40,11 @@ def dev():
     [site.include(f'posts.{type}.xml', feed) for type, feed in feeds(site['posts'])]
 
     # Render SASS to CSS.
-    site.include('static/css/lightweight.css', sass('static/scss/lightweight.scss'))
+    site.include('styles/lightweight.css', sass('styles/lightweight.scss'))
 
     # Include directory with its contents.
-    site.include('static/js')
-    site.include('static/img')
+    site.include('js')
+    site.include('images')
 
     # A unique id to queried to check if the site was updated.
     site.include('id', file(str(uuid4())))
