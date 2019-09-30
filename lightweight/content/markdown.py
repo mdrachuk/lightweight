@@ -17,7 +17,7 @@ if TYPE_CHECKING:
 
 @dataclass(frozen=True)
 class MarkdownSource(Content):
-    file: FileName  # name of markdown file
+    filename: FileName  # name of markdown file
     source_path: Optional[Path]
     content: str  # the contents of a file
     template: Template
@@ -48,7 +48,7 @@ def markdown(md_path: Union[str, Path], template: Template, **fields) -> Markdow
     with path.open() as f:
         content = f.read()
     return MarkdownSource(
-        file=FileName(path.name),
+        filename=FileName(path.name),
         source_path=path,
         content=content,
         template=template,

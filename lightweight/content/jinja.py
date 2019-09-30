@@ -4,20 +4,19 @@ from dataclasses import dataclass
 from pathlib import Path
 from typing import Optional, Dict, Any, Union, TYPE_CHECKING
 
-from jinja2 import Environment, FileSystemLoader, Template
+from jinja2 import Template
 
 from lightweight.files import FileName
+from lightweight.template import template
 from .content import Content
 
 if TYPE_CHECKING:
     from lightweight import SitePath
 
-jinja_cwd = Environment(loader=FileSystemLoader('./.', followlinks=True))
-
 
 @dataclass
 class JinjaSource(Content):
-    file: FileName
+    filename: FileName
     source_path: Optional[Path]
     params: Dict[str, Any]
     template: Template
@@ -34,8 +33,8 @@ def render(template_path: Union[str, Path], **params) -> JinjaSource:
     Templates are resolved from current directory (NOT `./templates/`)."""
     path = Path(template_path)
     return JinjaSource(
-        file=FileName(path.name),
+        filename=FileName(path.name),
         source_path=path,
         params=params,
-        template=jinja_cwd.get_template(str(path))
+        template=template(path, base_dir='.')
     )

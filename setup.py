@@ -30,6 +30,7 @@ setup(
     },
     install_requires=[
         'Jinja2>=2.10.1',
+        'feedgen>=0.7.0',
         'python-slugify>=3.0.3',
         'mistune>=0.8.4',
     ],

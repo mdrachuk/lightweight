@@ -1,0 +1,70 @@
+{% extends "templates/base.html" %}
+
+{% block main %}
+    <p>Static website generator without magic.</p>
+
+    <h2>Code over configuration</h2>
+
+    <p>Most frameworks for static site generation are declarative.
+        They require a lot of time to get started and then they may not be flexible enough.</p>
+
+    <p>Lightweight is different in this manner.
+        It’s core API is handful, but from there you’re free to go in any direction you want.</p>
+
+
+    <div class="double-container">
+        <div>
+            <h2>Features</h2>
+
+            <ul>
+                <li><a href="https://www.python.org"><span>Python</span></a> Declarations</li>
+                <li><a href="https://jinja.palletsprojects.com/"><span>Jinja2</span></a> Templates</li>
+                <li><a href="https://daringfireball.net/projects/markdown/"><span>Markdown</span></a> Rendering</li>
+                <li><a href="https://sass-lang.com"><span>SCSS</span></a> Superpowers</li>
+            </ul>
+        </div>
+
+        <div>
+            <h2>Installation</h2>
+
+            <p>Get it from PyPI.</p>
+
+            <pre><code class="bash">pip install lightweight</code></pre>
+        </div>
+
+    </div>
+
+    <h2>Code Example</h2>
+
+    <pre><code class="python">from lightweight import Site, markdown, paths, render, template, feeds, sass
+
+
+def blog_posts():
+    post_template = template('blog-post.html')
+    # Use globs to select files.
+    return (markdown(path, post_template) for path in paths('posts/**.md'))
+
+
+site = Site(url='https://example.com')
+
+# Render a Jinja2 template.
+site.include('index.html', render('index.html'))
+
+# Render list of Markdown files.
+[site.include(f'posts/{post.filename.stem}.html', post) for post in blog_posts()]
+
+# Render SCSS.
+site.include('static/css/style.css', sass('static/scss/lightweight.scss'))
+
+# Include a copy of a directory.
+site.include('static/js')
+site.include('static/img')
+
+# Execute all included content.
+site.render()</code></pre>
+
+    <h2>Getting started</h2>
+
+    <p>TBD</p>
+
+{% endblock %}
