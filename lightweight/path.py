@@ -40,6 +40,15 @@ class SitePath:
     def parent(self) -> SitePath:
         return self.site.path(self.relative_path.parent)
 
+    @property
+    def suffix(self) -> str:
+        return self.relative_path.suffix
+
+    @property
+    def url(self) -> str:
+        location = str(self.with_suffix('') if self.suffix == '.html' else self)
+        return f'{self.site.url}/{location}'
+
     def absolute(self) -> Path:
         return self.real_path.absolute()
 

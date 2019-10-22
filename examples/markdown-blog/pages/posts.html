@@ -5,7 +5,7 @@
 {% block main %}
     <ul>
         {%- for path, post in site['posts'].items() %}
-            <li><a href="{{ path | url }}">{{ post.filename }}</a></li>
+            <li><a href="{{ path.url }}">{{ post.filename }}</a></li>
         {%- endfor %}
     </ul>
 {% endblock %}

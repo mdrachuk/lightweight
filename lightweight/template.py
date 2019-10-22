@@ -1,18 +1,9 @@
 from pathlib import Path
-from typing import Union, Any
+from typing import Union
 
-from jinja2 import Environment, FileSystemLoader, Template, contextfilter
+from jinja2 import Environment, FileSystemLoader, Template
 
 jinja = Environment(loader=FileSystemLoader('./.', followlinks=True))
-
-
-@contextfilter
-def url(ctx: Any, path: Path) -> str:
-    location = str(path.with_suffix('') if path.suffix == '.html' else path)
-    return f'{ctx["site"].url}/{location}'
-
-
-jinja.filters['url'] = url
 
 
 def template(name: Union[str, Path], base_dir: Union[str, Path] = 'templates') -> Template:
