@@ -77,25 +77,15 @@ class LiveStaticFiles(StaticFiles):
         return file.content
 
 
-class DevServer:
-    def __init__(self,
-                 directory: str,
-                 host: str = '0.0.0.0',
-                 port: int = 8080,
-                 enable_reload: bool = True):
-        self.host = host
-        self.port = port
-        self.handler = LiveStaticFiles if enable_reload else StaticFiles
-        self.working_dir = Path(directory).resolve()
-        check_directory(self.working_dir)
-
-    def start(self):
-        address = (self.host, self.port)
-        http_server = HTTPServer(address, self.handler)
-        http_server.working_dir = self.working_dir
-        http_server.id = str(uuid4())
-        print(f'Server started in directory {self.working_dir}')
-        http_server.serve_forever()
+def dev_server(directory: str, *, host: str, port: int, enable_reload: bool) -> HTTPServer:
+    working_dir = Path(directory).resolve()
+    check_directory(working_dir)
+    address = (host, port)
+    handler = LiveStaticFiles if enable_reload else StaticFiles
+    server = HTTPServer(address, handler)
+    server.working_dir = working_dir
+    server.id = str(uuid4())
+    return server
 
 
 def check_directory(working_dir: Path):
@@ -153,10 +143,8 @@ parser.add_argument('--no-live-reload', action='store_true', default=False, help
 
 if __name__ == '__main__':
     args = parser.parse_args()
-    server = DevServer(
-        args.directory,
-        host=args.host,
-        port=args.port,
-        enable_reload=not args.no_live_reload
-    )
-    server.start()
+    server = dev_server(args.directory,
+                        host=args.host,
+                        port=args.port,
+                        enable_reload=not args.no_live_reload)
+    server.serve_forever()
