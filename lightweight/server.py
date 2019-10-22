@@ -39,7 +39,7 @@ class StaticFiles(BaseHTTPRequestHandler):
 
     def file(self) -> File:
         location = self.path[1:] if self.path.startswith('/') else self.path
-        working_dir: Path = self.server.working_dir
+        working_dir: Path = self.server.working_dir  # type: ignore
         exact = working_dir / location
         html = working_dir / f'{location}.html'
         index = working_dir / location / 'index.html'
