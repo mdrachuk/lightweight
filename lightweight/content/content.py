@@ -51,4 +51,4 @@ class ByteContent(Content, bytes):
 
 
 def truncate(string: Union[str, bytes], size=16) -> str:
-    return f'{string[:size]}..' if len(string) > size else str(string)
+    return f'{string[:size].decode("utf8")}..' if len(string) > size else str(string)
