@@ -3,7 +3,7 @@ from __future__ import annotations
 from abc import ABC, abstractmethod
 from datetime import datetime
 from pathlib import Path
-from typing import TYPE_CHECKING, Union
+from typing import TYPE_CHECKING
 
 if TYPE_CHECKING:
     from lightweight import Site, SitePath
@@ -50,5 +50,5 @@ class ByteContent(Content, bytes):
         return f'<{self.__class__.__name__} {truncate(self)}>'
 
 
-def truncate(string: Union[str, bytes], size=16) -> str:
-    return f'{string[:size].decode("utf8")}..' if len(string) > size else str(string)
+def truncate(data: bytes, size=16) -> str:
+    return f'{data[:size].decode("utf8")}..' if len(data) > size else data.decode("utf8")

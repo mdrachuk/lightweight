@@ -83,8 +83,8 @@ def dev_server(directory: str, *, host: str, port: int, enable_reload: bool) -> 
     address = (host, port)
     handler = LiveStaticFiles if enable_reload else StaticFiles
     server = HTTPServer(address, handler)
-    server.working_dir = working_dir
-    server.id = str(uuid4())
+    server.working_dir = working_dir  # type: ignore
+    server.id = str(uuid4())  # type: ignore
     return server
 
 
