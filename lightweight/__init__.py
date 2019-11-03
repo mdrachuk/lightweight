@@ -4,4 +4,4 @@ from .files import paths
 from .path import SitePath
 from .template import template
 
-__version__ = '1.0.0.dev18'
+__version__ = '1.0.0.dev19'

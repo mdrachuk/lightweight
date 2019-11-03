@@ -59,5 +59,26 @@ site.include('js')
 site.render()
 ```
 
+## Dev Server
+
+Lightweight includes a simple static web server with live reload 
+serving at `0.0.0.0:8080` (can be accessed via `localhost:8080`):
+```bash
+python -m lightweight.server <directory>
+```
+
+The live reload can be disabled with `--no-live-reload` flag:
+```bash
+python -m lightweight.server <directory> --no-live-reload
+```
+
+Host and port can be set via:
+```bash
+python -m lightweight.server <directory> --host 0.0.0.0 --port 8080
+```
+
+To stop the server press `Ctrl+C` in terminal.
+
+
 [pypi]: https://pypi.org/project/lightweight/
 [docs]: https://lightweight.readthedocs.io/en/latest/ 
