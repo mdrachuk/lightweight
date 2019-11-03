@@ -1,6 +1,7 @@
 from __future__ import annotations
 
-from locate_lightweight_for_example import *
+from argparse import ArgumentParser
+
 from lightweight import Site, markdown, paths, render, template, sass, atom, rss
 
 
@@ -9,8 +10,8 @@ def blog_posts():
     return (markdown(path, post_template) for path in paths('posts/**.md'))
 
 
-def dev():
-    site = Site(url='http://localhost:8080')
+def main(dev: bool = False):
+    site = Site(url='http://localhost:8080' if dev else 'http://example.org')
 
     # Render an index page from Jinja2 template.
     site.include('index.html', render('pages/index.html'))
@@ -33,5 +34,9 @@ def dev():
     site.render()
 
 
+parser = ArgumentParser(description='Render a static website')
+parser.add_argument('--dev', action='store_true', default=False, help='dev configuration')
+
 if __name__ == '__main__':
-    dev()
+    args = parser.parse_args()
+    main(dev=args.dev)
