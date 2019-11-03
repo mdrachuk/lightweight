@@ -2,8 +2,7 @@ from __future__ import annotations
 
 from dataclasses import dataclass
 from datetime import datetime, timezone
-from pathlib import Path
-from typing import TYPE_CHECKING, TypeVar, Any, Optional, Type, Union, List, Mapping
+from typing import TYPE_CHECKING, TypeVar, Any, Optional, Type, List, Mapping, Union
 from urllib.parse import urljoin
 
 from feedgen.entry import FeedEntry  # type: ignore
@@ -139,10 +138,10 @@ def rss(source: ContentCollection) -> RssFeed:
     return new_feed(RssFeed, source)
 
 
-FeedFactory = Type[Union[RssFeed, AtomFeed]]
+F = TypeVar('F', RssFeed, AtomFeed)
 
 
-def new_feed(feed: FeedFactory, source: ContentCollection) -> Union[RssFeed, AtomFeed]:
+def new_feed(feed: Type[F], source: ContentCollection) -> F:
     """Create RSS and Atom feeds."""
 
     url = required(source, 'url')
@@ -173,7 +172,7 @@ def new_feed(feed: FeedFactory, source: ContentCollection) -> Union[RssFeed, Ato
     )
 
 
-def new_entry(path: Path, content: Content, author: Any, root_url: Url, ):
+def new_entry(path: SitePath, content: Content, author: Any, root_url: Url, ):
     """Fill the provided FeedEntry with content."""
     url = get(content, 'url', default=urljoin(root_url, str(path)))
     title = get(content, 'title', default=str(path))
@@ -201,7 +200,7 @@ def required(obj, field: str) -> Any:
     return value
 
 
-def get(obj, field: str, *, default: Optional[T]) -> Optional[T]:
+def get(obj, field: str, *, default: T) -> Union[T, Any]:
     """Get a field from object, with a default value in case its not present, None, or empty."""
     value = getattr(obj, field, None)
     if not value and value is not False and value != 0:
