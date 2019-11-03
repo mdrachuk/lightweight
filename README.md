@@ -14,10 +14,10 @@ Static site generator i actually can use.
 - [x] Clean and easily extensible API 
 - [x] Jinja2 templates
 - [x] Markdown rendering
-- [ ] Markdown links
 - [x] Sass/SCSS rendering
 - [x] RSS/Atom feeds
-- [ ] Dev server
+- [x] Dev server
+- [ ] CLI
 
 ## Installation
 Available from [PyPI][pypi]:
