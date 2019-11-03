@@ -62,7 +62,7 @@ class Site(ContentCollection):
         if self.out.exists():
             rmtree(self.out)
         self.out.mkdir(parents=True, exist_ok=True)
-        [content.render(self.path(p)) for p, content in self.content.items()]
+        [content.write(self.path(p)) for p, content in self.content.items()]
 
 
 def _file_or_dir(path: Path):

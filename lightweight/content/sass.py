@@ -17,7 +17,7 @@ if TYPE_CHECKING:
 class Sass(Content):
     source_path: Path
 
-    def render(self, path: SitePath):
+    def write(self, path: SitePath):
         if self.source_path.is_dir():
             css_at_target = construct_relative_css_path(self.source_path, target=path)
             [_render(p, css_at_target(p)) for p in paths(f'{self.source_path}/**/*.sass')]

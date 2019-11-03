@@ -1,7 +1,7 @@
 from datetime import datetime, timezone, timedelta
 from pathlib import Path
 
-from lightweight import Site, feeds, markdown, template, paths
+from lightweight import Site, markdown, template, paths, atom, rss
 
 PDT = timezone(timedelta(hours=-7))
 apr_20 = datetime(2020, 4, 20, 16, 20, tzinfo=PDT)
@@ -17,8 +17,8 @@ def test_create_atom(tmp_path: Path):
     site.updated = apr_20
 
     [site.include(f'posts/{md.filename.stem}.html', md) for md in md_posts('resources/md/collection/*.md')]
-    posts = feeds(site['posts'])
-    site.include('posts.atom.xml', posts.atom)
+    posts = atom(site['posts'])
+    site.include('posts.atom.xml', posts)
 
     site.render()
 
@@ -33,8 +33,8 @@ def test_create_rss(tmp_path: Path):
     site.updated = apr_20
 
     [site.include(f'posts/{md.filename.stem}.html', md) for md in md_posts('resources/md/collection/*.md')]
-    posts = feeds(site['posts'])
-    site.include('posts.rss.xml', posts.rss)
+    posts = rss(site['posts'])
+    site.include('posts.rss.xml', posts)
 
     site.render()
 

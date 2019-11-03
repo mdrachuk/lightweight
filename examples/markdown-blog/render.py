@@ -1,6 +1,7 @@
 from __future__ import annotations
 
-from lightweight import Site, markdown, paths, render, template, sass, feeds
+from locate_lightweight_for_example import *
+from lightweight import Site, markdown, paths, render, template, sass, atom, rss
 
 
 def blog_posts():
@@ -19,7 +20,8 @@ def dev():
     site.include('posts.html', render('pages/posts.html'))
 
     # Syndicate RSS and Atom feeds.
-    [site.include(f'posts.{type}.xml', feed) for type, feed in feeds(site['posts'])]
+    site.include(f'posts.atom.xml', atom(site['posts']))
+    site.include(f'posts.rss.xml', rss(site['posts']))
 
     # Render SASS to CSS.
     site.include('styles/lightweight.css', sass('styles/lightweight.scss'))

@@ -1,3 +1,3 @@
 # Hello, World
 
-Hello, this fist blog post.
+Hello, this first blog post.

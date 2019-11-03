@@ -3,17 +3,16 @@ from __future__ import annotations
 from dataclasses import dataclass
 from datetime import datetime, timezone
 from pathlib import Path
-from typing import TYPE_CHECKING, TypeVar, Any, Optional, Iterator, Tuple
+from typing import TYPE_CHECKING, TypeVar, Any, Optional, Type, Union, Dict, List
 from urllib.parse import urljoin
 
 from feedgen.entry import FeedEntry  # type: ignore
 from feedgen.feed import FeedGenerator  # type: ignore
 
 from lightweight.content import Content
-from lightweight.content.content import ByteContent
 
 if TYPE_CHECKING:
-    from lightweight import ContentCollection
+    from lightweight import ContentCollection, SitePath, Site
 
 # Type aliases for clear type definitions
 Url = str
@@ -21,88 +20,179 @@ LanguageCode = str
 Email = str
 
 
-class RssFeed(ByteContent):
+@dataclass(frozen=True)
+class RssFeed(Content):
     """An immutable RSS feed content that can be saved to a file."""
+    url: Url
+    icon_url: Optional[Url]
+    title: str
+    description: str
+    updated: Optional[str]
+    author: Dict[str, Optional[str]]
+    language: Optional[LanguageCode]
+    copyright: Optional[str]
 
+    entries: List[Entry]
 
-class AtomFeed(ByteContent):
-    """An immutable Atom feed content that can be saved to a file."""
+    def render(self, site: Site):
+        gen = FeedGenerator()
+
+        gen.id(self.url)
+        gen.link(href=self.url, rel='alternate')
+        gen.icon(self.icon_url)
+        gen.title(self.title)
+        gen.description(self.description)
+
+        if self.updated:
+            gen.updated(self.updated)
+
+        gen.author(self.author)
+
+        gen.language(self.language)
+        gen.copyright(self.copyright)
+
+        for entry in self.entries:
+            feed_entry = gen.add_entry()
+            entry.fill(feed_entry, site)
+
+        return gen.rss_str(pretty=True)
+
+    def write(self, path: SitePath):
+        target = self.render(path.site)
+        path.create(target)
 
 
 @dataclass(frozen=True)
-class Feeds:
-    rss: RssFeed
-    atom: AtomFeed
+class AtomFeed(Content):
+    """An immutable Atom feed content that can be saved to a file."""
+    url: str
+    icon_url: Optional[str]
+    title: str
+    description: str
+    updated: Optional[datetime]
+    author: Dict[str, Optional[str]]
+    language: Optional[str]
+    copyright: Optional[str]
 
-    def __iter__(self) -> Iterator[Tuple[str, ByteContent]]:
-        return iter([
-            ('rss', self.rss),
-            ('atom', self.atom),
-        ])
+    entries: List[Entry]
+
+    def render(self, site: Site):
+        gen = FeedGenerator()
+
+        gen.id(self.url)
+        gen.link(href=self.url, rel='alternate')
+        gen.icon(self.icon_url)
+        gen.title(self.title)
+        gen.description(self.description)
+
+        if self.updated:
+            gen.updated(self.updated)
+
+        gen.author(self.author)
+
+        gen.language(self.language)
+        gen.copyright(self.copyright)
+
+        for entry in self.entries:
+            feed_entry = gen.add_entry()
+            entry.fill(feed_entry, site)
+
+        return gen.atom_str(pretty=True)
+
+    def write(self, path: SitePath):
+        target = self.render(path.site)
+        path.create(target)
 
 
-def feeds(content: ContentCollection, include_content=True) -> Feeds:
+@dataclass(frozen=True)
+class Entry:
+    url: str
+    title: str
+    author: Dict[str, str]
+    created: datetime
+    updated: datetime
+    summary: str
+
+    def fill(self, feed_entry: FeedEntry, site: Site):
+        """Fill the provided FeedEntry with content."""
+        feed_entry.id(self.url)
+        feed_entry.link(href=self.url, rel='alternate')
+
+        feed_entry.title(self.title)
+
+        feed_entry.summary(self.summary)
+        # TODO:mdrachuk:2019-09-02: support tags (categories)
+        # TODO:mdrachuk:2019-09-02: support rich media (videos, audio)
+
+        feed_entry.author(self.author)
+        # TODO:mdrachuk:2019-09-02: support contributors
+
+        feed_entry.published(self.created)
+        feed_entry.updated(self.updated)
+
+
+def atom(source: ContentCollection) -> AtomFeed:
+    return new_feed(AtomFeed, source)
+
+
+def rss(source: ContentCollection) -> RssFeed:
+    return new_feed(RssFeed, source)
+
+
+FeedFactory = Type[Union[RssFeed, AtomFeed]]
+
+
+def new_feed(feed: FeedFactory, source: ContentCollection) -> Union[RssFeed, AtomFeed]:
     """Create RSS and Atom feeds."""
-    gen = FeedGenerator()
 
-    url = required(content, 'url')
-    gen.id(url)
-    gen.link(href=url, rel='alternate')
-    gen.icon(get(content, 'icon_url', default=None))
-    gen.title(required(content, 'title'))
-    gen.description(required(content, 'description'))
+    url = required(source, 'url')
+    icon_url = get(source, 'icon_url', default=None)
+    title = required(source, 'title')
+    description = required(source, 'description')
 
-    updated = get(content, 'updated', default=None)
-    if updated is not None:
-        gen.updated(updated)
-
+    updated = get(source, 'updated', default=None)
     author = {
-        'name': get(content, 'author_name', default=None),
-        'email': get(content, 'author_email', default=None),
+        'name': get(source, 'author_name', default=None),
+        'email': get(source, 'author_email', default=None),
     }
-    gen.author(author)
+    language = get(source, 'language', default=None)
+    copyright = get(source, 'copyright', default=None)
 
-    gen.language(get(content, 'language', default=None))
-    gen.copyright(get(content, 'copyright', default=None))
+    entries = [new_entry(path, entry_content, author, url) for path, entry_content in source.content.items()]
 
-    for path, entry in content.content.items():
-        feed_entry = gen.add_entry()
-        fill_entry(path, entry, feed_entry, author, url, include_content=include_content)
-
-    return Feeds(
-        RssFeed(gen.rss_str(pretty=True)),
-        AtomFeed(gen.atom_str(pretty=True))
+    return feed(
+        url=url,
+        icon_url=icon_url,
+        title=title,
+        description=description,
+        updated=updated,
+        author=author,
+        language=language,
+        copyright=copyright,
+        entries=entries,
     )
 
 
-def fill_entry(
+def new_entry(
         path: Path,
         content: Content,
-        feed_entry: FeedEntry,
         author: Any,
         root_url: Url,
-        *,
-        include_content: bool
 ):
     """Fill the provided FeedEntry with content."""
     url = get(content, 'url', default=urljoin(root_url, str(path)))
-    feed_entry.id(url)
-    feed_entry.link(href=url, rel='alternate')
-
-    feed_entry.title(get(content, 'title', default=str(path)))
-
-    if include_content:
-        # TODO:mdrachuk:2019-09-02: support tags (categories)
-        # TODO:mdrachuk:2019-09-02: support summary/content
-        # TODO:mdrachuk:2019-09-02: rich media (videos, audio)
-        feed_entry.content(required(content, 'content'))
-
-    feed_entry.author(getattr(content, 'author', author))
-    # TODO:mdrachuk:2019-09-02: support contributors
-
+    title = get(content, 'title', default=str(path))
+    summary = get(content, 'summary', default='')
     created = get(content, 'created', default=datetime.now(tz=timezone.utc))
-    feed_entry.published(created)
-    feed_entry.updated(get(content, 'updated', default=created))
+    updated = get(content, 'updated', default=created)
+    return Entry(
+        url=url,
+        title=title,
+        summary=summary,
+        author=author,
+        created=created,
+        updated=updated,
+    )
 
 
 T = TypeVar('T')

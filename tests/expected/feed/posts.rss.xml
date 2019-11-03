@@ -10,20 +10,6 @@
     <item>
       <title>posts/post-1.html</title>
       <link>https://example.com/posts/post-1.html</link>
-      <description># This is a test
-One.
-
-## Second heading
-## Second heading part 2
-### Third heading
-#### 4th heading
-##### 5th heading
-###### 6th heading!
-
-## And Back
-
-
-</description>
       <guid isPermaLink="false">https://example.com/posts/post-1.html</guid>
       <pubDate>Mon, 20 Apr 2020 16:20:00 -0700</pubDate>
     </item>
