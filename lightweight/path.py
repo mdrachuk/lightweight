@@ -58,11 +58,11 @@ class SitePath:
     def mkdir(self, mode=0o777, parents=True, exist_ok=True):
         return self.real_path.mkdir(mode=mode, parents=parents, exist_ok=exist_ok)
 
-    def __truediv__(self, other: Union[SitePath, PurePath]):
-        other_path: PurePath
+    def __truediv__(self, other: Union[SitePath, PurePath, str]):
+        other_path: Union[PurePath, str]
         if isinstance(other, SitePath):
             other_path = other.relative_path
-        elif isinstance(other, PurePath):
+        elif isinstance(other, PurePath) or isinstance(other, str):
             other_path = other
         else:
             raise ValueError(f'Cannot make a path with {other}')
