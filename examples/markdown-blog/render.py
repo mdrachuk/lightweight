@@ -1,7 +1,6 @@
 from __future__ import annotations
 
 from lightweight import Site, markdown, paths, render, template, sass, feeds
-from lightweight.template import jinja
 
 
 def blog_posts():
@@ -10,8 +9,6 @@ def blog_posts():
 
 
 def dev():
-    jinja.globals['DEV_ENVIRONMENT'] = True
-
     site = Site(url='http://localhost:8080')
 
     # Render an index page from Jinja2 template.
@@ -32,8 +29,6 @@ def dev():
     site.include('images')
 
     site.render()
-
-    jinja.globals['DEV_ENVIRONMENT'] = False
 
 
 if __name__ == '__main__':
