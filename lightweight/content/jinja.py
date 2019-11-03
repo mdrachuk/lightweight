@@ -21,7 +21,7 @@ class JinjaSource(Content):
     params: Dict[str, Any]
     template: Template
 
-    def render(self, path: SitePath):
+    def write(self, path: SitePath):
         path.create(self.template.render(
             site=path.site, source=self, **self.params
         ))

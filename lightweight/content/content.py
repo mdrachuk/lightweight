@@ -2,11 +2,10 @@ from __future__ import annotations
 
 from abc import ABC, abstractmethod
 from datetime import datetime
-from pathlib import Path
 from typing import TYPE_CHECKING
 
 if TYPE_CHECKING:
-    from lightweight import Site, SitePath
+    from lightweight import SitePath
 
 # Type aliases for clear type definitions
 Url = str
@@ -14,12 +13,10 @@ Email = str
 
 
 class Content(ABC):
-    path: Path
-    site: Site
 
     @abstractmethod
-    def render(self, path: SitePath):
-        """Render..."""
+    def write(self, path: SitePath):
+        """Write..."""
 
 
 class Entry(ABC):
@@ -32,23 +29,3 @@ class Entry(ABC):
     author_email: Email
     created: datetime
     updated: datetime
-
-
-class ByteContent(Content, bytes):
-    """Bytes that can be redered to path.
-
-        :Example:
-
-        >>> binary_content = ByteContent(b'1234')
-        >>> binary_content.render(site.path('out/digits.bin'))
-    """
-
-    def render(self, path: SitePath):
-        path.create(self)
-
-    def __repr__(self):
-        return f'<{self.__class__.__name__} {truncate(self)}>'
-
-
-def truncate(data: bytes, size=16) -> str:
-    return f'{data[:size].decode("utf8")}..' if len(data) > size else data.decode("utf8")

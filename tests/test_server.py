@@ -4,7 +4,7 @@ from http.server import HTTPServer
 
 import requests
 
-from lightweight.server import parser, dev_server, LIVE_RELOAD_JS
+from lightweight.server import parser, DevSever, LIVE_RELOAD_JS
 
 
 def test_args():
@@ -33,19 +33,19 @@ def background_server(server: HTTPServer):
 
 
 def test_serves_live_reload_js():
-    server = dev_server('site', host='0.0.0.0', port=8033, enable_reload=True)
+    server = DevSever('site', host='0.0.0.0', port=8033, enable_reload=True)
     with background_server(server):
         assert 'liveReload.start();' in requests.get('http://0.0.0.0:8033').text
         assert LIVE_RELOAD_JS in requests.get('http://0.0.0.0:8033').text
         assert LIVE_RELOAD_JS in requests.get('http://0.0.0.0:8033/index').text
         assert LIVE_RELOAD_JS in requests.get('http://0.0.0.0:8033/index.html').text
-        assert server.id == requests.get('http://0.0.0.0:8033/id').text
+        assert server.id_path
 
         assert 'A test file.' in requests.get('http://0.0.0.0:8033/file').text
 
 
 def test_serves_no_live_reload_js():
-    server = dev_server('site', host='0.0.0.0', port=8034, enable_reload=False)
+    server = DevSever('site', host='0.0.0.0', port=8034, enable_reload=False)
     with background_server(server):
         assert LIVE_RELOAD_JS not in requests.get('http://0.0.0.0:8034').text
         assert LIVE_RELOAD_JS not in requests.get('http://0.0.0.0:8034/index').text

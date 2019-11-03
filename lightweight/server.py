@@ -4,7 +4,11 @@ from enum import Enum, auto
 from http.server import HTTPServer, BaseHTTPRequestHandler
 from mimetypes import types_map
 from pathlib import Path
+from tempfile import mkstemp
 from uuid import uuid4
+
+from watchdog.events import FileSystemEventHandler  # type: ignore
+from watchdog.observers import Observer  # type: ignore
 
 
 class FileType(Enum):
@@ -64,7 +68,9 @@ class LiveStaticFiles(StaticFiles):
         if self.path == '/id':
             self.send_response(200)
             self.end_headers()
-            self.wfile.write(self.server.id.encode('utf8'))
+            with open(self.server.id_path) as f:
+                id = f.read()
+            self.wfile.write(id.encode('utf8'))
         else:
             super().do_GET()
 
@@ -77,15 +83,15 @@ class LiveStaticFiles(StaticFiles):
         return file.content
 
 
-def dev_server(directory: str, *, host: str, port: int, enable_reload: bool) -> HTTPServer:
-    working_dir = Path(directory).resolve()
-    check_directory(working_dir)
-    address = (host, port)
-    handler = LiveStaticFiles if enable_reload else StaticFiles
-    server = HTTPServer(address, handler)
-    server.working_dir = working_dir  # type: ignore
-    server.id = str(uuid4())  # type: ignore
-    return server
+class DevSever(HTTPServer):
+    def __init__(self, directory: str, *, host: str, port: int, enable_reload: bool):
+        self.working_dir = Path(directory).resolve()
+        check_directory(self.working_dir)
+        address = (host, port)
+        handler = LiveStaticFiles if enable_reload else StaticFiles
+        super(DevSever, self).__init__(address, handler)
+        if enable_reload:
+            _, self.id_path = mkstemp()
 
 
 def check_directory(working_dir: Path):
@@ -114,7 +120,7 @@ const liveReload = function f() {
 
     function reloadOnChange(currentId) {
         stopped = false;
-        interval = setInterval(check, 500);
+        interval = setInterval(check, 1000);
 
         function check() {
             fetchId().then(newId => {
@@ -141,10 +147,30 @@ parser.add_argument('--host', type=str, default='0.0.0.0')
 parser.add_argument('--port', type=int, default=8080)
 parser.add_argument('--no-live-reload', action='store_true', default=False, help='disable live reloading')
 
+
+class ChangeId(FileSystemEventHandler):
+    def __init__(self, path: str):
+        super().__init__()
+        self.path = path
+        self.rewrite()
+
+    def on_any_event(self, event):
+        self.rewrite()
+
+    def rewrite(self):
+        with open(self.path, 'w') as f:
+            f.write(str(uuid4()))
+
+
 if __name__ == '__main__':
     args = parser.parse_args()
-    server = dev_server(args.directory,
-                        host=args.host,
-                        port=args.port,
-                        enable_reload=not args.no_live_reload)
+    enable_reload = not args.no_live_reload
+    server = DevSever(args.directory, host=args.host, port=args.port, enable_reload=enable_reload)
+
+    if enable_reload:
+        id_path = server.id_path
+        observer = Observer()
+        observer.schedule(ChangeId(id_path), args.directory, recursive=True)
+        observer.start()
+
     server.serve_forever()

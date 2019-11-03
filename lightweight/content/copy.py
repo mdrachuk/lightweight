@@ -16,7 +16,7 @@ if TYPE_CHECKING:
 class DirectoryCopy(Content):
     source: Path
 
-    def render(self, path: SitePath):
+    def write(self, path: SitePath):
         path.parent.mkdir()
         copy_tree(str(self.source), str(path.absolute()))
 
@@ -25,6 +25,6 @@ class DirectoryCopy(Content):
 class FileCopy(Content):
     source: Path
 
-    def render(self, path: SitePath):
+    def write(self, path: SitePath):
         path.parent.mkdir()
         copy(str(self.source), str(path.absolute()))

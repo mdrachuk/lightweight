@@ -13,13 +13,13 @@ from lightweight.path import SitePath
 
 
 class Site(ContentCollection):
-    content: Dict[Path, Content]
+    content: Dict[SitePath, Content]
 
     def __init__(self, *,
                  url: str,
                  out: Union[str, Path] = 'out',
                  title: Optional[str] = None):
-        super().__init__({})
+        super().__init__({}, self)
         url_parts = urlparse(url)
         assert url_parts.scheme, 'Missing scheme in Site URL.'
         self.title = title or url_parts.netloc
@@ -47,12 +47,12 @@ class Site(ContentCollection):
 
         pattern_or_path = arg  # type: Union[str, Path]
         if content is None:
-            contents = {path: _file_or_dir(path) for path in paths(pattern_or_path)}
+            contents = {self.path(path): file_or_dir(path) for path in paths(pattern_or_path)}
             if not len(contents):
                 raise FileNotFoundError()
             self.content.update(contents)
         else:
-            path = Path(pattern_or_path)
+            path = self.path(pattern_or_path)
             self.content[path] = content
 
     def path(self, p: Union[Path, str]) -> SitePath:
@@ -62,8 +62,8 @@ class Site(ContentCollection):
         if self.out.exists():
             rmtree(self.out)
         self.out.mkdir(parents=True, exist_ok=True)
-        [content.render(self.path(p)) for p, content in self.content.items()]
+        [content.write(p) for p, content in self.items()]
 
 
-def _file_or_dir(path: Path):
+def file_or_dir(path: Path):
     return FileCopy(path) if path.is_file() else DirectoryCopy(path)

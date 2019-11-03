@@ -1,7 +1,8 @@
 from __future__ import annotations
 
-from lightweight import Site, markdown, paths, render, template, sass, feeds
-from lightweight.template import jinja
+from argparse import ArgumentParser
+
+from lightweight import Site, markdown, paths, render, template, sass, atom, rss
 
 
 def blog_posts():
@@ -9,10 +10,8 @@ def blog_posts():
     return (markdown(path, post_template) for path in paths('posts/**.md'))
 
 
-def dev():
-    jinja.globals['DEV_ENVIRONMENT'] = True
-
-    site = Site(url='http://localhost:8080')
+def main(dev: bool = False):
+    site = Site(url='http://localhost:8080' if dev else 'http://example.org')
 
     # Render an index page from Jinja2 template.
     site.include('index.html', render('pages/index.html'))
@@ -22,7 +21,8 @@ def dev():
     site.include('posts.html', render('pages/posts.html'))
 
     # Syndicate RSS and Atom feeds.
-    [site.include(f'posts.{type}.xml', feed) for type, feed in feeds(site['posts'])]
+    site.include(f'posts.atom.xml', atom(site['posts']))
+    site.include(f'posts.rss.xml', rss(site['posts']))
 
     # Render SASS to CSS.
     site.include('styles/lightweight.css', sass('styles/lightweight.scss'))
@@ -33,8 +33,10 @@ def dev():
 
     site.render()
 
-    jinja.globals['DEV_ENVIRONMENT'] = False
 
+parser = ArgumentParser(description='Render a static website')
+parser.add_argument('--dev', action='store_true', default=False, help='dev configuration')
 
 if __name__ == '__main__':
-    dev()
+    args = parser.parse_args()
+    main(dev=args.dev)

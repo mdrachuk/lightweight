@@ -14,10 +14,10 @@ Static site generator i actually can use.
 - [x] Clean and easily extensible API 
 - [x] Jinja2 templates
 - [x] Markdown rendering
-- [ ] Markdown links
 - [x] Sass/SCSS rendering
 - [x] RSS/Atom feeds
-- [ ] Dev server
+- [x] Dev server
+- [ ] CLI
 
 ## Installation
 Available from [PyPI][pypi]:
@@ -27,7 +27,7 @@ pip install lightweight
 
 ## Quick Example
 ```python
-from lightweight import Site, markdown, paths, render, template, feeds, sass
+from lightweight import Site, markdown, paths, render, template, rss, atom, sass
 
 
 def blog_posts():
@@ -36,19 +36,20 @@ def blog_posts():
     return (markdown(path, post_template) for path in paths('posts/**.md'))
 
 
-site = Site(url='https://example.com')
+site = Site(url='https://example.org')
 
-# Render a Jinja2 template.
-site.include('index.html', render('pages/index.html')) 
+# Render an index page from Jinja2 template.
+site.include('index.html', render('pages/index.html'))
 
-# Render list of Markdown files.
-site.include('posts.html', render('pages/posts.html'))
+# Render markdown blog posts.
 [site.include(f'posts/{post.filename.stem}.html', post) for post in blog_posts()]
+site.include('posts.html', render('pages/posts.html'))
 
 # Syndicate RSS and Atom feeds.
-[site.include(f'posts.{type}.xml', feed) for type, feed in feeds(site['posts'])]
+site.include(f'posts.atom.xml', atom(site['posts']))
+site.include(f'posts.rss.xml', rss(site['posts']))
 
-# Render SCSS.
+# Render SASS to CSS.
 site.include('css/style.css', sass('styles/style.scss'))
 
 # Include a copy of a directory.
@@ -71,6 +72,9 @@ The live reload can be disabled with `--no-live-reload` flag:
 ```bash
 python -m lightweight.server <directory> --no-live-reload
 ```
+Otherwise every served html file will be injected with a javascript that polls `/id`.
+The script reloads the page when the `/id` changes.
+The `/id` changes every time on any file change at the served directory.
 
 Host and port can be set via:
 ```bash
