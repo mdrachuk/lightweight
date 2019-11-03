@@ -91,7 +91,7 @@ class DevSever(HTTPServer):
         handler = LiveStaticFiles if enable_reload else StaticFiles
         super(DevSever, self).__init__(address, handler)
         if enable_reload:
-            _, self.id_path = mkstemp()  # type: ignore
+            _, self.id_path = mkstemp()
 
 
 def check_directory(working_dir: Path):
@@ -168,7 +168,7 @@ if __name__ == '__main__':
     server = DevSever(args.directory, host=args.host, port=args.port, enable_reload=enable_reload)
 
     if enable_reload:
-        id_path = server.id_path  # type
+        id_path = server.id_path
         observer = Observer()
         observer.schedule(ChangeId(id_path), args.directory, recursive=True)
         observer.start()
