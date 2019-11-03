@@ -3,7 +3,7 @@ from __future__ import annotations
 from dataclasses import dataclass
 from datetime import datetime, timezone
 from pathlib import Path
-from typing import TYPE_CHECKING, TypeVar, Any, Optional, Type, Union, Dict, List
+from typing import TYPE_CHECKING, TypeVar, Any, Optional, Type, Union, List, Mapping
 from urllib.parse import urljoin
 
 from feedgen.entry import FeedEntry  # type: ignore
@@ -28,7 +28,7 @@ class RssFeed(Content):
     title: str
     description: str
     updated: Optional[str]
-    author: Dict[str, Optional[str]]
+    author: Mapping[str, Optional[str]]
     language: Optional[LanguageCode]
     copyright: Optional[str]
 
@@ -70,7 +70,7 @@ class AtomFeed(Content):
     title: str
     description: str
     updated: Optional[datetime]
-    author: Dict[str, Optional[str]]
+    author: Mapping[str, Optional[str]]
     language: Optional[str]
     copyright: Optional[str]
 
@@ -108,7 +108,7 @@ class AtomFeed(Content):
 class Entry:
     url: str
     title: str
-    author: Dict[str, str]
+    author: Mapping[str, Optional[str]]
     created: datetime
     updated: datetime
     summary: str
@@ -173,12 +173,7 @@ def new_feed(feed: FeedFactory, source: ContentCollection) -> Union[RssFeed, Ato
     )
 
 
-def new_entry(
-        path: Path,
-        content: Content,
-        author: Any,
-        root_url: Url,
-):
+def new_entry(path: Path, content: Content, author: Any, root_url: Url, ):
     """Fill the provided FeedEntry with content."""
     url = get(content, 'url', default=urljoin(root_url, str(path)))
     title = get(content, 'title', default=str(path))

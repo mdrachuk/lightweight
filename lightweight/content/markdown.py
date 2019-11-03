@@ -28,7 +28,14 @@ class MarkdownPage(Content):
     updated: Optional[datetime] = None
 
     def render(self, site: Site):
-        html, toc_html = LwMarkdown().render(self.source)
+        md_paths = {
+            str(content.source_path): site.path(path).url
+            for path, content in site.content.items()
+            if isinstance(content, MarkdownPage)
+        }
+        locations = {str(path): site.path(path).url for path in site.content}
+        link_mapping = dict(**md_paths, **locations)
+        html, toc_html = LwMarkdown(link_mapping).render(self.source)
         return RenderedMarkdown(
             html=html,
             toc_html=toc_html,

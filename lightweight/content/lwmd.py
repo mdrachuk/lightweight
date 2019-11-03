@@ -1,7 +1,7 @@
 from __future__ import annotations
 
 from collections import namedtuple
-from typing import List
+from typing import List, Dict
 
 import mistune  # type: ignore # no typings
 from slugify import slugify  # type: ignore # no typings
@@ -70,13 +70,26 @@ class TocMixin(object):
 
 class LwRenderer(TocMixin, mistune.Renderer):
 
+    def __init__(self, link_mapping: Dict[str, str]):
+        super().__init__()
+        self.url_mapping = link_mapping
+
     def reset(self):
         super(LwRenderer, self).reset()
 
+    def link(self, link, title, text):
+        if link.startswith('/'):
+            without_slash = link[1:]
+            if without_slash in self.url_mapping:
+                link = self.url_mapping[without_slash]
+        elif link in self.url_mapping:
+            link = self.url_mapping[link]
+        return super().link(link, title, text)
+
 
 class LwMarkdown(mistune.Markdown):
-    def __init__(self):
-        super().__init__(renderer=LwRenderer())
+    def __init__(self, link_mapping: Dict[str, str]):
+        super().__init__(renderer=LwRenderer(link_mapping))
 
     def render(self, text):
         self.renderer.reset()
