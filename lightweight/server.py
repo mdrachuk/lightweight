@@ -175,4 +175,5 @@ if __name__ == '__main__':
     enable_reload = not args.no_live_reload
     id_path = start_watchdog(args.directory) if enable_reload else None
     server = DevSever(args.directory, host=args.host, port=args.port, watch_id=id_path)
+    print(f'Server for "{args.directory}" starting at "{args.host}:{args.port}"')
     server.serve_forever()

@@ -7,6 +7,7 @@ from lightweight.server import DevSever, start_watchdog
 def start_server(directory: str, *, host: str, port: int, enable_reload: bool):
     id_path = start_watchdog(directory) if enable_reload else None
     server = DevSever(directory, host=host, port=port, watch_id=id_path)
+    print(f'Server for "{directory}" starting at "{host}:{port}"')
     server.serve_forever()
 
 
