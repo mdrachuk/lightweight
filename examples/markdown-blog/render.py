@@ -5,9 +5,9 @@ from argparse import ArgumentParser
 from lightweight import Site, markdown, paths, render, template, sass, atom, rss
 
 
-def blog_posts():
+def blog_posts(source: str):
     post_template = template('blog-post.html')
-    return (markdown(path, post_template) for path in paths('posts/**.md'))
+    return (markdown(path, post_template) for path in paths(source))
 
 
 def main(dev: bool = False):
@@ -17,12 +17,12 @@ def main(dev: bool = False):
     site.include('index.html', render('pages/index.html'))
 
     # Render markdown blog posts.
-    [site.include(f'posts/{post.filename.stem}.html', post) for post in blog_posts()]
+    [site.include(f'posts/{post.filename.stem}.html', post) for post in blog_posts('posts/**.md')]
     site.include('posts.html', render('pages/posts.html'))
 
     # Syndicate RSS and Atom feeds.
-    site.include(f'posts.atom.xml', atom(site['posts']))
-    site.include(f'posts.rss.xml', rss(site['posts']))
+    site.include('posts.atom.xml', atom(site['posts']))
+    site.include('posts.rss.xml', rss(site['posts']))
 
     # Render SASS to CSS.
     site.include('styles/lightweight.css', sass('styles/lightweight.scss'))
