@@ -16,14 +16,17 @@ if TYPE_CHECKING:
 @dataclass(frozen=True)
 class Sass(Content):
     source_path: Path
+    sourcemap: bool
 
     def write(self, path: SitePath):
         if self.source_path.is_dir():
             css_at_target = construct_relative_css_path(self.source_path, target=path)
-            [_render(p, css_at_target(p)) for p in paths(f'{self.source_path}/**/*.sass')]
-            [_render(p, css_at_target(p)) for p in paths(f'{self.source_path}/**/*.scss')]
+            for p in paths(f'{self.source_path}/**/*.sass'):
+                _render(p, css_at_target(p), include_sourcemap=self.sourcemap)
+            for p in paths(f'{self.source_path}/**/*.scss'):
+                _render(p, css_at_target(p), include_sourcemap=self.sourcemap)
         else:
-            _render(self.source_path, path)
+            _render(self.source_path, path, include_sourcemap=self.sourcemap)
 
 
 def construct_relative_css_path(source: Path, *, target: SitePath) -> Callable[[Path], SitePath]:
@@ -36,7 +39,7 @@ def construct_relative_css_path(source: Path, *, target: SitePath) -> Callable[[
     return remap
 
 
-def _render(source: Path, target: SitePath):
+def _render(source: Path, target: SitePath, *, include_sourcemap: bool):
     sourcemap_path = target.with_name(target.name + '.map')
     result, sourcemap = compile(
         filename=str(source),
@@ -46,13 +49,15 @@ def _render(source: Path, target: SitePath):
         output_style='compact',
     )
     target.parent.mkdir()
-    with target.open('w') as css_file, sourcemap_path.open('w') as sourcemap_file:
+    with target.open('w') as css_file:
         css_file.write(result)
-        sourcemap_file.write(sourcemap)
+    if include_sourcemap:
+        with sourcemap_path.open('w') as sourcemap_file:
+            sourcemap_file.write(sourcemap)
 
 
-def sass(location: str) -> Sass:
+def sass(location: str, sourcemap=True) -> Sass:
     path = Path(location)
     if not path.exists():
         raise FileNotFoundError(f'Sass file not found: {location}')
-    return Sass(path)
+    return Sass(path, sourcemap)
