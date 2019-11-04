@@ -30,10 +30,10 @@ pip install lightweight
 from lightweight import Site, markdown, paths, render, template, rss, atom, sass
 
 
-def blog_posts():
+def blog_posts(source):
     post_template = template('blog-post.html')
     # Use globs to select files.
-    return (markdown(path, post_template) for path in paths('posts/**.md'))
+    return (markdown(path, post_template) for path in paths(source))
 
 
 site = Site(url='https://example.org')
@@ -42,12 +42,12 @@ site = Site(url='https://example.org')
 site.include('index.html', render('pages/index.html'))
 
 # Render markdown blog posts.
-[site.include(f'posts/{post.filename.stem}.html', post) for post in blog_posts()]
+[site.include(f'posts/{post.filename.stem}.html', post) for post in blog_posts('posts/**.md')]
 site.include('posts.html', render('pages/posts.html'))
 
 # Syndicate RSS and Atom feeds.
-site.include(f'posts.atom.xml', atom(site['posts']))
-site.include(f'posts.rss.xml', rss(site['posts']))
+site.include('posts.atom.xml', atom(site['posts']))
+site.include('posts.rss.xml', rss(site['posts']))
 
 # Render SASS to CSS.
 site.include('css/style.css', sass('styles/style.scss'))
