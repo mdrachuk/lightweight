@@ -13,6 +13,7 @@ setup(
     version=lightweight.__version__,
     packages=find_packages(exclude=("tests*",)),
     package_data={"lighweight": ["py.typed"]},
+    scripts=['lw'],
     zip_safe=False,
     author='mdrachuk',
     author_email='misha@drach.uk',
