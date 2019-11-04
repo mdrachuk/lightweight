@@ -3,9 +3,14 @@
 {% block title %} Lightweight | Posts {% endblock %}
 
 {% block main %}
-    <ul>
-        {%- for path, post in site['posts'].items() %}
-            <li><a href="{{ path.url }}">{{ post.filename }}</a></li>
-        {%- endfor %}
-    </ul>
+
+    {%- for path, source in site['posts'].items() %}
+        {% set post = source.render(path, strip_title=True) %}
+        <article>
+            <a href="{{ path.url }}"><h1>{{ post.title or post.created.strftime('%Y-%m-%d') }}</h1></a>
+
+            {{ post.html }}
+        </article>
+    {%- endfor %}
+
 {% endblock %}

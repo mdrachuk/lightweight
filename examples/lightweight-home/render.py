@@ -2,13 +2,20 @@ from __future__ import annotations
 
 from argparse import ArgumentParser
 
-from locate_lightweight_for_example import *
 from lightweight import Site, markdown, paths, render, template, sass, atom, rss
+from lightweight.content.lwmd import LwRenderer
+
+
+class WrapLinks(LwRenderer):
+
+    def link(self, link, title, text):
+        text = f'<span>{text}</span>'
+        return super(WrapLinks, self).link(link, title, text)
 
 
 def blog_posts(source: str):
     post_template = template('blog-post.html')
-    return (markdown(path, post_template) for path in paths(source))
+    return (markdown(path, post_template, renderer=WrapLinks) for path in paths(source))
 
 
 def main(dev: bool = False):
@@ -26,7 +33,7 @@ def main(dev: bool = False):
     site.include('posts.rss.xml', rss(site['posts']))
 
     # Render SASS to CSS.
-    site.include('styles/lightweight.css', sass('styles/lightweight.scss'))
+    site.include('lightweight.css', sass('styles/lightweight.scss'))
 
     # Include directory with its contents.
     site.include('js')

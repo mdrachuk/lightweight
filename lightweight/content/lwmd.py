@@ -74,9 +74,6 @@ class LwRenderer(TocMixin, mistune.Renderer):
         super().__init__()
         self.url_mapping = link_mapping
 
-    def reset(self):
-        super(LwRenderer, self).reset()
-
     def link(self, link, title, text):
         if link.startswith('/'):
             without_slash = link[1:]
@@ -88,8 +85,8 @@ class LwRenderer(TocMixin, mistune.Renderer):
 
 
 class LwMarkdown(mistune.Markdown):
-    def __init__(self, link_mapping: Dict[str, str]):
-        super().__init__(renderer=LwRenderer(link_mapping))
+    def __init__(self, renderer: mistune.Renderer):
+        super().__init__(renderer=renderer)
 
     def render(self, text):
         self.renderer.reset()
