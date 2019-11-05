@@ -7,11 +7,12 @@ from datetime import date, datetime, timezone
 from pathlib import Path
 from typing import Optional, Union, TYPE_CHECKING, Type
 
+import mistune
 from jinja2 import Template
 
-from lightweight.files import FileName
+from ..files import FileName
 from .content import Content
-from .lwmd import LwMarkdown, LwRenderer
+from .lwmd import LwRenderer
 
 if TYPE_CHECKING:
     from lightweight import SitePath
@@ -41,17 +42,15 @@ class MarkdownPage(Content):
         locations = {str(p): p.url for p in site}
         link_mapping = dict(**md_paths, **locations)
         renderer = self.renderer(link_mapping)
-        html, toc_html = LwMarkdown(renderer).render(self.source)
-        heading_regex = re.compile(r'\A<h1.+>(?P<title>.+)</h1>')
-        heading = heading_regex.match(html)
-        title = self.title or heading.group('title')
-        if strip_title:
-            html = heading_regex.sub('', html, count=1)
+        renderer.reset()
+        html = mistune.Markdown(renderer).render(self.source)
+        toc_html = renderer.render_toc(level=3)
+        html, md_title = extract_title(html, strip_from_html=strip_title)
         return RenderedMarkdown(
             html=html,
             toc_html=toc_html,
             # TODO:mdrachuk:2019-08-19: extract title from YAML Front Matter
-            title=title,
+            title=self.title or md_title,
             summary=self.summary,
             created=self.created,
             updated=self.updated,
@@ -65,6 +64,17 @@ class MarkdownPage(Content):
         ))
 
 
+def extract_title(html: str, *, strip_from_html: bool) -> Tupler[str, Optional[str]]:
+    heading_regex = re.compile(r'\A<h1.+>(?P<title>.+)</h1>')
+    match = heading_regex.match(html)
+    if not match:
+        return html, None
+    title = match.group('title')
+    if strip_from_html:
+        html = heading_regex.sub('', html, count=1)
+    return html, title
+
+
 def markdown(
         md_path: Union[str, Path],
         template: Template,
@@ -76,8 +86,15 @@ def markdown(
     path = Path(md_path)
     with path.open() as f:
         source = f.read()
-    created = created or datetime.fromtimestamp(os.path.getctime(str(path)), tz=timezone.utc)
-    updated = updated or datetime.fromtimestamp(os.path.getmtime(str(path)), tz=timezone.utc)
+    if not created and updated:
+        created = updated
+        updated = updated
+    elif created and not updated:
+        created = created
+        updated = created
+    elif not created and not updated:
+        created = datetime.fromtimestamp(os.path.getctime(str(path)), tz=timezone.utc)
+        updated = datetime.fromtimestamp(os.path.getmtime(str(path)), tz=timezone.utc)
     return MarkdownPage(
         filename=FileName(path.name),
         source_path=path,

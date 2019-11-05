@@ -84,12 +84,3 @@ class LwRenderer(TocMixin, mistune.Renderer):
         return super().link(link, title, text)
 
 
-class LwMarkdown(mistune.Markdown):
-    def __init__(self, renderer: mistune.Renderer):
-        super().__init__(renderer=renderer)
-
-    def render(self, text):
-        self.renderer.reset()
-        html = super().render(text)
-        toc_html = self.renderer.render_toc(level=3)
-        return html, toc_html
