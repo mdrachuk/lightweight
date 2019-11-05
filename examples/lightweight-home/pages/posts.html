@@ -5,12 +5,16 @@
 {% block main %}
 
     {%- for path, source in site['posts'].items() %}
-        {% set post = source.render(path, strip_title=True) %}
+        {% set post = source.render(path) %}
+
         <article>
-            <a href="{{ path.url }}"><h1>{{ post.title or post.created.strftime('%Y-%m-%d') }}</h1></a>
+            <a href="{{ path.location }}"><h1>{{ post.title or post.created.strftime('%Y-%m-%d') }}</h1></a>
 
             {{ post.html }}
         </article>
+
+        {% if not loop.last %} <hr> {% endif %}
+
     {%- endfor %}
 
 {% endblock %}
