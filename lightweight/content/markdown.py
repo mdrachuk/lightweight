@@ -1,16 +1,15 @@
 from __future__ import annotations
 
-import os
-import re
 from dataclasses import dataclass
 from datetime import date, datetime, timezone
 from pathlib import Path
-from typing import Optional, Union, TYPE_CHECKING, Type
+from typing import Optional, Union, TYPE_CHECKING, Type, Dict, Any
 
+import frontmatter
 import mistune
 from jinja2 import Template
 
-from ..files import FileName
+from lightweight.files import FileName
 from .content import Content
 from .lwmd import LwRenderer
 
@@ -27,12 +26,14 @@ class MarkdownPage(Content):
 
     renderer: Type[LwRenderer]
 
-    title: Optional[str] = None
-    summary: Optional[str] = None
-    created: Optional[datetime] = None
-    updated: Optional[datetime] = None
+    title: Optional[str]
+    summary: Optional[str]
+    created: Optional[datetime]
+    updated: Optional[datetime]
 
-    def render(self, path: SitePath, strip_title=False):
+    metadata: Dict[str, Any]
+
+    def render(self, path: SitePath):
         site = path.site
         md_paths = {
             str(content.source_path): path.url
@@ -45,12 +46,10 @@ class MarkdownPage(Content):
         renderer.reset()
         html = mistune.Markdown(renderer).render(self.source)
         toc_html = renderer.render_toc(level=3)
-        html, md_title = extract_title(html, strip_from_html=strip_title)
         return RenderedMarkdown(
             html=html,
             toc_html=toc_html,
-            # TODO:mdrachuk:2019-08-19: extract title from YAML Front Matter
-            title=self.title or md_title,
+            title=self.title,
             summary=self.summary,
             created=self.created,
             updated=self.updated,
@@ -64,46 +63,34 @@ class MarkdownPage(Content):
         ))
 
 
-def extract_title(html: str, *, strip_from_html: bool) -> Tupler[str, Optional[str]]:
-    heading_regex = re.compile(r'\A<h1.+>(?P<title>.+)</h1>')
-    match = heading_regex.match(html)
-    if not match:
-        return html, None
-    title = match.group('title')
-    if strip_from_html:
-        html = heading_regex.sub('', html, count=1)
-    return html, title
-
-
-def markdown(
-        md_path: Union[str, Path],
-        template: Template,
-        renderer=LwRenderer,
-        created=None,
-        updated=None,
-        **fields
-) -> MarkdownPage:
+def markdown(md_path: Union[str, Path], template: Template, *, renderer=LwRenderer) -> MarkdownPage:
     path = Path(md_path)
     with path.open() as f:
         source = f.read()
-    if not created and updated:
-        created = updated
-        updated = updated
-    elif created and not updated:
-        created = created
-        updated = created
-    elif not created and not updated:
-        created = datetime.fromtimestamp(os.path.getctime(str(path)), tz=timezone.utc)
-        updated = datetime.fromtimestamp(os.path.getmtime(str(path)), tz=timezone.utc)
+    post = frontmatter.loads(source)
+    title = post.get('title', None)
+    summary = post.get('summary', None)
+    created = post.get('created', None)
+    updated = post.get('updated', created)
+    if created is not None:
+        assert isinstance(created, datetime), '"created" is not a valid datetime object'
+        created = created.replace(tzinfo=timezone.utc)
+    if updated is not None:
+        assert isinstance(updated, datetime), '"updated" is not a valid datetime object'
+        updated = updated.replace(tzinfo=timezone.utc)
     return MarkdownPage(
         filename=FileName(path.name),
         source_path=path,
-        source=source,
+        source=post.content,
         template=template,
+
         renderer=renderer,
+
+        title=title,
+        summary=summary,
         created=created,
         updated=updated,
-        **fields
+        metadata=dict(post),
     )
 
 

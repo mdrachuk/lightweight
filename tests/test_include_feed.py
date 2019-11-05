@@ -8,7 +8,7 @@ apr_20 = datetime(2020, 4, 20, 16, 20, tzinfo=PDT)
 
 
 def md_posts(location):
-    return (markdown(path, template('md/plain.html'), created=apr_20) for path in paths(location))
+    return (markdown(path, template('md/plain.html')) for path in paths(location))
 
 
 def test_create_atom(tmp_path: Path):
