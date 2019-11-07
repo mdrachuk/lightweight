@@ -6,7 +6,7 @@ order: 3
 hide-toc: true
 ---
 
-The core idea behind Lightweight is "Code over configuration". 
+The core idea behind the project is "Code over configuration". 
 
 It’s explicit and predictable. 
 Site’s structure is easy to control when it is obvious from a single glance.
