@@ -53,7 +53,7 @@ def test_render_jinja_file(tmp_path: Path):
 
 class NoopContent(Content):
     def write(self, path: Path):
-        pass
+        """"""
 
 
 def test_render_missing_jinja_shortcut(tmp_path: Path):
