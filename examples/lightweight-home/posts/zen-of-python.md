@@ -1,11 +1,10 @@
 ---
-title: PEP 20 -- The Zen of Python
+title: "PEP 20: The Zen of Python"
 created: 2004-08-19 00:00:00
 updated: 2004-08-22 00:00:00
 order: 2
 ---
 
-### Abstract
 Long time Pythoneer Tim Peters succinctly channels the BDFL's guiding principles for Python's design into 20 aphorisms, only 19 of which have been written down.
 
 ### The Zen of Python
