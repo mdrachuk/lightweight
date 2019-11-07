@@ -12,8 +12,8 @@
 
             {{ post.preview_html or post.html }}
 
-            {% if post.preview_html %} <a href="{{ path.location }}"><span>Read More</span></a> {% endif %}
         </article>
+        <p>{% if post.preview_html %} <a href="{{ path.location }}"><span>Read More</span></a> {% endif %}</p>
 
         {% if not loop.last %} <hr> {% endif %}
 
