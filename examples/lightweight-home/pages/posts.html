@@ -10,7 +10,9 @@
         <article>
             <a href="{{ path.location }}"><h1>{{ post.title or post.created.strftime('%Y-%m-%d') }}</h1></a>
 
-            {{ post.html }}
+            {{ post.preview_html or post.html }}
+
+            {% if post.preview_html %} <a href="{{ path.location }}"><span>Read More</span></a> {% endif %}
         </article>
 
         {% if not loop.last %} <hr> {% endif %}
