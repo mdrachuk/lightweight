@@ -46,8 +46,11 @@ class SitePath:
 
     @property
     def url(self) -> str:
-        location = str(self.with_suffix('') if self.suffix == '.html' else self)
-        return f'{self.site.url}/{location}'
+        return f'{self.site.url}/{self.location}'
+
+    @property
+    def location(self) -> str:
+        return str(self.with_suffix('') if self.suffix == '.html' else self)
 
     def absolute(self) -> Path:
         return self.real_path.absolute()
