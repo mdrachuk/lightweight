@@ -4,9 +4,11 @@
 
     <article>
         <h1>{{ markdown.title }}</h1>
-        <nav id="table-of-contents">
-            {{ list_toc(markdown.toc) }}
-        </nav>
+        {% if not markdown.options['hide-toc'] %}
+            <nav id="table-of-contents">
+                {{ list_toc(markdown.toc) }}
+            </nav>
+        {% endif %}
         {{ markdown.html }}
     </article>
 

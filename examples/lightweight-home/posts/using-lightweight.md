@@ -3,6 +3,7 @@ title: Using Lightweight
 summary: A short how-to.
 created: 2019-10-10 00:00:00
 order: 3
+hide-toc: true
 ---
 
 The core idea behind Lightweight is "Code over configuration". 
