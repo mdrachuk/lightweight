@@ -30,7 +30,7 @@ class MarkdownPage(Content):
     summary: Optional[str]
     created: Optional[datetime]
     updated: Optional[datetime]
-    order: Optional[int]
+    order: Optional[Union[int, float]]
 
     metadata: Dict[str, Any]
 
