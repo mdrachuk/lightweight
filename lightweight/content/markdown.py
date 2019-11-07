@@ -5,9 +5,9 @@ from datetime import date, datetime, timezone
 from pathlib import Path
 from typing import Optional, Union, TYPE_CHECKING, Type, Dict, Any
 
-import frontmatter
-import mistune
+import frontmatter  # type: ignore
 from jinja2 import Template
+from mistune import Markdown  # type: ignore
 
 from lightweight.files import FileName
 from .content import Content
@@ -45,7 +45,7 @@ class MarkdownPage(Content):
         link_mapping = dict(**md_paths, **locations)
         renderer = self.renderer(link_mapping)
         renderer.reset()
-        html = mistune.Markdown(renderer).render(self.source)
+        html = Markdown(renderer).render(self.source)
         toc = renderer.render_toc(level=3)
         preview_split = html.split('<!--preview-->', maxsplit=1)
         preview_html = preview_split[0] if len(preview_split) == 2 else None
@@ -63,7 +63,7 @@ class MarkdownPage(Content):
         path.create(self.template.render(
             site=path.site,
             source=self,
-            markdown=self.render(path.site)
+            markdown=self.render(path)
         ))
 
 
