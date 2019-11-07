@@ -1,7 +1,8 @@
 ---
 title: PEP 20 -- The Zen of Python
 created: 2004-08-19 00:00:00
-updatedr: 2004-08-22 00:00:00
+updated: 2004-08-22 00:00:00
+order: 2
 ---
 
 ### Abstract

@@ -2,6 +2,7 @@
 title: Hello, World
 created: 2019-10-10 00:00:00
 updated: 2019-10-11 00:00:00
+order: 1
 ---
 
 Hello, this is the first blog post.

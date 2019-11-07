@@ -4,7 +4,7 @@
 
 {% block main %}
 
-    {%- for path, source in site['posts'].items() %}
+    {%- for path, source in site['posts'].items() | sort(attribute='1.order', reverse=True) %}
         {% set post = source.render(path) %}
 
         <article>
