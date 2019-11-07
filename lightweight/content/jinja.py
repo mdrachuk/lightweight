@@ -15,7 +15,7 @@ if TYPE_CHECKING:
 
 
 @dataclass
-class JinjaSource(Content):
+class JinjaPage(Content):
     filename: FileName
     source_path: Optional[Path]
     params: Dict[str, Any]
@@ -27,12 +27,12 @@ class JinjaSource(Content):
         ))
 
 
-def render(template_path: Union[str, Path], **params) -> JinjaSource:
+def render(template_path: Union[str, Path], **params) -> JinjaPage:
     """Renders the page at path with provided parameters.
 
     Templates are resolved from current directory (NOT `./templates/`)."""
     path = Path(template_path)
-    return JinjaSource(
+    return JinjaPage(
         filename=FileName(path.name),
         source_path=path,
         params=params,
