@@ -32,7 +32,7 @@ class MarkdownPage(Content):
     updated: Optional[datetime]
     order: Optional[Union[int, float]]
 
-    metadata: Dict[str, Any]
+    options: Dict[str, Any]
 
     def render(self, path: SitePath):
         site = path.site
@@ -57,6 +57,7 @@ class MarkdownPage(Content):
             summary=self.summary,
             created=self.created,
             updated=self.updated,
+            options=self.options,
         )
 
     def write(self, path: SitePath):
@@ -96,7 +97,7 @@ def markdown(md_path: Union[str, Path], template: Template, *, renderer=LwRender
         created=created,
         updated=updated,
         order=order,
-        metadata=dict(post),
+        options=dict(post),
     )
 
 
@@ -110,3 +111,4 @@ class RenderedMarkdown:
     summary: Optional[str]
     updated: Optional[date]
     created: Optional[date]
+    options: Dict[str, Any]
