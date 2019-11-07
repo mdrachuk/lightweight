@@ -11,7 +11,7 @@ from jinja2 import Template
 
 from lightweight.files import FileName
 from .content import Content
-from .lwmd import LwRenderer
+from .lwmd import LwRenderer, TableOfContents
 
 if TYPE_CHECKING:
     from lightweight import SitePath
@@ -30,6 +30,7 @@ class MarkdownPage(Content):
     summary: Optional[str]
     created: Optional[datetime]
     updated: Optional[datetime]
+    order: Optional[int]
 
     metadata: Dict[str, Any]
 
@@ -45,10 +46,13 @@ class MarkdownPage(Content):
         renderer = self.renderer(link_mapping)
         renderer.reset()
         html = mistune.Markdown(renderer).render(self.source)
-        toc_html = renderer.render_toc(level=3)
+        toc = renderer.render_toc(level=3)
+        preview_split = html.split('<!--preview-->', maxsplit=1)
+        preview_html = preview_split[0] if len(preview_split) == 2 else None
         return RenderedMarkdown(
             html=html,
-            toc_html=toc_html,
+            preview_html=preview_html,
+            toc=toc,
             title=self.title,
             summary=self.summary,
             created=self.created,
@@ -78,6 +82,7 @@ def markdown(md_path: Union[str, Path], template: Template, *, renderer=LwRender
     if updated is not None:
         assert isinstance(updated, datetime), '"updated" is not a valid datetime object'
         updated = updated.replace(tzinfo=timezone.utc)
+    order = post.get('order', None)
     return MarkdownPage(
         filename=FileName(path.name),
         source_path=path,
@@ -90,6 +95,7 @@ def markdown(md_path: Union[str, Path], template: Template, *, renderer=LwRender
         summary=summary,
         created=created,
         updated=updated,
+        order=order,
         metadata=dict(post),
     )
 
@@ -97,7 +103,8 @@ def markdown(md_path: Union[str, Path], template: Template, *, renderer=LwRender
 @dataclass(frozen=True)
 class RenderedMarkdown:
     html: str
-    toc_html: str
+    preview_html: str
+    toc: TableOfContents
 
     title: Optional[str]
     summary: Optional[str]
