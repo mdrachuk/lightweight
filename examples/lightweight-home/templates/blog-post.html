@@ -1,11 +1,26 @@
 {% extends "templates/base.html" %}
 
 {% block main %}
-    <nav>
-        {{ markdown.toc_html }}
-    </nav>
+
     <article>
         <h1>{{ markdown.title }}</h1>
+        <nav id="table-of-contents">
+            {{ list_toc(markdown.toc) }}
+        </nav>
         {{ markdown.html }}
     </article>
+
 {% endblock %}
+
+{% macro list_toc(toc, level=0, max_level=2) -%}
+    <ol style="margin-left: -1rem;">
+        {%- for section in toc %}
+            <li>
+                <a href="#{{ section.slug }}"><span>{{ section.title }}</span></a>
+                {%- if level <= max_level and section|length %}
+                    {{ list_toc(section, level+1, max_level) }}
+                {%- endif %}
+            </li>
+        {% endfor -%}
+    </ol>
+{%- endmacro %}
