@@ -56,7 +56,7 @@ def _render(source: Path, target: SitePath, *, include_sourcemap: bool):
             sourcemap_file.write(sourcemap)
 
 
-def sass(location: str, sourcemap=True) -> Sass:
+def sass(location: str, *, sourcemap=True) -> Sass:
     path = Path(location)
     if not path.exists():
         raise FileNotFoundError(f'Sass file not found: {location}')
