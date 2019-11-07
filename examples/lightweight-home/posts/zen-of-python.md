@@ -35,4 +35,4 @@ Namespaces are one honking great idea -- let's do more of those!
 >>> import this
 ```
 
-[Source](https://github.com/python/peps/blob/master/pep-0020.txt)
+[Source](https://www.python.org/dev/peps/pep-0020/)
