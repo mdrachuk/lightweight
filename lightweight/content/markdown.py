@@ -9,7 +9,6 @@ import frontmatter  # type: ignore
 from jinja2 import Template
 from mistune import Markdown  # type: ignore
 
-from lightweight.files import FileName
 from .content import Content
 from .lwmd import LwRenderer, TableOfContents
 
@@ -19,10 +18,9 @@ if TYPE_CHECKING:
 
 @dataclass(frozen=True)
 class MarkdownPage(Content):
-    filename: FileName  # name of markdown file
-    source_path: Path
-    source: str  # the contents of a file
-    template: Template
+    template: Template  # Jinja2 template
+    source: str  # the contents of a markdown file
+    path: Path  # path to the markdown file
 
     renderer: Type[LwRenderer]
 
@@ -36,19 +34,11 @@ class MarkdownPage(Content):
 
     def render(self, path: SitePath):
         site = path.site
-        md_paths = {
-            str(content.source_path): path.url
-            for path, content in site.items()
-            if isinstance(content, MarkdownPage)
-        }
-        locations = {str(p): p.url for p in site}
-        link_mapping = dict(**md_paths, **locations)
+        link_mapping = self.map_links(site)
         renderer = self.renderer(link_mapping)
-        renderer.reset()
         html = Markdown(renderer).render(self.source)
-        toc = renderer.render_toc(level=3)
-        preview_split = html.split('<!--preview-->', maxsplit=1)
-        preview_html = preview_split[0] if len(preview_split) == 2 else None
+        toc = renderer.table_of_contents(level=3)
+        preview_html = self.extract_preview(html)
         return RenderedMarkdown(
             html=html,
             preview_html=preview_html,
@@ -59,6 +49,23 @@ class MarkdownPage(Content):
             updated=self.updated,
             options=self.options,
         )
+
+    @staticmethod
+    def map_links(site):
+        md_paths = {
+            str(content.path): path.url
+            for path, content in site.items()
+            if isinstance(content, MarkdownPage)
+        }
+        locations = {str(p): p.url for p in site}
+        link_mapping = dict(**md_paths, **locations)
+        return link_mapping
+
+    @staticmethod
+    def extract_preview(html):
+        preview_split = html.split('<!--preview-->', maxsplit=1)
+        preview_html = preview_split[0] if len(preview_split) == 2 else None
+        return preview_html
 
     def write(self, path: SitePath):
         path.create(self.template.render(
@@ -85,10 +92,9 @@ def markdown(md_path: Union[str, Path], template: Template, *, renderer=LwRender
         updated = updated.replace(tzinfo=timezone.utc)
     order = post.get('order', None)
     return MarkdownPage(
-        filename=FileName(path.name),
-        source_path=path,
-        source=post.content,
         template=template,
+        source=post.content,
+        path=path,
 
         renderer=renderer,
 

@@ -1,9 +1,9 @@
 <html lang="en">
-<head><title>{{ source.filename }}</title></head>
+<head><title>{{ source.path.name }}</title></head>
 <body>
-filename: {{ source.filename }}
-filename.name: {{ source.filename.stem }}
-filename.extension: {{ source.filename.extension }}
+filename: {{ source.path.name }}
+filename.name: {{ source.path.stem }}
+filename.extension: {{ source.path.suffix }}
 
 </body>
 </html>

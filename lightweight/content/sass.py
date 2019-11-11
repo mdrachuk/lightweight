@@ -15,18 +15,18 @@ if TYPE_CHECKING:
 
 @dataclass(frozen=True)
 class Sass(Content):
-    source_path: Path
+    path: Path
     sourcemap: bool
 
     def write(self, path: SitePath):
-        if self.source_path.is_dir():
-            css_at_target = construct_relative_css_path(self.source_path, target=path)
-            for p in paths(f'{self.source_path}/**/*.sass'):
+        if self.path.is_dir():
+            css_at_target = construct_relative_css_path(self.path, target=path)
+            for p in paths(f'{self.path}/**/*.sass'):
                 _render(p, css_at_target(p), include_sourcemap=self.sourcemap)
-            for p in paths(f'{self.source_path}/**/*.scss'):
+            for p in paths(f'{self.path}/**/*.scss'):
                 _render(p, css_at_target(p), include_sourcemap=self.sourcemap)
         else:
-            _render(self.source_path, path, include_sourcemap=self.sourcemap)
+            _render(self.path, path, include_sourcemap=self.sourcemap)
 
 
 def construct_relative_css_path(source: Path, *, target: SitePath) -> Callable[[Path], SitePath]:

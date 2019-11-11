@@ -6,7 +6,6 @@ from typing import Optional, Dict, Any, Union, TYPE_CHECKING
 
 from jinja2 import Template
 
-from lightweight.files import FileName
 from lightweight.template import template
 from .content import Content
 
@@ -16,10 +15,9 @@ if TYPE_CHECKING:
 
 @dataclass(frozen=True)
 class JinjaPage(Content):
-    filename: FileName
-    source_path: Optional[Path]
-    params: Dict[str, Any]
     template: Template
+    path: Optional[Path]
+    params: Dict[str, Any]
 
     def write(self, path: SitePath):
         path.create(self.template.render(
@@ -33,8 +31,7 @@ def render(template_path: Union[str, Path], **params) -> JinjaPage:
     Templates are resolved from current directory (NOT `./templates/`)."""
     path = Path(template_path)
     return JinjaPage(
-        filename=FileName(path.name),
-        source_path=path,
+        template=template(path, base_dir='.'),
+        path=path,
         params=params,
-        template=template(path, base_dir='.')
     )

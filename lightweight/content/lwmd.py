@@ -79,6 +79,10 @@ class Section(TableOfContents):
 class TocMixin(object):
     toc: TocBuilder
 
+    def __init__(self, **kwargs):
+        super().__init__(**kwargs)
+        self.toc = TocBuilder()
+
     def reset(self):
         self.toc = TocBuilder()
 
@@ -88,7 +92,7 @@ class TocMixin(object):
         self.toc.append(TocEntry(slug, text, level))
         return rv
 
-    def render_toc(self, level) -> TableOfContents:
+    def table_of_contents(self, level) -> TableOfContents:
         return self.toc.compile(level)
 
 

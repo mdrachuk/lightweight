@@ -11,27 +11,3 @@ def paths(glob: Union[str, Path]) -> Iterator[Path]:
         return iter([glob])
     return map(Path, iglob(glob, recursive=True))
 
-
-def strip_extension(file_name: str) -> str:
-    split = file_name.rsplit('.', 1)
-    if not len(split[0]) or not len(split[1]):
-        return file_name
-    return split[0]
-
-
-def extension(file_name: str) -> Optional[str]:
-    split = file_name.rsplit('.', 1)
-    if len(split) < 2 or not len(split[0]) or not len(split[1]):
-        return None
-    return split[1]
-
-
-class FileName(str):
-
-    @property
-    def stem(self) -> str:
-        return strip_extension(self)
-
-    @property
-    def extension(self) -> Optional[str]:
-        return extension(self)
