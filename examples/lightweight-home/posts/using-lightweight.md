@@ -31,7 +31,7 @@ site = Site(url='http://example.org', out='generated/')
 site.include('index.html', render('pages/index.html', generated=datetime.now()))
 
 # Render markdown blog posts.
-[site.include(f'posts/{post.filename.stem}.html', post) for post in blog_posts('posts/**.md')]
+[site.include(f'posts/{post.path.stem}.html', post) for post in blog_posts('posts/**.md')]
 site.include('posts.html', render('pages/posts.html'))
 
 # Syndicate RSS and Atom feeds.
@@ -48,34 +48,44 @@ site.include('images')
 site.render()
 ``` 
 
-Let’s take the example apart.
+Let’s take it apart.
 
 ### `Site()`
 
-The central element of Lightweight API is the `Site`. 
-Site is the context shared by every component when they are rendered. 
+The central element of Lightweight API is the `Site`.
+Site is a collection of content and the context provided to content when it is rendered. 
 ```python
 site = Site(url='http://example.org', out='generated/')
 ```
 
 ### `site.include(location, content)`
 
-The content is added to the Site. 
-It is done via `site.include(location, content)` method, where
-`location` is a string that is the path to the output file, 
-and `content` is an object that has a `content.write(path)` method.  
+The API is designed to look declarative with every line defining the target location and the content.
+ 
+It is done via `site.include(location, content)` method,
+where `location` is a string path to the output file, 
+and `content` is an object that has a `content.write(path)` method.
+
+The beauty is in the fact that every line ends up having 
+the source, the target and the transformation from former to latter:
+
+```python
+site.include(<output location>, <transformation>(<source location>, **options))
+```  
+
+### `render(location) -> JinjaPage`
 ```python
 from lightweight import render
 
 site.include('index.html', render('pages/index.html', generated=datetime.now()))
 ```
 
-### `render(location) -> JinjaPage`
 Here `render(template_location, **params)` takes a Jinja2 template location, 
 and keyword arguments that are passed to the template when it is rendered.
 
 The template is not rendered right away. 
-Instead a `JinjaPage` instance is created, which is rendered and stored upon `site.render()` .
+Instead a `JinjaPage(Content)` instance is created. 
+It is rendered and stored upon `site.render()` at the very end.
 
 ### `paths(glob) -> List[Path]`
 Use `paths(glob)` when you need to list multiple files by glob.
@@ -94,7 +104,7 @@ def blog_posts(glob: str):
     post_template = template('blog-post.html')
     return (markdown(path, post_template) for path in paths(glob))
 
-[site.include(f'posts/{post.filename.stem}.html', post) for post in blog_posts('posts/**.md')]
+[site.include(f'posts/{post.path.stem}.html', post) for post in blog_posts('posts/**.md')]
 ```
 
 Each file matching `posts/**.md` is passed to `markdown(...)`.
@@ -135,3 +145,6 @@ The last step is to collect all the content and write it to the `out` directory 
 ```python
 site.render()
 ``` 
+
+At this point every `Content.write(path: SitePath)` is executed. 
+This two step design allows to depend on the whole content tree.

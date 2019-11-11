@@ -42,7 +42,7 @@ site = Site(url='https://example.org')
 site.include('index.html', render('pages/index.html'))
 
 # Render markdown blog posts.
-[site.include(f'posts/{post.filename.stem}.html', post) for post in blog_posts('posts/**.md')]
+[site.include(f'posts/{post.path.stem}.html', post) for post in blog_posts('posts/**.md')]
 site.include('posts.html', render('pages/posts.html'))
 
 # Syndicate RSS and Atom feeds.

@@ -5,6 +5,8 @@ updated: 2004-08-22 00:00:00
 order: 2
 ---
 
+[Source](https://www.python.org/dev/peps/pep-0020/)
+
 Long time Pythoneer Tim Peters succinctly channels the BDFL's guiding principles for Python's design into 20 aphorisms, only 19 of which have been written down.
 
 ### The Zen of Python
@@ -30,9 +32,9 @@ If the implementation is easy to explain, it may be a good idea.
 Namespaces are one honking great idea -- let's do more of those!
 ```
 
+<!--preview-->
+
 ### Easter Egg
 ```python
 >>> import this
 ```
-
-[Source](https://www.python.org/dev/peps/pep-0020/)
