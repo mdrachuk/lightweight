@@ -14,7 +14,7 @@ if TYPE_CHECKING:
     from lightweight import SitePath
 
 
-@dataclass
+@dataclass(frozen=True)
 class JinjaPage(Content):
     filename: FileName
     source_path: Optional[Path]
