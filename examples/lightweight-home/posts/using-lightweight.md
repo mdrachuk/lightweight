@@ -16,7 +16,7 @@ The best way to get a feel for Lightweight static site generation is simply to l
 <!--preview-->
 
 ```python
-from lightweight import Site, markdown, template, rss, atom, render, sass, paths
+from lightweight import Site, markdown, template, rss, atom, jinja, sass, paths
 from datetime import datetime
 
 
@@ -28,11 +28,11 @@ def blog_posts(source: str):
 site = Site(url='http://example.org', out='generated/')
 
 # Render an index page from Jinja2 template.
-site.include('index.html', render('pages/index.html', generated=datetime.now()))
+site.include('index.html', jinja('pages/index.html', generated=datetime.now()))
 
 # Render markdown blog posts.
 [site.include(f'posts/{post.path.stem}.html', post) for post in blog_posts('posts/**.md')]
-site.include('posts.html', render('pages/posts.html'))
+site.include('posts.html', jinja('pages/posts.html'))
 
 # Syndicate RSS and Atom feeds.
 site.include('posts.atom.xml', atom(site['posts']))
@@ -73,14 +73,14 @@ the source, the target and the transformation from former to latter:
 site.include(<output location>, <transformation>(<source location>, **options))
 ```  
 
-### `render(location) -> JinjaPage`
+### `jinja(location) -> JinjaPage`
 ```python
-from lightweight import render
+from lightweight import jinja
 
-site.include('index.html', render('pages/index.html', generated=datetime.now()))
+site.include('index.html', jinja('pages/index.html', generated=datetime.now()))
 ```
 
-Here `render(template_location, **params)` takes a Jinja2 template location, 
+Here `jinja(template_location, **params)` takes a Jinja2 template location, 
 and keyword arguments that are passed to the template when it is rendered.
 
 The template is not rendered right away. 

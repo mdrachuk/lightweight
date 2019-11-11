@@ -27,7 +27,7 @@ pip install lightweight
 
 ## Quick Example
 ```python
-from lightweight import Site, markdown, paths, render, template, rss, atom, sass
+from lightweight import Site, markdown, paths, jinja, template, rss, atom, sass
 
 
 def blog_posts(source):
@@ -39,11 +39,11 @@ def blog_posts(source):
 site = Site(url='https://example.org')
 
 # Render an index page from Jinja2 template.
-site.include('index.html', render('pages/index.html'))
+site.include('index.html', jinja('pages/index.html'))
 
 # Render markdown blog posts.
 [site.include(f'posts/{post.path.stem}.html', post) for post in blog_posts('posts/**.md')]
-site.include('posts.html', render('pages/posts.html'))
+site.include('posts.html', jinja('pages/posts.html'))
 
 # Syndicate RSS and Atom feeds.
 site.include('posts.atom.xml', atom(site['posts']))

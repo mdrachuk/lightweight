@@ -6,7 +6,7 @@ from locate_lightweight_for_example import update_path
 
 update_path()
 
-from lightweight import Site, markdown, paths, render, template, sass, atom, rss
+from lightweight import Site, markdown, paths, jinja, template, sass, atom, rss
 from lightweight.content.lwmd import LwRenderer
 
 
@@ -26,11 +26,11 @@ def main(dev: bool = False):
     site = Site(url='http://localhost:8080' if dev else 'http://example.org')
 
     # Render an index page from Jinja2 template.
-    site.include('index.html', render('pages/index.html'))
+    site.include('index.html', jinja('pages/index.html'))
 
     # Render markdown blog posts.
     [site.include(f'posts/{post.path.stem}.html', post) for post in blog_posts('posts/**.md')]
-    site.include('posts.html', render('pages/posts.html'))
+    site.include('posts.html', jinja('pages/posts.html'))
 
     # Syndicate RSS and Atom feeds.
     site.include('posts.atom.xml', atom(site['posts']))

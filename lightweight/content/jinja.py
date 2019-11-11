@@ -25,7 +25,7 @@ class JinjaPage(Content):
         ))
 
 
-def render(template_path: Union[str, Path], **params) -> JinjaPage:
+def jinja(template_path: Union[str, Path], **params) -> JinjaPage:
     """Renders the page at path with provided parameters.
 
     Templates are resolved from current directory (NOT `./templates/`)."""

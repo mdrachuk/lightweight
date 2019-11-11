@@ -49,7 +49,7 @@ def blog_posts():
 site = Site(url='https://example.com')
 
 # Render a Jinja2 template.
-site.include('index.html', render('index.html'))
+site.include('index.html', jinja('index.html'))
 
 # Render list of Markdown files.
 [site.include(f'posts/{post.path.stem}.html', post) for post in blog_posts()]

@@ -1,5 +1,5 @@
 from .site import Site
-from .content import Content, ContentCollection, feeds, atom, rss, markdown, render, sass
+from .content import Content, ContentCollection, feeds, atom, rss, markdown, jinja, sass
 from .files import paths
 from .path import SitePath
 from .template import template
