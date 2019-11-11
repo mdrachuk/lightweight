@@ -104,7 +104,7 @@ Upon `site.render()` the markdown will be rendered into the template and saved a
   
 ### `atom(collection)`/`rss(collection) -> Feed`
 Collections are created for content manipulation and aggregation. 
-`ContentCollection` supports indexing, iteration, sorting, etc.
+`ContentCollection` supports indexing, iteration, etc.
 
 A great example is how Atom and RSS feeds are created from everything included under site’s `posts` directory.
 ```python
