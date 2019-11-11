@@ -2,6 +2,10 @@ from __future__ import annotations
 
 from argparse import ArgumentParser
 
+from locate_lightweight_for_example import update_path
+
+update_path()
+
 from lightweight import Site, markdown, paths, render, template, sass, atom, rss
 from lightweight.content.lwmd import LwRenderer
 
