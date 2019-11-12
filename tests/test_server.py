@@ -57,7 +57,7 @@ class TestServer:
             assert identifier == requests.get('http://0.0.0.0:8033/id').text
             with (Path(self.directory) / 'new-file').open('w') as f:
                 f.write('Test file changes')
-            time.sleep(0.1)
+            time.sleep(1)
             with open(server.id_path) as idfile:
                 new_identifier = idfile.read()
             assert new_identifier == requests.get('http://0.0.0.0:8033/id').text
