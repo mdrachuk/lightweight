@@ -1,6 +1,8 @@
+import os
+from contextlib import contextmanager
 from glob import iglob
 from pathlib import Path
-from typing import Iterator, Optional, Union
+from typing import Iterator, Union
 
 
 def paths(glob: Union[str, Path]) -> Iterator[Path]:
@@ -11,3 +13,18 @@ def paths(glob: Union[str, Path]) -> Iterator[Path]:
         return iter([glob])
     return map(Path, iglob(glob, recursive=True))
 
+
+@contextmanager
+def directory(location: str):
+    """Execute the following statements with provided location as "cwd" (current working directory).
+
+        :Example:
+        project_location = os.path.dirname(os.path.realpath(__file__))
+        with directory(project_location):
+            site.include('index.html')
+
+    """
+    cwd = os.getcwd()
+    os.chdir(location)
+    yield
+    os.chdir(cwd)

@@ -1,6 +1,7 @@
 from pathlib import Path
 
 from lightweight import paths
+from lightweight.files import directory
 
 
 def test_dir():
@@ -24,3 +25,8 @@ def test_recursive_files():
 
 def test_path():
     assert set(paths(Path('resources/test.html'))) == {Path('resources/test.html')}
+
+
+def test_directory():
+    with directory('site'), open('file') as f:
+        assert 'A test file.' == f.read()
