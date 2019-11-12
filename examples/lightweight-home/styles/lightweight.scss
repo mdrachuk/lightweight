@@ -25,6 +25,10 @@ body {
   -ms-text-size-adjust: 100%;
   -webkit-text-size-adjust: 100%;
 
+  @media screen and (max-width: $lean-width) {
+    align-items: initial;
+  }
+
   p {
     line-height: 1.5rem;
   }
@@ -43,6 +47,11 @@ body {
     &:active, &:active * {
       color: $black-down;
     }
+  }
+
+  hr {
+    margin: 2em 0;
+    border: 1px solid rgb(234, 234, 234);
   }
 
   main {
@@ -103,18 +112,13 @@ body {
   }
 
   footer {
-    @media screen and (max-width: $lean-width) {
-      width: 100vw;
-
-      p {
-        padding: 1em;
-      }
-    }
+    padding: 1em;
+    font-size: 1rem;
   }
 
   pre code {
     @media screen and (max-width: $lean-width-plus) {
-      max-width: 86vw;
+      max-width: 92vw;
     }
   }
 

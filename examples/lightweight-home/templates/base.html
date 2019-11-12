@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no"/>
 
-    <link type="text/css" rel="stylesheet" href="/styles/lightweight.css" media="screen,projection">
+    <link type="text/css" rel="stylesheet" href="/lightweight.css" media="screen,projection">
 
     <link rel="alternate" type="application/rss+xml" title="New Posts" href="/posts.rss.xml"/>
     <link rel="alternate" type="application/atom+xml" title="New Posts" href="/posts.atom.xml"/>
@@ -39,12 +39,14 @@
     </header>
 </div>
 
-<main>
-    {% block main %} {% endblock %}
-</main>
+<main>{% block main %} {% endblock %}</main>
 
 <footer>
-    <p>© <a href="https://drach.uk"><span>Misha Drachuk</span></a> 2019</p>
+    <p>
+        © <a href="https://drach.uk"><span>Misha Drachuk</span></a> 2019
+        |
+        made with <a href="https://drach.uk/lightweight"><span>Lightweight</span></a>
+    </p>
 </footer>
 
 <script async charset="UTF-8" src="/js/highlight.pack.js" onload="hljs.initHighlightingOnLoad()"></script>

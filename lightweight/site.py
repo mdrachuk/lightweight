@@ -40,7 +40,7 @@ class Site(ContentCollection):
 
     def include(self, arg: Union[str, Path, Content], content: Content = None):
         if isinstance(arg, Content):
-            source_path = getattr(arg, 'source_path', None)  # type: Optional[Path]
+            source_path = getattr(arg, 'path', None)  # type: Optional[Path]
             if source_path is None:
                 raise NoSourcePath()
             arg, content = source_path, arg  # type: ignore

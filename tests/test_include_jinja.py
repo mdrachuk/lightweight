@@ -2,7 +2,7 @@ from pathlib import Path
 
 import pytest
 
-from lightweight import Site, render
+from lightweight import Site, jinja
 from lightweight.content import Content
 from lightweight.errors import NoSourcePath
 
@@ -14,7 +14,7 @@ def test_render_jinja(tmp_path: Path):
     test_out = tmp_path / 'out'
     site = Site(url='https://example.com', out=test_out)
 
-    site.include(out_location, render(src_location, title='99 reasons lightweight rules'))
+    site.include(out_location, jinja(src_location, title='99 reasons lightweight rules'))
     site.render()
 
     assert (test_out / out_location).exists()
@@ -28,7 +28,7 @@ def test_render_jinja_shortcut(tmp_path: Path):
     test_out = tmp_path / 'out'
     site = Site(url='https://example.com', out=test_out)
 
-    site.include(render(location, title='99 reasons lightweight rules'))
+    site.include(jinja(location, title='99 reasons lightweight rules'))
     site.render()
 
     assert (test_out / location).exists()
@@ -43,7 +43,7 @@ def test_render_jinja_file(tmp_path: Path):
     test_out = tmp_path / 'out'
     site = Site(url='https://example.com', out=test_out)
 
-    site.include(out_location, render(src_location))
+    site.include(out_location, jinja(src_location))
     site.render()
 
     assert (test_out / out_location).exists()
@@ -53,7 +53,7 @@ def test_render_jinja_file(tmp_path: Path):
 
 class NoopContent(Content):
     def write(self, path: Path):
-        pass
+        """"""
 
 
 def test_render_missing_jinja_shortcut(tmp_path: Path):

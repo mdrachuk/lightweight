@@ -8,9 +8,9 @@
   <subtitle>Tests | posts</subtitle>
   <entry>
     <id>https://example.com/posts/post-1.html</id>
-    <title>posts/post-1.html</title>
-    <updated>2020-04-20T16:20:00-07:00</updated>
+    <title>This is a test</title>
+    <updated>2020-04-20T16:20:00+00:00</updated>
     <link href="https://example.com/posts/post-1.html" rel="alternate"/>
-    <published>2020-04-20T16:20:00-07:00</published>
+    <published>2020-04-20T16:20:00+00:00</published>
   </entry>
 </feed>

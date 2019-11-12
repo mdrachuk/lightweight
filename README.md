@@ -3,7 +3,7 @@
 [![Build Status](https://img.shields.io/azure-devops/build/misha-drachuk/lightweight/8)](https://dev.azure.com/misha-drachuk/lightweight/_build/latest?definitionId=8&branchName=master)
 [![Test Coverage](https://img.shields.io/coveralls/github/mdrachuk/lightweight/master)](https://coveralls.io/github/mdrachuk/lightweight)
 [![Supported Python](https://img.shields.io/pypi/pyversions/lightweight)][pypi]
-[![Documentation](https://img.shields.io/readthedocs/lightweight)][docs]
+[![Documentation](https://img.shields.io/badge/docs-lightweight-green)][docs]
 
 Static site generator i actually can use.
 
@@ -27,27 +27,27 @@ pip install lightweight
 
 ## Quick Example
 ```python
-from lightweight import Site, markdown, paths, render, template, rss, atom, sass
+from lightweight import Site, markdown, paths, jinja, template, rss, atom, sass
 
 
-def blog_posts():
+def blog_posts(source):
     post_template = template('blog-post.html')
     # Use globs to select files.
-    return (markdown(path, post_template) for path in paths('posts/**.md'))
+    return (markdown(path, post_template) for path in paths(source))
 
 
 site = Site(url='https://example.org')
 
 # Render an index page from Jinja2 template.
-site.include('index.html', render('pages/index.html'))
+site.include('index.html', jinja('pages/index.html'))
 
 # Render markdown blog posts.
-[site.include(f'posts/{post.filename.stem}.html', post) for post in blog_posts()]
-site.include('posts.html', render('pages/posts.html'))
+[site.include(f'posts/{post.path.stem}.html', post) for post in blog_posts('posts/**.md')]
+site.include('posts.html', jinja('pages/posts.html'))
 
 # Syndicate RSS and Atom feeds.
-site.include(f'posts.atom.xml', atom(site['posts']))
-site.include(f'posts.rss.xml', rss(site['posts']))
+site.include('posts.atom.xml', atom(site['posts']))
+site.include('posts.rss.xml', rss(site['posts']))
 
 # Render SASS to CSS.
 site.include('css/style.css', sass('styles/style.scss'))

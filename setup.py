@@ -13,6 +13,7 @@ setup(
     version=lightweight.__version__,
     packages=find_packages(exclude=("tests*",)),
     package_data={"lighweight": ["py.typed"]},
+    scripts=['lw'],
     zip_safe=False,
     author='mdrachuk',
     author_email='misha@drach.uk',
@@ -31,8 +32,11 @@ setup(
     install_requires=[
         'Jinja2>=2.10.1',
         'feedgen>=0.7.0',
+        'libsass>=0.19.2',
+        'python-frontmatter>=0.4.5',
         'python-slugify>=3.0.3',
         'mistune>=0.8.4',
+        'watchdog>=0.9.0',
     ],
     classifiers=[
         "Intended Audience :: Developers",

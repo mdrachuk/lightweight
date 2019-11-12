@@ -5,6 +5,7 @@ from http.server import HTTPServer, BaseHTTPRequestHandler
 from mimetypes import types_map
 from pathlib import Path
 from tempfile import mkstemp
+from typing import Optional
 from uuid import uuid4
 
 from watchdog.events import FileSystemEventHandler  # type: ignore
@@ -84,14 +85,13 @@ class LiveStaticFiles(StaticFiles):
 
 
 class DevSever(HTTPServer):
-    def __init__(self, directory: str, *, host: str, port: int, enable_reload: bool):
+    def __init__(self, directory: str, *, host: str, port: int, watch_id: Optional[str]):
         self.working_dir = Path(directory).resolve()
         check_directory(self.working_dir)
         address = (host, port)
-        handler = LiveStaticFiles if enable_reload else StaticFiles
+        handler = LiveStaticFiles if watch_id else StaticFiles
         super(DevSever, self).__init__(address, handler)
-        if enable_reload:
-            _, self.id_path = mkstemp()
+        self.id_path = watch_id
 
 
 def check_directory(working_dir: Path):
@@ -162,15 +162,18 @@ class ChangeId(FileSystemEventHandler):
             f.write(str(uuid4()))
 
 
+def start_watchdog(directory: str):
+    _, id_path = mkstemp()
+    observer = Observer()
+    observer.schedule(ChangeId(id_path), directory, recursive=True)
+    observer.start()
+    return id_path
+
+
 if __name__ == '__main__':
     args = parser.parse_args()
     enable_reload = not args.no_live_reload
-    server = DevSever(args.directory, host=args.host, port=args.port, enable_reload=enable_reload)
-
-    if enable_reload:
-        id_path = server.id_path
-        observer = Observer()
-        observer.schedule(ChangeId(id_path), args.directory, recursive=True)
-        observer.start()
-
+    id_path = start_watchdog(args.directory) if enable_reload else None
+    server = DevSever(args.directory, host=args.host, port=args.port, watch_id=id_path)
+    print(f'Server for "{args.directory}" starting at "{args.host}:{args.port}"')
     server.serve_forever()
