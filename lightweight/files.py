@@ -19,7 +19,9 @@ def directory(location: str):
     """Execute the following statements with provided location as "cwd" (current working directory).
 
         :Example:
-        project_location = os.path.dirname(os.path.realpath(__file__))
+        from pathlib import Path
+
+        project_location = Path(__file__).absolute().parent
         with directory(project_location):
             site.include('index.html')
 
