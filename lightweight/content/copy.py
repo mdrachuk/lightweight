@@ -9,14 +9,14 @@ from typing import TYPE_CHECKING
 from .content import Content
 
 if TYPE_CHECKING:
-    from lightweight import SitePath
+    from lightweight import RenderPath
 
 
 @dataclass(frozen=True)
 class DirectoryCopy(Content):
     source: Path
 
-    def write(self, path: SitePath):
+    def write(self, path: RenderPath):
         path.parent.mkdir()
         copy_tree(str(self.source), str(path.absolute()))
 
@@ -25,6 +25,6 @@ class DirectoryCopy(Content):
 class FileCopy(Content):
     source: Path
 
-    def write(self, path: SitePath):
+    def write(self, path: RenderPath):
         path.parent.mkdir()
         copy(str(self.source), str(path.absolute()))

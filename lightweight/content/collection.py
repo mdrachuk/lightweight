@@ -2,11 +2,12 @@ from __future__ import annotations
 
 from abc import ABC
 from datetime import datetime
+from pathlib import Path
 from typing import Mapping, Dict, TYPE_CHECKING, Collection, Iterator, Any, Tuple
 from urllib.parse import urljoin
 
 if TYPE_CHECKING:
-    from lightweight import Content, SitePath, Site
+    from lightweight import Content, RenderPath, Site
 
 # Type aliases for clear type definitions
 Url = str
@@ -17,11 +18,11 @@ Email = str
 class ContentCollection:
     """A collection of Content that can be queried and iterated."""
 
-    def __init__(self, content: Mapping[SitePath, Content], site: Site):
+    def __init__(self, content: Mapping[str, Content], site: Site):
         self.content = dict(content)
         self.site = site
 
-    def __getitem__(self, path_part: str) -> ContentAtPath:
+    def __getitem__(self, path: str) -> ContentAtPath:
         """Get a collection of content included at provided path.
 
             :Example:
@@ -40,25 +41,24 @@ class ContentCollection:
             >>> assert <post-3> in posts
             >>> assert <static> not in posts
         """
-        path = self.site.path(path_part)
         content = self.content_at_path(path)
         if not content:
-            raise KeyError(f'There is no content at path "{path_part}"')
+            raise KeyError(f'There is no content at path "{path}"')
         return ContentAtPath(self, path, content)
 
-    def __iter__(self) -> Iterator[SitePath]:
+    def __iter__(self) -> Iterator[str]:
         """Iterate `Content` objects in this collection."""
         return iter(self.content)
 
-    def content_at_path(self, target: SitePath):
-        index = len(target.parts)
+    def content_at_path(self, target: str):
+        target_parts = Path(target).parts
         return {
             path: content
             for path, content in self.items()
-            if len(path.parts) > index and all(actual == expected for actual, expected in zip(path.parts, target.parts))
+            if all(actual == expected for actual, expected in zip(Path(path).parts, target_parts))
         }
 
-    def __contains__(self, path: SitePath) -> bool:
+    def __contains__(self, path: RenderPath) -> bool:
         return path in self.content
 
     def items(self):
@@ -122,7 +122,7 @@ class ContentAtPath(EntryCollection, ContentCollection):
             >>> assert <static> not in posts
     """
 
-    def __init__(self, source: ContentCollection, path: SitePath, content: Dict[SitePath, Content]):
+    def __init__(self, source: ContentCollection, path: str, content: Dict[str, Content]):
         super().__init__(content, source.site)
         self.relative_path = path
 
@@ -132,6 +132,6 @@ class ContentAtPath(EntryCollection, ContentCollection):
         description = f'{source_title} | {self.relative_path}' if source_title else url
         self.take_after(source, url=url, description=description)
 
-    def __getitem__(self, path_part: str):
-        path = self.relative_path / path_part
+    def __getitem__(self, path: str):
+        path = self.relative_path / path
         return ContentAtPath(self, path, self.content_at_path(path))

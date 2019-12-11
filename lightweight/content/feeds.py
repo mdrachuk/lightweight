@@ -11,7 +11,7 @@ from feedgen.feed import FeedGenerator  # type: ignore
 from lightweight.content import Content
 
 if TYPE_CHECKING:
-    from lightweight import ContentCollection, SitePath, Site
+    from lightweight import ContentCollection, RenderPath, Site
 
 # Type aliases for clear type definitions
 Url = str
@@ -56,8 +56,8 @@ class RssFeed(Content):
 
         return gen.rss_str(pretty=True)
 
-    def write(self, path: SitePath):
-        target = self.render(path.site)
+    def write(self, path: RenderPath):
+        target = self.render(path.ctx)
         path.create(target)
 
 
@@ -98,8 +98,8 @@ class AtomFeed(Content):
 
         return gen.atom_str(pretty=True)
 
-    def write(self, path: SitePath):
-        target = self.render(path.site)
+    def write(self, path: RenderPath):
+        target = self.render(path.ctx)
         path.create(target)
 
 
@@ -172,7 +172,7 @@ def new_feed(feed: Type[F], source: ContentCollection) -> F:
     )
 
 
-def new_entry(path: SitePath, content: Content, author: Any, root_url: Url, ):
+def new_entry(path: RenderPath, content: Content, author: Any, root_url: Url, ):
     """Fill the provided FeedEntry with content."""
     url = get(content, 'url', default=urljoin(root_url, str(path)))
     title = get(content, 'title', default=str(path))

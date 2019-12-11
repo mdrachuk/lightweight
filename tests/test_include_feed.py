@@ -13,14 +13,14 @@ def md_posts(location):
 
 def test_create_atom(tmp_path: Path):
     test_out = tmp_path / 'out'
-    site = Site(url='https://example.com', out=test_out, title='Tests')
+    site = Site(url='https://example.com', title='Tests')
     site.updated = apr_20
 
     [site.include(f'posts/{md.path.stem}.html', md) for md in md_posts('resources/md/collection/*.md')]
     posts = atom(site['posts'])
     site.include('posts.atom.xml', posts)
 
-    site.render()
+    site.render(test_out)
 
     assert (test_out / 'posts.atom.xml').exists()
     with open('expected/feed/posts.atom.xml') as expected:
@@ -29,14 +29,14 @@ def test_create_atom(tmp_path: Path):
 
 def test_create_rss(tmp_path: Path):
     test_out = tmp_path / 'out'
-    site = Site(url='https://example.com', out=test_out, title='Tests')
+    site = Site(url='https://example.com', title='Tests')
     site.updated = apr_20
 
     [site.include(f'posts/{md.path.stem}.html', md) for md in md_posts('resources/md/collection/*.md')]
     posts = rss(site['posts'])
     site.include('posts.rss.xml', posts)
 
-    site.render()
+    site.render(test_out)
 
     assert (test_out / 'posts.rss.xml').exists()
     with open('expected/feed/posts.rss.xml') as expected:
