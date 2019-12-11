@@ -4,7 +4,7 @@ from dataclasses import dataclass
 from distutils.dir_util import copy_tree
 from pathlib import Path
 from shutil import copy
-from typing import TYPE_CHECKING
+from typing import TYPE_CHECKING, Union
 
 from .content import Content
 
@@ -14,7 +14,7 @@ if TYPE_CHECKING:
 
 @dataclass(frozen=True)
 class DirectoryCopy(Content):
-    source: Path
+    source: Union[Path, str]
 
     def write(self, path: RenderPath):
         path.parent.mkdir()
@@ -23,7 +23,7 @@ class DirectoryCopy(Content):
 
 @dataclass(frozen=True)
 class FileCopy(Content):
-    source: Path
+    source: Union[Path, str]
 
     def write(self, path: RenderPath):
         path.parent.mkdir()
