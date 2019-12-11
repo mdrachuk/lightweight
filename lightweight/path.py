@@ -23,7 +23,7 @@ class Rendering:
         self.paths = tuple(tasks.keys())
         self.contents = tuple(tasks.values())
 
-    def path(self, p: str) -> RenderPath:
+    def path(self, p: Union[Path, str]) -> RenderPath:
         return RenderPath(p, self)
 
     @property

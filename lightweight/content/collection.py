@@ -132,6 +132,6 @@ class ContentAtPath(EntryCollection, ContentCollection):
         description = f'{source_title} | {self.relative_path}' if source_title else url
         self.take_after(source, url=url, description=description)
 
-    def __getitem__(self, path: str):
-        path = self.relative_path / path
+    def __getitem__(self, relative_path: str):
+        path = str(Path(self.relative_path) / relative_path)
         return ContentAtPath(self, path, self.content_at_path(path))

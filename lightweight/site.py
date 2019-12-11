@@ -2,7 +2,7 @@ from __future__ import annotations
 
 from pathlib import Path
 from shutil import rmtree
-from typing import overload, Union, Optional, Dict
+from typing import overload, Union, Optional, Dict, cast
 from urllib.parse import urlparse
 
 from lightweight.content import Content, ContentCollection
@@ -33,15 +33,11 @@ class Site(ContentCollection, Content):
     def include(self, path: str, content: Content):
         """Create a file at path with content."""
 
-    @overload
-    def include(self, path: str, content: Site):
-        """Include all of site contents in provided the directory."""
-
-    def include(self, path: str, content: Union[Content, str] = None):
+    def include(self, path: str, content: Content = None):
         if path.startswith('/'):
             path = path[1:]
         if content is None:
-            contents = {path: file_or_dir(path) for path in paths(path)}
+            contents = {str(path): file_or_dir(path) for path in paths(path)}
             if not len(contents):
                 raise FileNotFoundError()
             self.content.update(contents)
