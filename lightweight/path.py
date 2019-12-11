@@ -12,6 +12,7 @@ if TYPE_CHECKING:
 class Rendering:
     site: Site
     out: Path
+
     paths: Tuple[RenderPath, ...]
     contents: Tuple[Content, ...]
 
@@ -31,11 +32,7 @@ class Rendering:
 
     def perform(self):
         for p, content in self.tasks.items():
-            if isinstance(content, ContentCollection):
-                # Rendering(site=content, out=, paths=)
-                pass
-            else:
-                content.write(p)
+            content.write(p)
 
 
 class RenderPath:

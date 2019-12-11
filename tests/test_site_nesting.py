@@ -1,6 +1,7 @@
 from pathlib import Path
 
 from lightweight import Site
+from lightweight.content.copy import FileCopy
 
 
 def test_include_site(tmp_path: Path):
@@ -10,11 +11,11 @@ def test_include_site(tmp_path: Path):
         src_content = f.read()
 
     child = Site()
-    child.include(src_location)
+    child.include('test.html', FileCopy(src_location))
 
     root = Site()
-    root.include('/child', child)
+    root.include('child', child)
 
     root.render(tmp_path)
-    assert (test_out / src_location).exists()
-    assert (test_out / src_location).read_text() == src_content
+    assert (test_out / 'child/test.html').exists()
+    assert (test_out / 'child/test.html').read_text() == src_content

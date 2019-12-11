@@ -9,10 +9,10 @@ from lightweight.content import Content, ContentCollection
 from lightweight.content.copy import FileCopy, DirectoryCopy
 from lightweight.errors import NoSourcePath
 from lightweight.files import paths
-from lightweight.path import Rendering
+from lightweight.path import Rendering, RenderPath
 
 
-class Site(ContentCollection):
+class Site(ContentCollection, Content):
     content: Dict[str, Content]
 
     def __init__(self,
@@ -31,21 +31,27 @@ class Site(ContentCollection):
         """Include a file or directory."""
 
     @overload
-    def include(self, arg: Union[str, Path], content: Content):
+    def include(self, arg: str, content: Content):
         """Create a file at path with content."""
 
     @overload
     def include(self, arg: Content):
         """"""
 
-    def include(self, arg: Union[str, Content], content: Content = None):
+    @overload
+    def include(self, arg: str, content: Site):
+        """Include all of site contents in provided the directory."""
+
+    def include(self, arg: Union[str, Content], content: Union[Content, str] = None):
         if isinstance(arg, Content):
             source_path = getattr(arg, 'path', None)  # type: Optional[Path]
             if source_path is None:
                 raise NoSourcePath()
-            arg, content = source_path, arg  # type: ignore
+            arg, content = str(source_path), arg  # type: ignore
 
-        pattern_or_path = arg  # type: Union[str]
+        pattern_or_path = arg  # type: str
+        if pattern_or_path.startswith('/'):
+            pattern_or_path = pattern_or_path[1:]
         if content is None:
             contents = {path: file_or_dir(path) for path in paths(pattern_or_path)}
             if not len(contents):
@@ -61,6 +67,10 @@ class Site(ContentCollection):
         out.mkdir(parents=True, exist_ok=True)
 
         rendering = Rendering(out=out, site=self)
+        rendering.perform()
+
+    def write(self, path: RenderPath):
+        rendering = Rendering(out=(path.ctx.out / path.relative_path).absolute(), site=self)
         rendering.perform()
 
 
