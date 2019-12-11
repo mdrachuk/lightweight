@@ -10,10 +10,10 @@ def test_render_scss_file(tmp_path: Path):
     out_location = 'css/style.css'
 
     test_out = tmp_path / 'out'
-    site = Site(url='https://example.com', out=test_out)
+    site = Site(url='https://example.com')
 
     site.include(out_location, sass(src_location))
-    site.render()
+    site.render(test_out)
 
     assert (test_out / out_location).exists()
     with open('expected/sass/style.css') as expected:
@@ -25,10 +25,10 @@ def test_render_scss_directory(tmp_path: Path):
     out_location = 'css/nested'
 
     test_out = tmp_path / 'out'
-    site = Site(url='https://example.com', out=test_out)
+    site = Site(url='https://example.com')
 
     site.include(out_location, sass(src_location))
-    site.render()
+    site.render(test_out)
 
     assert (test_out / out_location).exists()
     with open('expected/sass/nested/test1.css') as expected:
@@ -39,7 +39,7 @@ def test_render_scss_directory(tmp_path: Path):
 
 def test_nonexistent(tmp_path: Path):
     src_location = 'resources/sass/test.scss'
-    site = Site(url='https://example.com', out=tmp_path / 'out')
+    site = Site(url='https://example.com')
 
     with pytest.raises(FileNotFoundError):
         site.include('', sass(src_location))
@@ -50,10 +50,10 @@ def test_render_scss_file_sourcemaps(tmp_path: Path):
     out_location = 'css/style.css'
 
     test_out = tmp_path / 'out'
-    site = Site(url='https://example.com', out=test_out)
+    site = Site(url='https://example.com')
 
     site.include(out_location, sass(src_location))
-    site.render()
+    site.render(test_out)
 
     with open('expected/sass/style.css.map') as expected:
         assert (test_out / 'css/style.css.map').read_text() == expected.read()
@@ -64,10 +64,10 @@ def test_render_scss_directory_sourcemaps(tmp_path: Path):
     out_location = 'css'
 
     test_out = tmp_path / 'out'
-    site = Site(url='https://example.com', out=test_out)
+    site = Site(url='https://example.com')
 
     site.include(out_location, sass(src_location))
-    site.render()
+    site.render(test_out)
 
     with open('expected/sass/nested/test1.css.map') as expected:
         assert (test_out / 'css/test1.css.map').read_text() == expected.read()

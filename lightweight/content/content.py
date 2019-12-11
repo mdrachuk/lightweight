@@ -5,7 +5,7 @@ from datetime import datetime
 from typing import TYPE_CHECKING
 
 if TYPE_CHECKING:
-    from lightweight import SitePath
+    from lightweight import RenderPath
 
 # Type aliases for clear type definitions
 Url = str
@@ -15,7 +15,7 @@ Email = str
 class Content(ABC):
 
     @abstractmethod
-    def write(self, path: SitePath):
+    def write(self, path: RenderPath):
         """Write..."""
 
 

@@ -10,7 +10,7 @@ from lightweight.files import paths
 from .content import Content
 
 if TYPE_CHECKING:
-    from lightweight import SitePath
+    from lightweight import RenderPath
 
 
 @dataclass(frozen=True)
@@ -18,7 +18,7 @@ class Sass(Content):
     path: Path
     sourcemap: bool
 
-    def write(self, path: SitePath):
+    def write(self, path: RenderPath):
         if self.path.is_dir():
             css_at_target = construct_relative_css_path(self.path, target=path)
             for p in paths(f'{self.path}/**/*.sass'):
@@ -29,17 +29,17 @@ class Sass(Content):
             _render(self.path, path, include_sourcemap=self.sourcemap)
 
 
-def construct_relative_css_path(source: Path, *, target: SitePath) -> Callable[[Path], SitePath]:
+def construct_relative_css_path(source: Path, *, target: RenderPath) -> Callable[[Path], RenderPath]:
     start = len(source.parts)
 
-    def remap(path: Path) -> SitePath:
+    def remap(path: Path) -> RenderPath:
         relative_parts = path.parts[start:]
-        return target.site.path(Path(*target.parts, *relative_parts)).with_suffix('.css')
+        return target.ctx.path(Path(*target.parts, *relative_parts)).with_suffix('.css')
 
     return remap
 
 
-def _render(source: Path, target: SitePath, *, include_sourcemap: bool):
+def _render(source: Path, target: RenderPath, *, include_sourcemap: bool):
     sourcemap_path = target.with_name(target.name + '.map')
     result, sourcemap = compile(
         filename=str(source),

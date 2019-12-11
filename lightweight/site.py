@@ -2,67 +2,60 @@ from __future__ import annotations
 
 from pathlib import Path
 from shutil import rmtree
-from typing import overload, Union, Optional, Dict
+from typing import overload, Union, Optional, Dict, cast
 from urllib.parse import urlparse
 
 from lightweight.content import Content, ContentCollection
 from lightweight.content.copy import FileCopy, DirectoryCopy
-from lightweight.errors import NoSourcePath
 from lightweight.files import paths
-from lightweight.path import SitePath
+from lightweight.path import Rendering, RenderPath
 
 
-class Site(ContentCollection):
-    content: Dict[SitePath, Content]
+class Site(ContentCollection, Content):
+    content: Dict[str, Content]
 
-    def __init__(self, *,
-                 url: str,
-                 out: Union[str, Path] = 'out',
+    def __init__(self,
+                 *,
+                 url: Optional[str] = None,
                  title: Optional[str] = None):
         super().__init__({}, self)
-        url_parts = urlparse(url)
-        assert url_parts.scheme, 'Missing scheme in Site URL.'
-        self.title = title or url_parts.netloc
+        self.title = title
+        if url is not None:
+            url_parts = urlparse(url)
+            assert url_parts.scheme, 'Missing scheme in Site URL.'
         self.url = url
-        self.out = Path(out)
 
     @overload
-    def include(self, arg: str):
-        """Include a file or directory."""
+    def include(self, path: str):
+        """Include a file, a directory, or multiple files with a glob pattern."""
 
     @overload
-    def include(self, arg: Union[str, Path], content: Content):
+    def include(self, path: str, content: Content):
         """Create a file at path with content."""
 
-    @overload
-    def include(self, arg: Content):
-        """"""
-
-    def include(self, arg: Union[str, Path, Content], content: Content = None):
-        if isinstance(arg, Content):
-            source_path = getattr(arg, 'path', None)  # type: Optional[Path]
-            if source_path is None:
-                raise NoSourcePath()
-            arg, content = source_path, arg  # type: ignore
-
-        pattern_or_path = arg  # type: Union[str, Path]
+    def include(self, path: str, content: Content = None):
+        if path.startswith('/'):
+            path = path[1:]
         if content is None:
-            contents = {self.path(path): file_or_dir(path) for path in paths(pattern_or_path)}
+            contents = {str(path): file_or_dir(path) for path in paths(path)}
             if not len(contents):
                 raise FileNotFoundError()
             self.content.update(contents)
         else:
-            path = self.path(pattern_or_path)
             self.content[path] = content
 
-    def path(self, p: Union[Path, str]) -> SitePath:
-        return SitePath(p, self)
+    def render(self, out: Union[str, Path] = 'out'):
+        out = Path(out)
+        if out.exists():
+            rmtree(out)
+        out.mkdir(parents=True, exist_ok=True)
 
-    def render(self):
-        if self.out.exists():
-            rmtree(self.out)
-        self.out.mkdir(parents=True, exist_ok=True)
-        [content.write(p) for p, content in self.items()]
+        rendering = Rendering(out=out, site=self)
+        rendering.perform()
+
+    def write(self, path: RenderPath):
+        rendering = Rendering(out=(path.ctx.out / path.relative_path).absolute(), site=self)
+        rendering.perform()
 
 
 def file_or_dir(path: Path):

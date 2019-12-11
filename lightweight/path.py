@@ -3,11 +3,39 @@ from __future__ import annotations
 from pathlib import Path, PurePath
 from typing import Union, Tuple, TYPE_CHECKING
 
+from .content.collection import ContentCollection
+
 if TYPE_CHECKING:
-    from lightweight import Site
+    from lightweight import Site, Content
 
 
-class SitePath:
+class Rendering:
+    site: Site
+    out: Path
+
+    paths: Tuple[RenderPath, ...]
+    contents: Tuple[Content, ...]
+
+    def __init__(self, out: Path, site: Site):
+        self.site = site
+        self.out = out
+        tasks = {self.path(p): content for p, content in site.items()}
+        self.paths = tuple(tasks.keys())
+        self.contents = tuple(tasks.values())
+
+    def path(self, p: Union[Path, str]) -> RenderPath:
+        return RenderPath(p, self)
+
+    @property
+    def tasks(self):
+        return dict(zip(self.paths, self.contents))
+
+    def perform(self):
+        for p, content in self.tasks.items():
+            content.write(p)
+
+
+class RenderPath:
     """An implementation of Path interface.
     File system operations performed on real_path; relative path is used for all other operations.
 
@@ -20,13 +48,13 @@ class SitePath:
     - create -- create file with contents.
     """
 
-    def __init__(self, path: Union[Path, str], site: Site):
-        self.site = site
+    def __init__(self, path: Union[Path, str], ctx: Rendering):
+        self.ctx = ctx
         self.relative_path = Path(path) if isinstance(path, str) else path
 
     @property
     def real_path(self):
-        return self.site.out / self.relative_path
+        return self.ctx.out / self.relative_path
 
     @property
     def name(self):
@@ -37,8 +65,8 @@ class SitePath:
         return self.relative_path.parts
 
     @property
-    def parent(self) -> SitePath:
-        return self.site.path(self.relative_path.parent)
+    def parent(self) -> RenderPath:
+        return self.ctx.path(self.relative_path.parent)
 
     @property
     def suffix(self) -> str:
@@ -46,7 +74,7 @@ class SitePath:
 
     @property
     def url(self) -> str:
-        return f'{self.site.url}/{self.location}'
+        return f'{self.ctx.site.url}/{self.location}'  # TODO:mdrachuk:10.12.2019: subsite urls
 
     @property
     def location(self) -> str:
@@ -61,27 +89,27 @@ class SitePath:
     def mkdir(self, mode=0o777, parents=True, exist_ok=True):
         return self.real_path.mkdir(mode=mode, parents=parents, exist_ok=exist_ok)
 
-    def __truediv__(self, other: Union[SitePath, PurePath, str]):
+    def __truediv__(self, other: Union[RenderPath, PurePath, str]):
         other_path: Union[PurePath, str]
-        if isinstance(other, SitePath):
+        if isinstance(other, RenderPath):
             other_path = other.relative_path
         elif isinstance(other, PurePath) or isinstance(other, str):
             other_path = other
         else:
             raise ValueError(f'Cannot make a path with {other}')
-        return self.site.path(self.relative_path / other_path)
+        return self.ctx.path(self.relative_path / other_path)
 
     def __str__(self):
         return str(self.relative_path)
 
-    def with_name(self, name: str) -> SitePath:
-        return self.site.path(self.relative_path.with_name(name))
+    def with_name(self, name: str) -> RenderPath:
+        return self.ctx.path(self.relative_path.with_name(name))
 
     def open(self, mode='r', buffering=-1, encoding=None, errors=None, newline=None):
         return self.real_path.open(mode=mode, buffering=buffering, encoding=encoding, errors=errors, newline=newline)
 
-    def with_suffix(self, suffix: str) -> SitePath:
-        return self.site.path(self.relative_path.with_suffix(suffix))
+    def with_suffix(self, suffix: str) -> RenderPath:
+        return self.ctx.path(self.relative_path.with_suffix(suffix))
 
     def create(self, content: Union[str, bytes]) -> None:
         self.parent.mkdir()

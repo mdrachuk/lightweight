@@ -38,7 +38,7 @@ def blog_posts(source):
     return (markdown(path, post_template) for path in paths(source))
 
 
-site = Site(url='https://example.org')
+site = Site()
 
 # Render an index page from Jinja2 template.
 site.include('index.html', jinja('pages/index.html'))
@@ -59,7 +59,7 @@ site.include('img')
 site.include('js')
 
 # Execute all included content. 
-site.render()
+site.render(url='https://example.org')
 ```
 
 ## Dev Server

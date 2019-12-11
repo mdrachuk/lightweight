@@ -8,10 +8,10 @@ def test_render_markdown(tmp_path: Path):
     out_location = 'md/plain.html'
 
     test_out = tmp_path / 'out'
-    site = Site(url='https://example.com', out=test_out)
+    site = Site(url='https://example.com')
 
     site.include(out_location, markdown(src_location, template('md/plain.html')))
-    site.render()
+    site.render(test_out)
 
     assert (test_out / out_location).exists()
     with open('expected/md/plain.html') as expected:
@@ -23,10 +23,10 @@ def test_render_toc(tmp_path: Path):
     out_location = 'md/toc.html'
 
     test_out = tmp_path / 'out'
-    site = Site(url='https://example.com', out=test_out)
+    site = Site(url='https://example.com')
 
     site.include(out_location, markdown(src_location, template('md/toc.html')))
-    site.render()
+    site.render(test_out)
 
     assert (test_out / out_location).exists()
     with open('expected/md/toc.html') as expected:
@@ -38,10 +38,10 @@ def test_render_file(tmp_path: Path):
     out_location = 'md/file.html'
 
     test_out = tmp_path / 'out'
-    site = Site(url='https://example.com', out=test_out)
+    site = Site(url='https://example.com')
 
     site.include(out_location, markdown(src_location, template('md/file.html')))
-    site.render()
+    site.render(test_out)
 
     assert (test_out / out_location).exists()
     with open('expected/md/file.html') as expected:
@@ -54,11 +54,11 @@ def test_render_markdown_link(tmp_path: Path):
     out_location = 'md/file.html'
 
     test_out = tmp_path / 'out'
-    site = Site(url='https://example.com', out=test_out)
+    site = Site(url='https://example.com')
 
     site.include('plain.html', markdown(link_target_location, template('md/plain.html')))
     site.include(out_location, markdown(src_location, template('md/plain.html')))
-    site.render()
+    site.render(test_out)
 
     assert (test_out / out_location).exists()
     with open('expected/md/md-link.html') as expected:

@@ -11,7 +11,7 @@ from feedgen.feed import FeedGenerator  # type: ignore
 from lightweight.content import Content
 
 if TYPE_CHECKING:
-    from lightweight import ContentCollection, SitePath, Site
+    from lightweight import ContentCollection, RenderPath, Site, Rendering
 
 # Type aliases for clear type definitions
 Url = str
@@ -33,7 +33,7 @@ class RssFeed(Content):
 
     entries: List[Entry]
 
-    def render(self, site: Site):
+    def render(self, ctx: Rendering):
         gen = FeedGenerator()
 
         gen.id(self.url)
@@ -52,12 +52,12 @@ class RssFeed(Content):
 
         for entry in self.entries:
             feed_entry = gen.add_entry()
-            entry.fill(feed_entry, site)
+            entry.fill(feed_entry, ctx)
 
         return gen.rss_str(pretty=True)
 
-    def write(self, path: SitePath):
-        target = self.render(path.site)
+    def write(self, path: RenderPath):
+        target = self.render(path.ctx)
         path.create(target)
 
 
@@ -75,7 +75,7 @@ class AtomFeed(Content):
 
     entries: List[Entry]
 
-    def render(self, site: Site):
+    def render(self, ctx: Rendering):
         gen = FeedGenerator()
 
         gen.id(self.url)
@@ -94,12 +94,12 @@ class AtomFeed(Content):
 
         for entry in self.entries:
             feed_entry = gen.add_entry()
-            entry.fill(feed_entry, site)
+            entry.fill(feed_entry, ctx)
 
         return gen.atom_str(pretty=True)
 
-    def write(self, path: SitePath):
-        target = self.render(path.site)
+    def write(self, path: RenderPath):
+        target = self.render(path.ctx)
         path.create(target)
 
 
@@ -112,7 +112,7 @@ class Entry:
     updated: datetime
     summary: str
 
-    def fill(self, feed_entry: FeedEntry, site: Site):
+    def fill(self, feed_entry: FeedEntry, ctx: Rendering):
         """Fill the provided FeedEntry with content."""
         feed_entry.id(self.url)
         feed_entry.link(href=self.url, rel='alternate')
@@ -172,10 +172,10 @@ def new_feed(feed: Type[F], source: ContentCollection) -> F:
     )
 
 
-def new_entry(path: SitePath, content: Content, author: Any, root_url: Url, ):
+def new_entry(location: str, content: Content, author: Any, root_url: Url, ):
     """Fill the provided FeedEntry with content."""
-    url = get(content, 'url', default=urljoin(root_url, str(path)))
-    title = get(content, 'title', default=str(path))
+    url = get(content, 'url', default=urljoin(root_url, location))
+    title = get(content, 'title', default=location)
     summary = get(content, 'summary', default='')
     created = get(content, 'created', default=datetime.now(tz=timezone.utc))
     updated = get(content, 'updated', default=created)
