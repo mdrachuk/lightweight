@@ -32,8 +32,8 @@ class MarkdownPage(Content):
 
     options: Dict[str, Any]
 
-    def render(self, path: RenderPath):
-        link_mapping = self.map_links(path.ctx)
+    def render(self, ctx: Rendering):
+        link_mapping = self.map_links(ctx)
         renderer = self.renderer(link_mapping)
         html = Markdown(renderer).render(self.source)
         toc = renderer.table_of_contents(level=3)
@@ -68,9 +68,10 @@ class MarkdownPage(Content):
 
     def write(self, path: RenderPath):
         path.create(self.template.render(
-            site=path.ctx,
+            site=path.ctx.site,
+            ctx=path.ctx,
             source=self,
-            markdown=self.render(path)
+            markdown=self.render(path.ctx)
         ))
 
 
