@@ -2,11 +2,12 @@ from __future__ import annotations
 
 from pathlib import Path
 from shutil import rmtree
-from typing import overload, Union, Optional, Dict, cast
+from typing import overload, Union, Optional, Dict
 from urllib.parse import urlparse
 
 from lightweight.content import Content, ContentCollection
 from lightweight.content.copy import FileCopy, DirectoryCopy
+from lightweight.errors import AbsolutePathIncluded
 from lightweight.files import paths
 from lightweight.path import Rendering, RenderPath
 
@@ -35,7 +36,7 @@ class Site(ContentCollection, Content):
 
     def include(self, path: str, content: Content = None):
         if path.startswith('/'):
-            path = path[1:]
+            raise AbsolutePathIncluded()
         if content is None:
             contents = {str(path): file_or_dir(path) for path in paths(path)}
             if not len(contents):

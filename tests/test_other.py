@@ -1,6 +1,9 @@
 from pathlib import Path
 
+import pytest
+
 from lightweight import Site
+from lightweight.errors import AbsolutePathIncluded
 
 
 def test_rewrite_out(tmp_path: Path):
@@ -17,3 +20,9 @@ def assert_site_render(src_location, content, tmp_path):
     site.render(test_out)
     assert (test_out / src_location).exists()
     assert (test_out / src_location).read_text() == src_content
+
+
+def test_absolute_includes_not_allowed():
+    site = Site()
+    with pytest.raises(AbsolutePathIncluded):
+        site.include('/etc')
