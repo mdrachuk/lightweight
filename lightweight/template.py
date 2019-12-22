@@ -1,9 +1,17 @@
+from os import PathLike, getcwd
 from pathlib import Path
 from typing import Union
 
 from jinja2 import Environment, FileSystemLoader, Template
 
-jinja = Environment(loader=FileSystemLoader('./.', followlinks=True))
+
+class DynamicCwd(PathLike):
+    def __fspath__(self):
+        return getcwd()
+
+
+cwd_loader = FileSystemLoader([DynamicCwd()], followlinks=True)
+jinja = Environment(loader=cwd_loader)
 
 
 def template(name: Union[str, Path], base_dir: Union[str, Path] = 'templates') -> Template:
