@@ -57,6 +57,9 @@ class Site(ContentCollection, Content):
         rendering = Rendering(out=(path.ctx.out / path.relative_path).absolute(), site=self)
         rendering.perform()
 
+    def __repr__(self):
+        return f'<{type(self).__name__} title={self.title} url={self.url} at 0x{id(self):02x}>'
+
 
 def file_or_dir(path: Path):
     return FileCopy(path) if path.is_file() else DirectoryCopy(path)
