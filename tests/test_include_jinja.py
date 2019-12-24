@@ -1,7 +1,10 @@
+from os import chdir, getcwd
 from pathlib import Path
 
-from lightweight import Site, jinja
-from lightweight.content import Content
+import pytest
+from jinja2 import TemplateNotFound
+
+from lightweight import Site, jinja, Content
 
 
 def test_render_jinja(tmp_path: Path):
@@ -37,3 +40,19 @@ def test_render_jinja_file(tmp_path: Path):
 class NoopContent(Content):
     def write(self, path: Path):
         """"""
+
+
+class TestWorkingDirectory:
+
+    def setup_method(self, method):
+        self.original_cwd = getcwd()
+
+    def teardown_method(self, method):
+        chdir(self.original_cwd)
+
+    def test_dynamic_cwd(self, tmp_path: Path):
+        assert jinja('templates/test.html')
+        chdir('templates')
+        assert jinja('test.html')
+        with pytest.raises(TemplateNotFound):
+            jinja('templates/test.html')

@@ -11,7 +11,7 @@ class DynamicCwd(PathLike):
 
 
 cwd_loader = FileSystemLoader([DynamicCwd()], followlinks=True)
-jinja = Environment(loader=cwd_loader)
+jinja = Environment(loader=cwd_loader, cache_size=0)
 
 
 def template(name: Union[str, Path], base_dir: Union[str, Path] = 'templates') -> Template:
