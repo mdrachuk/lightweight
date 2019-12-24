@@ -2,6 +2,7 @@ from __future__ import annotations
 
 from dataclasses import dataclass
 from datetime import date, datetime, timezone
+from os import getcwd
 from pathlib import Path
 from typing import Optional, Union, TYPE_CHECKING, Type, Dict, Any
 
@@ -11,6 +12,7 @@ from mistune import Markdown  # type: ignore
 
 from .content import Content
 from .lwmd import LwRenderer, TableOfContents
+from ..files import directory
 
 if TYPE_CHECKING:
     from lightweight import RenderPath, Rendering
@@ -21,6 +23,7 @@ class MarkdownPage(Content):
     template: Template  # Jinja2 template
     source: str  # the contents of a markdown file
     path: Path  # path to the markdown file
+    cwd: str
 
     renderer: Type[LwRenderer]
 
@@ -32,8 +35,8 @@ class MarkdownPage(Content):
 
     options: Dict[str, Any]
 
-    def render(self, path: RenderPath):
-        link_mapping = self.map_links(path.ctx)
+    def render(self, ctx: Rendering):
+        link_mapping = self.map_links(ctx)
         renderer = self.renderer(link_mapping)
         html = Markdown(renderer).render(self.source)
         toc = renderer.table_of_contents(level=3)
@@ -67,11 +70,13 @@ class MarkdownPage(Content):
         return preview_html
 
     def write(self, path: RenderPath):
-        path.create(self.template.render(
-            site=path.ctx,
-            source=self,
-            markdown=self.render(path)
-        ))
+        with directory(self.cwd):
+            path.create(self.template.render(
+                site=path.ctx.site,
+                ctx=path.ctx,
+                source=self,
+                markdown=self.render(path.ctx)
+            ))
 
 
 def markdown(md_path: Union[str, Path], template: Template, *, renderer=LwRenderer) -> MarkdownPage:
@@ -94,6 +99,7 @@ def markdown(md_path: Union[str, Path], template: Template, *, renderer=LwRender
         template=template,
         source=post.content,
         path=path,
+        cwd=getcwd(),
 
         renderer=renderer,
 

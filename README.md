@@ -4,7 +4,7 @@
 [![Test Coverage](https://img.shields.io/coveralls/github/mdrachuk/lightweight/master)](https://coveralls.io/github/mdrachuk/lightweight)
 [![Supported Python](https://img.shields.io/pypi/pyversions/lightweight)][pypi]
 
-Static site generator i actually can use.
+Python code over configuration static site generator.
 
 [Documentation][docs]
 
