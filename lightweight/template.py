@@ -14,7 +14,6 @@ cwd_loader = FileSystemLoader([DynamicCwd()], followlinks=True)
 jinja = Environment(loader=cwd_loader, cache_size=0)
 
 
-def template(name: Union[str, Path], base_dir: Union[str, Path] = 'templates') -> Template:
+def template(location: Union[str, Path]) -> Template:
     """A shorthand for loading a Jinja2 template from `templates` directory."""
-    location = str(Path(base_dir) / Path(name))
-    return jinja.get_template(location)
+    return jinja.get_template(str(location))

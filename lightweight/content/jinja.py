@@ -31,7 +31,7 @@ def jinja(template_path: Union[str, Path], **params) -> JinjaPage:
     Templates are resolved from current directory (NOT `./templates/`)."""
     path = Path(template_path)
     return JinjaPage(
-        template=template(path, base_dir='.'),
+        template=template(path),
         path=path,
         params=params,
     )
