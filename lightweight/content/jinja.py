@@ -1,13 +1,15 @@
 from __future__ import annotations
 
 from dataclasses import dataclass
+from os import getcwd
 from pathlib import Path
-from typing import Optional, Dict, Any, Union, TYPE_CHECKING
+from typing import Dict, Any, Union, TYPE_CHECKING
 
 from jinja2 import Template
 
-from lightweight.template import template
 from .content import Content
+from ..files import directory
+from ..template import template
 
 if TYPE_CHECKING:
     from lightweight import RenderPath
@@ -16,13 +18,18 @@ if TYPE_CHECKING:
 @dataclass(frozen=True)
 class JinjaPage(Content):
     template: Template
-    path: Optional[Path]
+    path: Path
+    cwd: str
     params: Dict[str, Any]
 
     def write(self, path: RenderPath):
-        path.create(self.template.render(
-            site=path.ctx, source=self, **self.params
-        ))
+        with directory(self.cwd):
+            path.create(self.template.render(
+                site=path.ctx.site,
+                ctx=path.ctx,
+                source=self,
+                **self.params
+            ))
 
 
 def jinja(template_path: Union[str, Path], **params) -> JinjaPage:
@@ -33,5 +40,6 @@ def jinja(template_path: Union[str, Path], **params) -> JinjaPage:
     return JinjaPage(
         template=template(path),
         path=path,
+        cwd=getcwd(),
         params=params,
     )

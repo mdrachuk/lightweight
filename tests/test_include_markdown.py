@@ -1,6 +1,6 @@
 from pathlib import Path
 
-from lightweight import Site, markdown, template
+from lightweight import Site, markdown, template, directory
 
 
 def test_render_markdown(tmp_path: Path):
@@ -63,3 +63,15 @@ def test_render_markdown_link(tmp_path: Path):
     assert (test_out / out_location).exists()
     with open('expected/md/md-link.html') as expected:
         assert (test_out / out_location).read_text() == expected.read()
+
+
+def test_resolves_sub_site_markdown_template_by_cwd(tmp_path: Path):
+    site = Site()
+    with directory('site'):
+        subsite = Site()
+        subsite.include('markdown.html', markdown('text.md', template=template('markdown.html')))
+    site.include('subsite', subsite)
+    site.render(out=tmp_path)
+
+    with open('expected/subsite/markdown.html') as expected:
+        assert (tmp_path / 'subsite' / 'markdown.html').read_text() == expected.read()

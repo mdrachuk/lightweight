@@ -4,7 +4,7 @@ from pathlib import Path
 import pytest
 from jinja2 import TemplateNotFound
 
-from lightweight import Site, jinja, Content
+from lightweight import Site, jinja, Content, directory
 
 
 def test_render_jinja(tmp_path: Path):
@@ -56,3 +56,15 @@ class TestWorkingDirectory:
         assert jinja('test.html')
         with pytest.raises(TemplateNotFound):
             jinja('templates/test.html')
+
+
+def test_resolves_sub_site_template_by_cwd(tmp_path: Path):
+    site = Site()
+    with directory('site'):
+        subsite = Site()
+        subsite.include('page.html', jinja('page.html'))
+    site.include('subsite', subsite)
+    site.render(out=tmp_path)
+
+    with open('expected/subsite/page.html') as expected:
+        assert (tmp_path / 'subsite' / 'page.html').read_text() == expected.read()
