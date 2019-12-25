@@ -68,3 +68,23 @@ def test_resolves_sub_site_template_by_cwd(tmp_path: Path):
 
     with open('expected/subsite/page.html') as expected:
         assert (tmp_path / 'subsite' / 'page.html').read_text() == expected.read()
+
+
+def test_url_filter(tmp_path: Path):
+    site = Site()
+    site.include('page.html', jinja('resources/url/test.html'))
+    site.render(out=tmp_path)
+
+    with open('expected/url/test.html') as expected:
+        assert (tmp_path / 'page.html').read_text() == expected.read()
+
+
+def test_relative_url_filter(tmp_path: Path):
+    site = Site()
+    subsite = Site()
+    subsite.include('page.html', jinja('resources/url/nested.html'))
+    site.include('subsite', subsite)
+    site.render(out=tmp_path)
+
+    with open('expected/url/nested.html') as expected:
+        assert (tmp_path / 'subsite' / 'page.html').read_text() == expected.read()
