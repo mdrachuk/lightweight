@@ -11,7 +11,7 @@ from feedgen.feed import FeedGenerator  # type: ignore
 from lightweight.content import Content
 
 if TYPE_CHECKING:
-    from lightweight import ContentCollection, RenderPath, Site, Rendering
+    from lightweight import ContentCollection, RenderPath, Rendering
 
 # Type aliases for clear type definitions
 Url = str
@@ -157,7 +157,7 @@ def new_feed(feed: Type[F], source: ContentCollection) -> F:
     language = get(source, 'language', default=None)
     copyright = get(source, 'copyright', default=None)
 
-    entries = [new_entry(path, entry_content, author, url) for path, entry_content in source.content.items()]
+    entries = [new_entry(ic.path, ic.content, author, url) for ic in source.content]
 
     return feed(
         url=url,

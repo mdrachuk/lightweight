@@ -1,25 +1,25 @@
 from __future__ import annotations
 
+from os import getcwd
 from pathlib import Path
 from shutil import rmtree
-from typing import overload, Union, Optional, Dict
+from typing import overload, Union, Optional
 from urllib.parse import urlparse
 
 from lightweight.content import Content, ContentCollection
+from lightweight.content.collection import IncludedContent
 from lightweight.content.copy import FileCopy, DirectoryCopy
-from lightweight.errors import AbsolutePathIncluded
+from lightweight.errors import AbsolutePathIncluded, IncludedDuplicate
 from lightweight.files import paths
 from lightweight.path import Rendering, RenderPath
 
 
 class Site(ContentCollection, Content):
-    content: Dict[str, Content]
-
     def __init__(self,
                  *,
                  url: Optional[str] = None,
                  title: Optional[str] = None):
-        super().__init__({}, self)
+        super().__init__([], self)
         self.title = title
         if url is not None:
             url_parts = urlparse(url)
@@ -35,15 +35,22 @@ class Site(ContentCollection, Content):
         """Create a file at path with content."""
 
     def include(self, path: str, content: Content = None):
+        cwd = getcwd()
         if path.startswith('/'):
             raise AbsolutePathIncluded()
         if content is None:
             contents = {str(path): file_or_dir(path) for path in paths(path)}
             if not len(contents):
                 raise FileNotFoundError()
-            self.content.update(contents)
+            for path, content in contents.items():
+                self._include(path, content, cwd)
         else:
-            self.content[path] = content
+            self._include(path, content, cwd)
+
+    def _include(self, path, content, cwd):
+        if path in self:
+            raise IncludedDuplicate()
+        self.content.append(IncludedContent(path, content, cwd))
 
     def render(self, out: Union[str, Path] = 'out'):
         out = Path(out)

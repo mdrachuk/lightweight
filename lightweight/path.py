@@ -1,12 +1,24 @@
 from __future__ import annotations
 
+from dataclasses import dataclass
 from pathlib import Path, PurePath
 from typing import Union, Tuple, TYPE_CHECKING
 
-from .content.collection import ContentCollection
+from .files import directory
 
 if TYPE_CHECKING:
     from lightweight import Site, Content
+
+
+@dataclass(frozen=True)
+class RenderTask:
+    path: RenderPath
+    content: Content
+    cwd: str
+
+    def perform(self):
+        with directory(self.cwd):
+            self.content.write(self.path)
 
 
 class Rendering:
@@ -19,20 +31,16 @@ class Rendering:
     def __init__(self, out: Path, site: Site):
         self.site = site
         self.out = out
-        tasks = {self.path(p): content for p, content in site.items()}
-        self.paths = tuple(tasks.keys())
-        self.contents = tuple(tasks.values())
+        self.tasks = [
+            RenderTask(self.path(c.path), c.content, c.cwd)
+            for c in site.content
+        ]
 
     def path(self, p: Union[Path, str]) -> RenderPath:
         return RenderPath(p, self)
 
-    @property
-    def tasks(self):
-        return dict(zip(self.paths, self.contents))
-
     def perform(self):
-        for p, content in self.tasks.items():
-            content.write(p)
+        [task.perform() for task in self.tasks]
 
 
 class RenderPath:

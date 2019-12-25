@@ -22,11 +22,11 @@ class Sass(Content):
         if self.path.is_dir():
             css_at_target = construct_relative_css_path(self.path, target=path)
             for p in paths(f'{self.path}/**/*.sass'):
-                _render(p, css_at_target(p), include_sourcemap=self.sourcemap)
+                _write(p, css_at_target(p), include_sourcemap=self.sourcemap)
             for p in paths(f'{self.path}/**/*.scss'):
-                _render(p, css_at_target(p), include_sourcemap=self.sourcemap)
+                _write(p, css_at_target(p), include_sourcemap=self.sourcemap)
         else:
-            _render(self.path, path, include_sourcemap=self.sourcemap)
+            _write(self.path, path, include_sourcemap=self.sourcemap)
 
 
 def construct_relative_css_path(source: Path, *, target: RenderPath) -> Callable[[Path], RenderPath]:
@@ -39,7 +39,7 @@ def construct_relative_css_path(source: Path, *, target: RenderPath) -> Callable
     return remap
 
 
-def _render(source: Path, target: RenderPath, *, include_sourcemap: bool):
+def _write(source: Path, target: RenderPath, *, include_sourcemap: bool):
     sourcemap_path = target.with_name(target.name + '.map')
     result, sourcemap = compile(
         filename=str(source),
