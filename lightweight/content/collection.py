@@ -7,7 +7,7 @@ from typing import TYPE_CHECKING, Collection, Iterator, Any, Tuple, NamedTuple
 from urllib.parse import urljoin
 
 if TYPE_CHECKING:
-    from lightweight import Content, RenderPath, Site
+    from lightweight import Content, Site
 
 # Type aliases for clear type definitions
 Url = str
@@ -64,7 +64,7 @@ class ContentCollection:
             if all(actual == expected for actual, expected in zip(Path(ic.path).parts, target_parts))
         ]
 
-    def __contains__(self, path: RenderPath) -> bool:
+    def __contains__(self, path: str) -> bool:
         return path in map(lambda c: c.path, self.content)
 
     def items(self):
