@@ -2,7 +2,6 @@ from __future__ import annotations
 
 from dataclasses import dataclass
 from datetime import date, datetime, timezone
-from os import getcwd
 from pathlib import Path
 from typing import Optional, Union, TYPE_CHECKING, Type, Dict, Any
 
@@ -12,7 +11,6 @@ from mistune import Markdown  # type: ignore
 
 from .content import Content
 from .lwmd import LwRenderer, TableOfContents
-from ..files import directory
 
 if TYPE_CHECKING:
     from lightweight import RenderPath, Rendering
@@ -23,7 +21,6 @@ class MarkdownPage(Content):
     template: Template  # Jinja2 template
     source: str  # the contents of a markdown file
     path: Path  # path to the markdown file
-    cwd: str
 
     renderer: Type[LwRenderer]
 
@@ -54,13 +51,12 @@ class MarkdownPage(Content):
 
     @staticmethod
     def map_links(ctx: Rendering):
-        md_paths = {
-            str(content.path): path.url
-            for path, content in ctx.tasks.items()
-            if isinstance(content, MarkdownPage)
-        }
-        locations = {str(p): p.url for p in ctx.tasks}
-        link_mapping = dict(**md_paths, **locations)
+        link_mapping = {str(task.path): task.path.url for task in ctx.tasks}
+        link_mapping.update({
+            str(task.content.path): task.path.url
+            for task in ctx.tasks
+            if isinstance(task.content, MarkdownPage)
+        })
         return link_mapping
 
     @staticmethod
@@ -70,13 +66,12 @@ class MarkdownPage(Content):
         return preview_html
 
     def write(self, path: RenderPath):
-        with directory(self.cwd):
-            path.create(self.template.render(
-                site=path.ctx.site,
-                ctx=path.ctx,
-                source=self,
-                markdown=self.render(path.ctx)
-            ))
+        path.create(self.template.render(
+            site=path.ctx.site,
+            ctx=path.ctx,
+            source=self,
+            markdown=self.render(path.ctx)
+        ))
 
 
 def markdown(md_path: Union[str, Path], template: Template, *, renderer=LwRenderer) -> MarkdownPage:
@@ -99,7 +94,6 @@ def markdown(md_path: Union[str, Path], template: Template, *, renderer=LwRender
         template=template,
         source=post.content,
         path=path,
-        cwd=getcwd(),
 
         renderer=renderer,
 

@@ -3,11 +3,11 @@ from __future__ import annotations
 from abc import ABC
 from datetime import datetime
 from pathlib import Path
-from typing import Mapping, Dict, TYPE_CHECKING, Collection, Iterator, Any, Tuple
+from typing import TYPE_CHECKING, Collection, Iterator, Any, Tuple, NamedTuple
 from urllib.parse import urljoin
 
 if TYPE_CHECKING:
-    from lightweight import Content, RenderPath, Site
+    from lightweight import Content, Site
 
 # Type aliases for clear type definitions
 Url = str
@@ -15,11 +15,17 @@ LanguageCode = str
 Email = str
 
 
+class IncludedContent(NamedTuple):
+    path: str
+    content: Content
+    cwd: str
+
+
 class ContentCollection:
     """A collection of Content that can be queried and iterated."""
 
-    def __init__(self, content: Mapping[str, Content], site: Site):
-        self.content = dict(content)
+    def __init__(self, content: Collection[IncludedContent], site: Site):
+        self.content = list(content)
         self.site = site
 
     def __getitem__(self, path: str) -> ContentAtPath:
@@ -46,23 +52,23 @@ class ContentCollection:
             raise KeyError(f'There is no content at path "{path}"')
         return ContentAtPath(self, path, content)
 
-    def __iter__(self) -> Iterator[str]:
+    def __iter__(self) -> Iterator[IncludedContent]:
         """Iterate `Content` objects in this collection."""
         return iter(self.content)
 
-    def content_at_path(self, target: str):
+    def content_at_path(self, target: str) -> Collection[IncludedContent]:
         target_parts = Path(target).parts
-        return {
-            path: content
-            for path, content in self.items()
-            if all(actual == expected for actual, expected in zip(Path(path).parts, target_parts))
-        }
+        return [
+            ic
+            for ic in self.content
+            if all(actual == expected for actual, expected in zip(Path(ic.path).parts, target_parts))
+        ]
 
-    def __contains__(self, path: RenderPath) -> bool:
-        return path in self.content
+    def __contains__(self, path: str) -> bool:
+        return path in map(lambda c: c.path, self.content)
 
     def items(self):
-        return self.content.items()
+        return iter(self.content)
 
 
 class EntryCollection(ABC):
@@ -122,7 +128,7 @@ class ContentAtPath(EntryCollection, ContentCollection):
             >>> assert <static> not in posts
     """
 
-    def __init__(self, source: ContentCollection, path: str, content: Dict[str, Content]):
+    def __init__(self, source: ContentCollection, path: str, content: Collection[IncludedContent]):
         super().__init__(content, source.site)
         self.relative_path = path
 
