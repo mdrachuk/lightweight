@@ -10,4 +10,9 @@ class AbsolutePathIncluded(Exception):
 
 class IncludedDuplicate(Exception):
     def __init__(self):
-        super(IncludedDuplicate, self).__init__('Site cannot include duplicates.')
+        super().__init__('Site cannot include duplicates.')
+
+
+class MissingSiteUrl(Exception):
+    def __init__(self):
+        super().__init__('Site().url property is not set.')

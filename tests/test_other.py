@@ -3,7 +3,7 @@ from pathlib import Path
 import pytest
 
 from lightweight import Site
-from lightweight.errors import AbsolutePathIncluded
+from lightweight.errors import AbsolutePathIncluded, MissingSiteUrl
 
 
 def test_rewrite_out(tmp_path: Path):
@@ -26,3 +26,13 @@ def test_absolute_includes_not_allowed():
     site = Site()
     with pytest.raises(AbsolutePathIncluded):
         site.include('/etc')
+
+
+def test_site_location(tmp_path: Path):
+    site = Site(url='http://example.org')
+    assert site / 'test.html' == 'http://example.org/test.html'
+    assert site / '/test.html' == 'http://example.org/test.html'
+    assert site / '/foo/bar' == 'http://example.org/foo/bar'
+    with pytest.raises(MissingSiteUrl):
+        Site() / '/foo/bar'
+

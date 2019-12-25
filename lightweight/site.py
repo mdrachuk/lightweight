@@ -9,7 +9,7 @@ from urllib.parse import urlparse
 from lightweight.content import Content, ContentCollection
 from lightweight.content.collection import IncludedContent
 from lightweight.content.copy import FileCopy, DirectoryCopy
-from lightweight.errors import AbsolutePathIncluded, IncludedDuplicate
+from lightweight.errors import AbsolutePathIncluded, IncludedDuplicate, MissingSiteUrl
 from lightweight.files import paths
 from lightweight.path import Rendering, RenderPath
 
@@ -47,7 +47,7 @@ class Site(ContentCollection, Content):
         else:
             self._include(path, content, cwd)
 
-    def _include(self, path, content, cwd):
+    def _include(self, path: str, content: Content, cwd: str):
         if path in self:
             raise IncludedDuplicate()
         self.content.append(IncludedContent(path, content, cwd))
@@ -67,6 +67,14 @@ class Site(ContentCollection, Content):
 
     def __repr__(self):
         return f'<{type(self).__name__} title={self.title} url={self.url} at 0x{id(self):02x}>'
+
+    def __truediv__(self, location: str):
+        if self.url is None:
+            raise MissingSiteUrl()
+        if location.startswith('/'):
+            return f'{self.url}{location}'
+        else:
+            return f'{self.url}/{location}'
 
 
 def file_or_dir(path: Path):

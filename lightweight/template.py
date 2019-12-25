@@ -1,8 +1,11 @@
 from os import PathLike, getcwd
 from pathlib import Path
-from typing import Union, cast
+from typing import Union, cast, TYPE_CHECKING
 
 from jinja2 import Environment, FileSystemLoader, Template
+
+if TYPE_CHECKING:
+    pass
 
 
 class DynamicCwd(PathLike):
@@ -12,9 +15,9 @@ class DynamicCwd(PathLike):
 
 
 cwd_loader = FileSystemLoader([cast(str, DynamicCwd())], followlinks=True)
-jinja = Environment(loader=cwd_loader, cache_size=0)
+jinja_env = Environment(loader=cwd_loader, cache_size=0)
 
 
 def template(location: Union[str, Path]) -> Template:
     """A shorthand for loading a Jinja2 template from `templates` directory."""
-    return jinja.get_template(str(location))
+    return jinja_env.get_template(str(location))
