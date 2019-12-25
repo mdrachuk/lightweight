@@ -47,7 +47,7 @@ class Site(ContentCollection, Content):
         else:
             self._include(path, content, cwd)
 
-    def _include(self, path, content, cwd):
+    def _include(self, path: str, content: Content, cwd: str):
         if path in self:
             raise IncludedDuplicate()
         self.content.append(IncludedContent(path, content, cwd))
