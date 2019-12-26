@@ -4,4 +4,4 @@ from .files import paths, directory
 from .path import RenderPath, Rendering
 from .template import template
 
-__version__ = '1.0.0.dev28'
+__version__ = '1.0.0.dev29'
