@@ -59,9 +59,9 @@ class TestWorkingDirectory:
 
 
 def test_resolves_sub_site_template_by_cwd(tmp_path: Path):
-    site = Site()
+    site = Site('http://example.org')
     with directory('site'):
-        subsite = Site()
+        subsite = Site('http://example.org')
         subsite.include('page.html', jinja('page.html'))
     site.include('subsite', subsite)
     site.render(out=tmp_path)

@@ -5,7 +5,7 @@
   <updated>2020-04-20T16:20:00-07:00</updated>
   <link href="https://example.com/posts" rel="alternate"/>
   <generator uri="http://lkiesow.github.io/python-feedgen" version="0.8.0">python-feedgen</generator>
-  <subtitle>Tests | posts</subtitle>
+  <subtitle>Test site</subtitle>
   <entry>
     <id>posts/post-1.html</id>
     <title>This is a test</title>

@@ -66,9 +66,9 @@ def test_render_markdown_link(tmp_path: Path):
 
 
 def test_resolves_sub_site_markdown_template_by_cwd(tmp_path: Path):
-    site = Site()
+    site = Site('http://example.org')
     with directory('site'):
-        subsite = Site()
+        subsite = Site('http://example.org')
         subsite.include('markdown.html', markdown('text.md', template=template('markdown.html')))
     site.include('subsite', subsite)
     site.render(out=tmp_path)
