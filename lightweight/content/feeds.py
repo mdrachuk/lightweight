@@ -52,7 +52,7 @@ class RssFeed(Content):
 
         for entry in self.entries:
             feed_entry = gen.add_entry()
-            entry.fill(feed_entry, ctx)
+            entry.fill(feed_entry)
 
         return gen.rss_str(pretty=True)
 
@@ -94,7 +94,7 @@ class AtomFeed(Content):
 
         for entry in self.entries:
             feed_entry = gen.add_entry()
-            entry.fill(feed_entry, ctx)
+            entry.fill(feed_entry)
 
         return gen.atom_str(pretty=True)
 
@@ -111,10 +111,11 @@ class Entry:
     created: datetime
     updated: datetime
     summary: str
+    path: str
 
-    def fill(self, feed_entry: FeedEntry, ctx: Rendering):
+    def fill(self, feed_entry: FeedEntry):
         """Fill the provided FeedEntry with content."""
-        feed_entry.id(self.url)
+        feed_entry.id(self.path)
         feed_entry.link(href=self.url, rel='alternate')
 
         feed_entry.title(self.title)
@@ -186,6 +187,7 @@ def new_entry(location: str, content: Content, author: Any, root_url: Url, ):
         author=author,
         created=created,
         updated=updated,
+        path=location,
     )
 
 

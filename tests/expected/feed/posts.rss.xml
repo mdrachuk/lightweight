@@ -10,7 +10,7 @@
     <item>
       <title>This is a test</title>
       <link>https://example.com/posts/post-1.html</link>
-      <guid isPermaLink="false">https://example.com/posts/post-1.html</guid>
+      <guid isPermaLink="false">posts/post-1.html</guid>
       <pubDate>Mon, 20 Apr 2020 16:20:00 +0000</pubDate>
     </item>
   </channel>
