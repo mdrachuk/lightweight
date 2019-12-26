@@ -9,11 +9,10 @@ from urllib.parse import urlparse
 
 from lightweight.content.content import Content
 from lightweight.content.copy import FileCopy, DirectoryCopy
+from lightweight.empty import Empty, empty
 from lightweight.errors import AbsolutePathIncluded, IncludedDuplicate
 from lightweight.files import paths
 from lightweight.path import Rendering, RenderPath
-
-_empty = object()
 
 
 class Site(Content):
@@ -57,28 +56,28 @@ class Site(Content):
 
     def copy(
             self,
-            url: Optional[str] = _empty,
-            content: Collection[IncludedContent] = _empty,
-            title: Optional[str] = _empty,
-            icon_url: Optional[str] = _empty,
-            description: Optional[str] = _empty,
-            author_name: Optional[str] = _empty,
-            author_email: Optional[str] = _empty,
-            language: Optional[str] = _empty,
-            copyright: Optional[str] = _empty,
-            updated: Optional[datetime] = _empty,
+            url: Union[str, Empty] = empty,
+            content: Union[Collection[IncludedContent], Empty] = empty,
+            title: Union[Optional[str], Empty] = empty,
+            icon_url: Union[Optional[str], Empty] = empty,
+            description: Union[Optional[str], Empty] = empty,
+            author_name: Union[Optional[str], Empty] = empty,
+            author_email: Union[Optional[str], Empty] = empty,
+            language: Union[Optional[str], Empty] = empty,
+            copyright: Union[Optional[str], Empty] = empty,
+            updated: Union[Optional[datetime], Empty] = empty,
     ) -> Site:
         return Site(
-            url=url if url is not _empty else self.url,
-            content=content if content is not _empty else self.content,
-            title=title if title is not _empty else self.title,
-            icon_url=icon_url if icon_url is not _empty else self.icon_url,
-            description=description if description is not _empty else self.description,
-            author_name=author_name if author_name is not _empty else self.author_name,
-            author_email=author_email if author_email is not _empty else self.author_email,
-            language=language if language is not _empty else self.language,
-            copyright=copyright if copyright is not _empty else self.copyright,
-            updated=updated if updated is not _empty else self.updated,
+            url=url if url is not empty else self.url,  # type: ignore
+            content=content if content is not empty else self.content,  # type: ignore
+            title=title if title is not empty else self.title,  # type: ignore
+            icon_url=icon_url if icon_url is not empty else self.icon_url,  # type: ignore
+            description=description if description is not empty else self.description,  # type: ignore
+            author_name=author_name if author_name is not empty else self.author_name,  # type: ignore
+            author_email=author_email if author_email is not empty else self.author_email,  # type: ignore
+            language=language if language is not empty else self.language,  # type: ignore
+            copyright=copyright if copyright is not empty else self.copyright,  # type: ignore
+            updated=updated if updated is not empty else self.updated,  # type: ignore
         )
 
     @overload

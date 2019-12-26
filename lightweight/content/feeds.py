@@ -11,7 +11,7 @@ from feedgen.feed import FeedGenerator  # type: ignore
 from lightweight.content import Content
 
 if TYPE_CHECKING:
-    from lightweight import ContentCollection, RenderPath, Rendering
+    from lightweight import RenderPath, Rendering
 
 # Type aliases for clear type definitions
 Url = str
