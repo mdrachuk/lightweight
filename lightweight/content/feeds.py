@@ -11,7 +11,7 @@ from feedgen.feed import FeedGenerator  # type: ignore
 from lightweight.content import Content
 
 if TYPE_CHECKING:
-    from lightweight import ContentCollection, RenderPath, Rendering
+    from lightweight import Site, RenderPath, Rendering
 
 # Type aliases for clear type definitions
 Url = str
@@ -52,7 +52,7 @@ class RssFeed(Content):
 
         for entry in self.entries:
             feed_entry = gen.add_entry()
-            entry.fill(feed_entry, ctx)
+            entry.fill(feed_entry)
 
         return gen.rss_str(pretty=True)
 
@@ -94,7 +94,7 @@ class AtomFeed(Content):
 
         for entry in self.entries:
             feed_entry = gen.add_entry()
-            entry.fill(feed_entry, ctx)
+            entry.fill(feed_entry)
 
         return gen.atom_str(pretty=True)
 
@@ -111,10 +111,11 @@ class Entry:
     created: datetime
     updated: datetime
     summary: str
+    path: str
 
-    def fill(self, feed_entry: FeedEntry, ctx: Rendering):
+    def fill(self, feed_entry: FeedEntry):
         """Fill the provided FeedEntry with content."""
-        feed_entry.id(self.url)
+        feed_entry.id(self.path)
         feed_entry.link(href=self.url, rel='alternate')
 
         feed_entry.title(self.title)
@@ -130,18 +131,18 @@ class Entry:
         feed_entry.updated(self.updated)
 
 
-def atom(source: ContentCollection) -> AtomFeed:
+def atom(source: Site) -> AtomFeed:
     return new_feed(AtomFeed, source)
 
 
-def rss(source: ContentCollection) -> RssFeed:
+def rss(source: Site) -> RssFeed:
     return new_feed(RssFeed, source)
 
 
 F = TypeVar('F', RssFeed, AtomFeed)
 
 
-def new_feed(feed: Type[F], source: ContentCollection) -> F:
+def new_feed(feed: Type[F], source: Site) -> F:
     """Create RSS and Atom feeds."""
 
     url = required(source, 'url')
@@ -186,6 +187,7 @@ def new_entry(location: str, content: Content, author: Any, root_url: Url, ):
         author=author,
         created=created,
         updated=updated,
+        path=location,
     )
 
 

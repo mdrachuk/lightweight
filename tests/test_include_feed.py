@@ -13,7 +13,7 @@ def md_posts(location):
 
 def test_create_atom(tmp_path: Path):
     test_out = tmp_path / 'out'
-    site = Site(url='https://example.com', title='Tests')
+    site = Site(url='https://example.com', title='Tests', description='Test site')
     site.updated = apr_20
 
     [site.include(f'posts/{md.path.stem}.html', md) for md in md_posts('resources/md/collection/*.md')]
@@ -29,7 +29,7 @@ def test_create_atom(tmp_path: Path):
 
 def test_create_rss(tmp_path: Path):
     test_out = tmp_path / 'out'
-    site = Site(url='https://example.com', title='Tests')
+    site = Site(url='https://example.com', title='Tests', description='Test site')
     site.updated = apr_20
 
     [site.include(f'posts/{md.path.stem}.html', md) for md in md_posts('resources/md/collection/*.md')]

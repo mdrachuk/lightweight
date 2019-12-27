@@ -1,4 +1,3 @@
-from .collection import ContentCollection
 from .content import Content
 from .feeds import atom, rss
 from .jinja import jinja
