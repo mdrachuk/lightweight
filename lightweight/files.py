@@ -1,17 +1,15 @@
 import os
 from contextlib import contextmanager
-from glob import iglob
+from glob import glob
 from pathlib import Path
-from typing import Iterator, Union
+from typing import Union, List
 
 
-def paths(glob: Union[str, Path]) -> Iterator[Path]:
-    """An iterator of paths matching the provided `glob`_ pattern.
-
-    _glob: https://en.wikipedia.org/wiki/Glob_(programming)"""
-    if isinstance(glob, Path):
-        return iter([glob])
-    return map(Path, iglob(glob, recursive=True))
+def paths(pattern: Union[str, Path]) -> List[Path]:
+    """A list of paths matching the provided [glob](https://en.wikipedia.org/wiki/Glob_(programming)) pattern."""
+    if isinstance(pattern, Path):
+        return [pattern]
+    return [Path(p) for p in glob(pattern, recursive=True)]
 
 
 @contextmanager

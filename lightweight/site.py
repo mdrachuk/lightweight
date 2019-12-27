@@ -88,7 +88,11 @@ class Site(Content):
     def include(self, path: str, content: Content):
         """Create a file at path with content."""
 
-    def include(self, path: str, content: Content = None):
+    @overload
+    def include(self, path: str, content: str):
+        """Create a file at path with contents of a file at content path."""
+
+    def include(self, path: str, content: Union[Content, str, None] = None):
         cwd = getcwd()
         if path.startswith('/'):
             raise AbsolutePathIncluded()
@@ -96,10 +100,16 @@ class Site(Content):
             contents = {str(path): file_or_dir(path) for path in paths(path)}
             if not len(contents):
                 raise FileNotFoundError()
-            for path, content in contents.items():
-                self._include(path, content, cwd)
-        else:
+            [self._include(path, content_, cwd) for path, content_ in contents.items()]
+        elif isinstance(content, Content):
             self._include(path, content, cwd)
+        elif isinstance(content, str):
+            source = Path(content)
+            if not source.exists():
+                raise FileNotFoundError()
+            self._include(path, file_or_dir(source), cwd)
+        else:
+            raise Exception(ValueError('Content, str, or None types are accepted as include parameter'))
 
     def _include(self, path: str, content: Content, cwd: str):
         if path in self:
