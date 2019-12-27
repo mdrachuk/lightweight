@@ -11,7 +11,7 @@ from feedgen.feed import FeedGenerator  # type: ignore
 from lightweight.content import Content
 
 if TYPE_CHECKING:
-    from lightweight import RenderPath, Rendering
+    from lightweight import Site, RenderPath, Rendering
 
 # Type aliases for clear type definitions
 Url = str
@@ -131,18 +131,18 @@ class Entry:
         feed_entry.updated(self.updated)
 
 
-def atom(source: ContentCollection) -> AtomFeed:
+def atom(source: Site) -> AtomFeed:
     return new_feed(AtomFeed, source)
 
 
-def rss(source: ContentCollection) -> RssFeed:
+def rss(source: Site) -> RssFeed:
     return new_feed(RssFeed, source)
 
 
 F = TypeVar('F', RssFeed, AtomFeed)
 
 
-def new_feed(feed: Type[F], source: ContentCollection) -> F:
+def new_feed(feed: Type[F], source: Site) -> F:
     """Create RSS and Atom feeds."""
 
     url = required(source, 'url')
