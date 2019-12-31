@@ -170,7 +170,7 @@ class EntryFactory(ABC, Generic[T]):
         """"""
 
     @abstractmethod
-    def accepts(self, path: str, content: Content):
+    def accepts(self, path: str, content: Content) -> bool:
         """"""
 
 
