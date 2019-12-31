@@ -6,8 +6,8 @@ from datetime import datetime, timezone
 from typing import TYPE_CHECKING, Optional, Mapping, Tuple, Generic, TypeVar, List
 from urllib.parse import urljoin
 
-from feedgen import feed as fgf # type: ignore
-from feedgen import entry as fge # type: ignore
+from feedgen import entry as fge  # type: ignore
+from feedgen import feed as fgf  # type: ignore
 
 from lightweight.content import Content
 from .markdown import MarkdownPage
@@ -23,7 +23,7 @@ class RssFeed(Content):
     icon_url: Optional[str]
     title: str
     description: str
-    updated: Optional[str]
+    updated: Optional[datetime]
     author: Mapping[str, Optional[str]]
     language: Optional[str]
     copyright: Optional[str]
@@ -243,6 +243,9 @@ class RssGenerator(FeedGenerator):
             for ic in source.content
         ]
 
+        if not source.title or not source.description or not source.updated:
+            raise ValueError()
+
         return RssFeed(
             url=source.url,
             icon_url=source.icon_url,
@@ -268,6 +271,8 @@ class AtomGenerator(FeedGenerator):
                 .atom(ic.path, ic.content, source)
             for ic in source.content
         ]
+        if not source.title or not source.description:
+            raise ValueError()
 
         return AtomFeed(
             url=source.url,
