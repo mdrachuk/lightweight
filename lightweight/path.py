@@ -122,5 +122,5 @@ class RenderPath:
     def create(self, content: Union[str, bytes]) -> None:
         self.parent.mkdir()
         binary_mode = isinstance(content, bytes)
-        with self.open('wb' if binary_mode else 'w') as f:
+        with self.open('xb' if binary_mode else 'w') as f:
             f.write(content)
