@@ -21,6 +21,7 @@ class Site(Content):
     content: List[IncludedContent]
     title: Optional[str]
     icon_url: Optional[str]
+    logo_url: Optional[str]
     description: Optional[str]
     authors: Set[Author]
     language: Optional[str]
@@ -34,6 +35,7 @@ class Site(Content):
             content: Collection[IncludedContent] = None,
             title: Optional[str] = None,
             icon_url: Optional[str] = None,
+            logo_url: Optional[str] = None,
             description: Optional[str] = None,
             author_name: Optional[str] = None,
             author_email: Optional[str] = None,
@@ -48,6 +50,7 @@ class Site(Content):
         self.content = [] if not content else list(content)
         self.title = title
         self.icon_url = icon_url
+        self.logo_url = logo_url
         self.description = description
         self.author_name = author_name
         self.author_email = author_email

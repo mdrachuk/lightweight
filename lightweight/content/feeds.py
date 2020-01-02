@@ -20,6 +20,7 @@ if TYPE_CHECKING:
 class RssFeed(Content):
     """An immutable RSS feed content that can be saved to a file."""
     url: str
+    image_url: Optional[str]
     title: str
     description: str
     updated: Optional[datetime]
@@ -30,17 +31,16 @@ class RssFeed(Content):
     entries: Tuple[RssEntry, ...]
 
     def render(self):
-        generator = self._generator()
-        self._add_entries(generator)
-        return generator.rss_str(pretty=True)
+        return self._as_fg().rss_str(pretty=True)
 
-    def _generator(self) -> fgf.FeedGenerator:
+    def _as_fg(self) -> fgf.FeedGenerator:
         gen = fgf.FeedGenerator()
 
         gen.id(self.url)
         gen.link(href=self.url, rel='alternate')
         gen.title(self.title)
         gen.description(self.description)
+        gen.image(self.image_url)
 
         if self.updated:
             gen.updated(self.updated)
@@ -50,12 +50,9 @@ class RssFeed(Content):
         gen.language(self.language)
         gen.copyright(self.copyright)
 
-        return gen
+        [gen.add_entry(entry._as_fg()) for entry in self.entries]
 
-    def _add_entries(self, gen: fgf.FeedGenerator):
-        for entry in self.entries:
-            feed_entry = gen.add_entry()
-            entry.fill(feed_entry)
+        return gen
 
     def write(self, path: RenderPath):
         target = self.render()
@@ -67,6 +64,7 @@ class AtomFeed(Content):
     """An immutable Atom feed content that can be saved to a file."""
     url: str
     icon_url: Optional[str]
+    logo_url: Optional[str]
     title: str
     description: str
     updated: Optional[datetime]
@@ -77,16 +75,15 @@ class AtomFeed(Content):
     entries: Tuple[AtomEntry, ...]
 
     def render(self):
-        generator = self._generator()
-        self._add_entries(generator)
-        return generator.atom_str(pretty=True)
+        return self._as_fg().atom_str(pretty=True)
 
-    def _generator(self):
+    def _as_fg(self):
         gen = fgf.FeedGenerator()
 
         gen.id(self.url)
         gen.link(href=self.url, rel='alternate')
         gen.icon(self.icon_url)
+        gen.logo(self.logo_url)
         gen.title(self.title)
         gen.description(self.description)
 
@@ -98,12 +95,8 @@ class AtomFeed(Content):
         gen.language(self.language)  # only sets xml:lang property of the feed node
         gen.rights(self.copyright)
 
+        [gen.add_entry(entry._as_fg()) for entry in self.entries]
         return gen
-
-    def _add_entries(self, gen: fgf.FeedGenerator):
-        for entry in self.entries:
-            feed_entry = gen.add_entry()
-            entry.fill(feed_entry)
 
     def write(self, path: RenderPath):
         target = self.render()
@@ -112,58 +105,64 @@ class AtomFeed(Content):
 
 @dataclass(frozen=True)
 class RssEntry:
+    id: str
     url: str
     title: str
+    description: Optional[str]
     authors: Tuple[Author, ...]
     created: datetime
     updated: datetime
-    summary: str
-    path: str
 
-    def fill(self, feed_entry: fge.FeedEntry):
+    def _as_fg(self):
         """Fill the provided FeedEntry with content."""
-        feed_entry.id(self.path)
+        feed_entry = fge.FeedEntry()
+        feed_entry.id(self.id)
         feed_entry.link(href=self.url, rel='alternate')
 
         feed_entry.title(self.title)
 
-        feed_entry.summary(self.summary)
+        feed_entry.description(self.description)
         # TODO:mdrachuk:2019-09-02: support tags (categories)
         # TODO:mdrachuk:2019-09-02: support rich media (videos, audio)
 
         feed_entry.author(list(map(asdict, self.authors)))
-        # TODO:mdrachuk:2019-09-02: support contributors
 
         feed_entry.published(self.created)
         feed_entry.updated(self.updated)
+        return feed_entry
 
 
 @dataclass(frozen=True)
 class AtomEntry:
+    id: str
     url: str
     title: str
+    summary: Optional[str]
+    content: Optional[str]
     authors: Tuple[Author, ...]
     created: datetime
     updated: datetime
-    summary: str
-    path: str
 
-    def fill(self, feed_entry: fge.FeedEntry):
+    def _as_fg(self) -> fge.FeedEntry:
         """Fill the provided FeedEntry with content."""
-        feed_entry.id(self.path)
+        feed_entry = fge.FeedEntry()
+
+        feed_entry.id(self.id)
         feed_entry.link(href=self.url, rel='alternate')
 
         feed_entry.title(self.title)
 
         feed_entry.summary(self.summary)
+        feed_entry.content(self.content)
         # TODO:mdrachuk:2019-09-02: support tags (categories)
         # TODO:mdrachuk:2019-09-02: support rich media (videos, audio)
 
         feed_entry.author(list(map(asdict, self.authors)))
-        # TODO:mdrachuk:2019-09-02: support contributors
 
         feed_entry.published(self.created)
         feed_entry.updated(self.updated)
+
+        return feed_entry
 
 
 T = TypeVar('T')
@@ -189,6 +188,22 @@ class MarkdownEntries(EntryFactory):
     def accepts(self, path: str, content: Content):
         return isinstance(content, MarkdownPage)
 
+    def rss(self, location: str, content: MarkdownPage, site: Site) -> RssEntry:
+        url = urljoin(site.url, location)
+        title = content.title or location
+        description = content.summary or ''
+        created = content.created or datetime.now(tz=timezone.utc)
+        updated = content.updated or created
+        return RssEntry(
+            id=location,
+            url=url,
+            title=title,
+            description=description,
+            authors=tuple(site.authors),
+            created=created,
+            updated=updated,
+        )
+
     def atom(self, location: str, content: MarkdownPage, site: Site) -> AtomEntry:
         url = urljoin(site.url, location)
         title = content.title or location
@@ -196,29 +211,14 @@ class MarkdownEntries(EntryFactory):
         created = content.created or datetime.now(tz=timezone.utc)
         updated = content.updated or created
         return AtomEntry(
+            id=location,
             url=url,
             title=title,
             summary=summary,
+            content=None,
             authors=tuple(site.authors),
             created=created,
             updated=updated,
-            path=location,
-        )
-
-    def rss(self, location: str, content: MarkdownPage, site: Site) -> RssEntry:
-        url = urljoin(site.url, location)
-        title = content.title or location
-        summary = content.summary or ''
-        created = content.created or datetime.now(tz=timezone.utc)
-        updated = content.updated or created
-        return RssEntry(
-            url=url,
-            title=title,
-            summary=summary,
-            authors=tuple(site.authors),
-            created=created,
-            updated=updated,
-            path=location,
         )
 
 
@@ -254,6 +254,7 @@ class RssGenerator(FeedGenerator):
 
         return RssFeed(
             url=source.url,
+            image_url=source.logo_url,
             title=source.title,
             description=source.description,
             updated=source.updated,
@@ -278,6 +279,7 @@ class AtomGenerator(FeedGenerator):
         return AtomFeed(
             url=source.url,
             icon_url=source.icon_url,
+            logo_url=source.logo_url,
             title=source.title,
             description=source.description,
             updated=source.updated,
