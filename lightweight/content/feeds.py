@@ -233,7 +233,7 @@ class FeedGenerator:
             if factory.accepts(path, content):
                 return factory
         else:
-            raise ValueError()  # TODO:mdrachuk:31.12.2019: set error message
+            raise ValueError(f'Missing an Entry factory that can handle "{content}" at path "{path}"')
 
     def add_factory(self, factory: EntryFactory):
         self._factories.insert(0, factory)
@@ -249,8 +249,8 @@ class RssGenerator(FeedGenerator):
             for ic in source.content
         ]
 
-        if not source.title or not source.description or not source.updated:
-            raise ValueError()
+        if not source.title or not source.description:
+            raise ValueError('RSS feed requires a title and description.')
 
         return RssFeed(
             url=source.url,
@@ -274,7 +274,7 @@ class AtomGenerator(FeedGenerator):
             for ic in source.content
         ]
         if not source.title or not source.description:
-            raise ValueError()
+            raise ValueError('Atom feed requires a title and description')
 
         return AtomFeed(
             url=source.url,
