@@ -1,4 +1,4 @@
-from .site import Site
+from .site import Site, Author
 from .content import Content, feeds, atom, rss, markdown, jinja, sass
 from .files import paths, directory
 from .path import RenderPath, Rendering

@@ -1,9 +1,9 @@
 from __future__ import annotations
 
 from abc import ABC, abstractmethod
-from dataclasses import dataclass
+from dataclasses import dataclass, asdict
 from datetime import datetime, timezone
-from typing import TYPE_CHECKING, Optional, Mapping, Tuple, Generic, TypeVar, List
+from typing import TYPE_CHECKING, Optional, Tuple, Generic, TypeVar, List
 from urllib.parse import urljoin
 
 from feedgen import entry as fge  # type: ignore
@@ -13,45 +13,49 @@ from lightweight.content import Content
 from .markdown import MarkdownPage
 
 if TYPE_CHECKING:
-    from lightweight import Site, RenderPath
+    from lightweight import Site, RenderPath, Author
 
 
 @dataclass(frozen=True)
 class RssFeed(Content):
     """An immutable RSS feed content that can be saved to a file."""
     url: str
-    icon_url: Optional[str]
     title: str
     description: str
     updated: Optional[datetime]
-    author: Mapping[str, Optional[str]]
+    authors: Tuple[Author, ...]
     language: Optional[str]
     copyright: Optional[str]
 
     entries: Tuple[RssEntry, ...]
 
     def render(self):
+        generator = self._generator()
+        self._add_entries(generator)
+        return generator.rss_str(pretty=True)
+
+    def _generator(self) -> fgf.FeedGenerator:
         gen = fgf.FeedGenerator()
 
         gen.id(self.url)
         gen.link(href=self.url, rel='alternate')
-        gen.icon(self.icon_url)
         gen.title(self.title)
         gen.description(self.description)
 
         if self.updated:
             gen.updated(self.updated)
 
-        gen.author(self.author)
+        gen.author(list(map(asdict, self.authors)))
 
         gen.language(self.language)
         gen.copyright(self.copyright)
 
+        return gen
+
+    def _add_entries(self, gen: fgf.FeedGenerator):
         for entry in self.entries:
             feed_entry = gen.add_entry()
             entry.fill(feed_entry)
-
-        return gen.rss_str(pretty=True)
 
     def write(self, path: RenderPath):
         target = self.render()
@@ -66,13 +70,18 @@ class AtomFeed(Content):
     title: str
     description: str
     updated: Optional[datetime]
-    author: Mapping[str, Optional[str]]
+    authors: Tuple[Author, ...]
     language: Optional[str]
     copyright: Optional[str]
 
     entries: Tuple[AtomEntry, ...]
 
     def render(self):
+        generator = self._generator()
+        self._add_entries(generator)
+        return generator.atom_str(pretty=True)
+
+    def _generator(self):
         gen = fgf.FeedGenerator()
 
         gen.id(self.url)
@@ -84,16 +93,17 @@ class AtomFeed(Content):
         if self.updated:
             gen.updated(self.updated)
 
-        gen.author(self.author)
+        gen.author(list(map(asdict, self.authors)))
 
-        gen.language(self.language)
-        gen.copyright(self.copyright)
+        gen.language(self.language)  # only sets xml:lang property of the feed node
+        gen.rights(self.copyright)
 
+        return gen
+
+    def _add_entries(self, gen: fgf.FeedGenerator):
         for entry in self.entries:
             feed_entry = gen.add_entry()
             entry.fill(feed_entry)
-
-        return gen.atom_str(pretty=True)
 
     def write(self, path: RenderPath):
         target = self.render()
@@ -104,7 +114,7 @@ class AtomFeed(Content):
 class RssEntry:
     url: str
     title: str
-    author: Mapping[str, Optional[str]]
+    authors: Tuple[Author, ...]
     created: datetime
     updated: datetime
     summary: str
@@ -121,7 +131,7 @@ class RssEntry:
         # TODO:mdrachuk:2019-09-02: support tags (categories)
         # TODO:mdrachuk:2019-09-02: support rich media (videos, audio)
 
-        feed_entry.author(self.author)
+        feed_entry.author(list(map(asdict, self.authors)))
         # TODO:mdrachuk:2019-09-02: support contributors
 
         feed_entry.published(self.created)
@@ -132,7 +142,7 @@ class RssEntry:
 class AtomEntry:
     url: str
     title: str
-    author: Mapping[str, Optional[str]]
+    authors: Tuple[Author, ...]
     created: datetime
     updated: datetime
     summary: str
@@ -149,7 +159,7 @@ class AtomEntry:
         # TODO:mdrachuk:2019-09-02: support tags (categories)
         # TODO:mdrachuk:2019-09-02: support rich media (videos, audio)
 
-        feed_entry.author(self.author)
+        feed_entry.author(list(map(asdict, self.authors)))
         # TODO:mdrachuk:2019-09-02: support contributors
 
         feed_entry.published(self.created)
@@ -189,7 +199,7 @@ class MarkdownEntries(EntryFactory):
             url=url,
             title=title,
             summary=summary,
-            author={'name': site.author_name, 'email': site.author_email},
+            authors=tuple(site.authors),
             created=created,
             updated=updated,
             path=location,
@@ -205,7 +215,7 @@ class MarkdownEntries(EntryFactory):
             url=url,
             title=title,
             summary=summary,
-            author={'name': site.author_name, 'email': site.author_email},
+            authors=tuple(site.authors),
             created=created,
             updated=updated,
             path=location,
@@ -231,12 +241,8 @@ class FeedGenerator:
 
 class RssGenerator(FeedGenerator):
     def __call__(self, source: Site):
-        """Create RSS and Atom feeds."""
-
-        author = {
-            'name': source.author_name,
-            'email': source.author_email,
-        }
+        """Create an RSS feed."""
+        authors = tuple(source.authors)
         entries = [
             self._factory(ic.path, ic.content)
                 .rss(ic.path, ic.content, source)
@@ -248,11 +254,10 @@ class RssGenerator(FeedGenerator):
 
         return RssFeed(
             url=source.url,
-            icon_url=source.icon_url,
             title=source.title,
             description=source.description,
             updated=source.updated,
-            author=author,
+            authors=authors,
             language=source.language,
             copyright=source.copyright,
             entries=tuple(entries),
@@ -261,11 +266,7 @@ class RssGenerator(FeedGenerator):
 
 class AtomGenerator(FeedGenerator):
     def __call__(self, source: Site):
-        """Create RSS and Atom feeds."""
-        author = {
-            'name': source.author_name,
-            'email': source.author_email,
-        }
+        """Create an Atom feed."""
         entries = [
             self._factory(ic.path, ic.content)
                 .atom(ic.path, ic.content, source)
@@ -280,15 +281,17 @@ class AtomGenerator(FeedGenerator):
             title=source.title,
             description=source.description,
             updated=source.updated,
-            author=author,
+            authors=tuple(source.authors),
             language=source.language,
             copyright=source.copyright,
             entries=tuple(entries),
         )
 
 
+_md_entry_factory = MarkdownEntries()
+
 atom = AtomGenerator()
-atom.add_factory(MarkdownEntries())
+atom.add_factory(_md_entry_factory)
 
 rss = RssGenerator()
-rss.add_factory(MarkdownEntries())
+rss.add_factory(_md_entry_factory)

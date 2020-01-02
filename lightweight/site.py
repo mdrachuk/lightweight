@@ -1,10 +1,11 @@
 from __future__ import annotations
 
+from dataclasses import dataclass
 from datetime import datetime
 from os import getcwd
 from pathlib import Path
 from shutil import rmtree
-from typing import overload, Union, Optional, NamedTuple, Collection, Iterator, List
+from typing import overload, Union, Optional, Collection, Iterator, List, Set
 from urllib.parse import urlparse
 
 from lightweight.content.content import Content
@@ -21,8 +22,7 @@ class Site(Content):
     title: Optional[str]
     icon_url: Optional[str]
     description: Optional[str]
-    author_name: Optional[str]
-    author_email: Optional[str]
+    authors: Set[Author]
     language: Optional[str]
     copyright: Optional[str]
     updated: Optional[datetime]
@@ -37,6 +37,7 @@ class Site(Content):
             description: Optional[str] = None,
             author_name: Optional[str] = None,
             author_email: Optional[str] = None,
+            authors: Collection[Author] = None,
             language: Optional[str] = None,
             copyright: Optional[str] = None,
             updated: Optional[datetime] = None,
@@ -50,6 +51,10 @@ class Site(Content):
         self.description = description
         self.author_name = author_name
         self.author_email = author_email
+        authors = set() if authors is None else set(authors)
+        if author_name or author_email:
+            authors |= {Author(author_name, author_email)}
+        self.authors = authors
         self.language = language
         self.copyright = copyright
         self.updated = updated
@@ -182,7 +187,14 @@ def file_or_dir(path: Path):
     return FileCopy(path) if path.is_file() else DirectoryCopy(path)
 
 
-class IncludedContent(NamedTuple):
+@dataclass(frozen=True)
+class IncludedContent:
     path: str
     content: Content
     cwd: str
+
+
+@dataclass(frozen=True)
+class Author:
+    name: Optional[str] = None
+    email: Optional[str] = None
