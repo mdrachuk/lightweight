@@ -2,7 +2,7 @@
 <rss xmlns:atom="http://www.w3.org/2005/Atom" xmlns:content="http://purl.org/rss/1.0/modules/content/" version="2.0">
   <channel>
     <title>Tests</title>
-    <link>https://example.com/symbols</link>
+    <link>https://example.com/symbols/</link>
     <description>Test site</description>
     <docs>http://www.rssboard.org/rss-specification</docs>
     <generator>python-feedgen</generator>
@@ -11,182 +11,182 @@
       <title>Z</title>
       <link>https://example.com/symbols/z</link>
       <description>z</description>
-      <guid isPermaLink="false">symbols/z</guid>
+      <guid isPermaLink="false">z</guid>
       <pubDate>Mon, 20 Apr 2020 16:20:00 -0700</pubDate>
     </item>
     <item>
       <title>Y</title>
       <link>https://example.com/symbols/y</link>
       <description>y</description>
-      <guid isPermaLink="false">symbols/y</guid>
+      <guid isPermaLink="false">y</guid>
       <pubDate>Mon, 20 Apr 2020 16:20:00 -0700</pubDate>
     </item>
     <item>
       <title>X</title>
       <link>https://example.com/symbols/x</link>
       <description>x</description>
-      <guid isPermaLink="false">symbols/x</guid>
+      <guid isPermaLink="false">x</guid>
       <pubDate>Mon, 20 Apr 2020 16:20:00 -0700</pubDate>
     </item>
     <item>
       <title>W</title>
       <link>https://example.com/symbols/w</link>
       <description>w</description>
-      <guid isPermaLink="false">symbols/w</guid>
+      <guid isPermaLink="false">w</guid>
       <pubDate>Mon, 20 Apr 2020 16:20:00 -0700</pubDate>
     </item>
     <item>
       <title>U</title>
       <link>https://example.com/symbols/u</link>
       <description>u</description>
-      <guid isPermaLink="false">symbols/u</guid>
+      <guid isPermaLink="false">u</guid>
       <pubDate>Mon, 20 Apr 2020 16:20:00 -0700</pubDate>
     </item>
     <item>
       <title>V</title>
       <link>https://example.com/symbols/v</link>
       <description>v</description>
-      <guid isPermaLink="false">symbols/v</guid>
+      <guid isPermaLink="false">v</guid>
       <pubDate>Mon, 20 Apr 2020 16:20:00 -0700</pubDate>
     </item>
     <item>
       <title>T</title>
       <link>https://example.com/symbols/t</link>
       <description>t</description>
-      <guid isPermaLink="false">symbols/t</guid>
+      <guid isPermaLink="false">t</guid>
       <pubDate>Mon, 20 Apr 2020 16:20:00 -0700</pubDate>
     </item>
     <item>
       <title>S</title>
       <link>https://example.com/symbols/s</link>
       <description>s</description>
-      <guid isPermaLink="false">symbols/s</guid>
+      <guid isPermaLink="false">s</guid>
       <pubDate>Mon, 20 Apr 2020 16:20:00 -0700</pubDate>
     </item>
     <item>
       <title>R</title>
       <link>https://example.com/symbols/r</link>
       <description>r</description>
-      <guid isPermaLink="false">symbols/r</guid>
+      <guid isPermaLink="false">r</guid>
       <pubDate>Mon, 20 Apr 2020 16:20:00 -0700</pubDate>
     </item>
     <item>
       <title>Q</title>
       <link>https://example.com/symbols/q</link>
       <description>q</description>
-      <guid isPermaLink="false">symbols/q</guid>
+      <guid isPermaLink="false">q</guid>
       <pubDate>Mon, 20 Apr 2020 16:20:00 -0700</pubDate>
     </item>
     <item>
       <title>P</title>
       <link>https://example.com/symbols/p</link>
       <description>p</description>
-      <guid isPermaLink="false">symbols/p</guid>
+      <guid isPermaLink="false">p</guid>
       <pubDate>Mon, 20 Apr 2020 16:20:00 -0700</pubDate>
     </item>
     <item>
       <title>O</title>
       <link>https://example.com/symbols/o</link>
       <description>o</description>
-      <guid isPermaLink="false">symbols/o</guid>
+      <guid isPermaLink="false">o</guid>
       <pubDate>Mon, 20 Apr 2020 16:20:00 -0700</pubDate>
     </item>
     <item>
       <title>N</title>
       <link>https://example.com/symbols/n</link>
       <description>n</description>
-      <guid isPermaLink="false">symbols/n</guid>
+      <guid isPermaLink="false">n</guid>
       <pubDate>Mon, 20 Apr 2020 16:20:00 -0700</pubDate>
     </item>
     <item>
       <title>M</title>
       <link>https://example.com/symbols/m</link>
       <description>m</description>
-      <guid isPermaLink="false">symbols/m</guid>
+      <guid isPermaLink="false">m</guid>
       <pubDate>Mon, 20 Apr 2020 16:20:00 -0700</pubDate>
     </item>
     <item>
       <title>L</title>
       <link>https://example.com/symbols/l</link>
       <description>l</description>
-      <guid isPermaLink="false">symbols/l</guid>
+      <guid isPermaLink="false">l</guid>
       <pubDate>Mon, 20 Apr 2020 16:20:00 -0700</pubDate>
     </item>
     <item>
       <title>K</title>
       <link>https://example.com/symbols/k</link>
       <description>k</description>
-      <guid isPermaLink="false">symbols/k</guid>
+      <guid isPermaLink="false">k</guid>
       <pubDate>Mon, 20 Apr 2020 16:20:00 -0700</pubDate>
     </item>
     <item>
       <title>J</title>
       <link>https://example.com/symbols/j</link>
       <description>j</description>
-      <guid isPermaLink="false">symbols/j</guid>
+      <guid isPermaLink="false">j</guid>
       <pubDate>Mon, 20 Apr 2020 16:20:00 -0700</pubDate>
     </item>
     <item>
       <title>I</title>
       <link>https://example.com/symbols/i</link>
       <description>i</description>
-      <guid isPermaLink="false">symbols/i</guid>
+      <guid isPermaLink="false">i</guid>
       <pubDate>Mon, 20 Apr 2020 16:20:00 -0700</pubDate>
     </item>
     <item>
       <title>H</title>
       <link>https://example.com/symbols/h</link>
       <description>h</description>
-      <guid isPermaLink="false">symbols/h</guid>
+      <guid isPermaLink="false">h</guid>
       <pubDate>Mon, 20 Apr 2020 16:20:00 -0700</pubDate>
     </item>
     <item>
       <title>G</title>
       <link>https://example.com/symbols/g</link>
       <description>g</description>
-      <guid isPermaLink="false">symbols/g</guid>
+      <guid isPermaLink="false">g</guid>
       <pubDate>Mon, 20 Apr 2020 16:20:00 -0700</pubDate>
     </item>
     <item>
       <title>F</title>
       <link>https://example.com/symbols/f</link>
       <description>f</description>
-      <guid isPermaLink="false">symbols/f</guid>
+      <guid isPermaLink="false">f</guid>
       <pubDate>Mon, 20 Apr 2020 16:20:00 -0700</pubDate>
     </item>
     <item>
       <title>E</title>
       <link>https://example.com/symbols/e</link>
       <description>e</description>
-      <guid isPermaLink="false">symbols/e</guid>
+      <guid isPermaLink="false">e</guid>
       <pubDate>Mon, 20 Apr 2020 16:20:00 -0700</pubDate>
     </item>
     <item>
       <title>D</title>
       <link>https://example.com/symbols/d</link>
       <description>d</description>
-      <guid isPermaLink="false">symbols/d</guid>
+      <guid isPermaLink="false">d</guid>
       <pubDate>Mon, 20 Apr 2020 16:20:00 -0700</pubDate>
     </item>
     <item>
       <title>C</title>
       <link>https://example.com/symbols/c</link>
       <description>c</description>
-      <guid isPermaLink="false">symbols/c</guid>
+      <guid isPermaLink="false">c</guid>
       <pubDate>Mon, 20 Apr 2020 16:20:00 -0700</pubDate>
     </item>
     <item>
       <title>B</title>
       <link>https://example.com/symbols/b</link>
       <description>b</description>
-      <guid isPermaLink="false">symbols/b</guid>
+      <guid isPermaLink="false">b</guid>
       <pubDate>Mon, 20 Apr 2020 16:20:00 -0700</pubDate>
     </item>
     <item>
       <title>A</title>
       <link>https://example.com/symbols/a</link>
       <description>a</description>
-      <guid isPermaLink="false">symbols/a</guid>
+      <guid isPermaLink="false">a</guid>
       <pubDate>Mon, 20 Apr 2020 16:20:00 -0700</pubDate>
     </item>
   </channel>

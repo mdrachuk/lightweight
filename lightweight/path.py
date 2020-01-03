@@ -82,7 +82,7 @@ class RenderPath:
 
     @property
     def url(self) -> str:
-        return f'{self.ctx.site.url}/{self.location}'  # TODO:mdrachuk:10.12.2019: subsite urls
+        return self.ctx.site / self.location
 
     @property
     def location(self) -> str:
