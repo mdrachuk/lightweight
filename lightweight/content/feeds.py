@@ -4,7 +4,6 @@ from abc import ABC, abstractmethod
 from dataclasses import dataclass, asdict
 from datetime import datetime, timezone
 from typing import TYPE_CHECKING, Optional, Tuple, Generic, TypeVar, List
-from urllib.parse import urljoin
 
 from feedgen import entry as fge  # type: ignore
 from feedgen import feed as fgf  # type: ignore
@@ -129,6 +128,7 @@ class RssEntry:
 
         feed_entry.published(self.created)
         feed_entry.updated(self.updated)
+
         return feed_entry
 
 
@@ -189,14 +189,13 @@ class MarkdownEntries(EntryFactory):
         return isinstance(content, MarkdownPage)
 
     def rss(self, location: str, content: MarkdownPage, site: Site) -> RssEntry:
-        url = urljoin(site.url, location)
         title = content.title or location
         description = content.summary or ''
         created = content.created or datetime.now(tz=timezone.utc)
         updated = content.updated or created
         return RssEntry(
             id=location,
-            url=url,
+            url=site / location,
             title=title,
             description=description,
             authors=tuple(site.authors),
@@ -205,14 +204,13 @@ class MarkdownEntries(EntryFactory):
         )
 
     def atom(self, location: str, content: MarkdownPage, site: Site) -> AtomEntry:
-        url = urljoin(site.url, location)
         title = content.title or location
         summary = content.summary or ''
         created = content.created or datetime.now(tz=timezone.utc)
         updated = content.updated or created
         return AtomEntry(
             id=location,
-            url=url,
+            url=site / location,
             title=title,
             summary=summary,
             content=None,

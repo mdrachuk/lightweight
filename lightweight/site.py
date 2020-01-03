@@ -1,12 +1,12 @@
 from __future__ import annotations
 
-from dataclasses import dataclass
+from dataclasses import dataclass, replace
 from datetime import datetime
 from os import getcwd
 from pathlib import Path
 from shutil import rmtree
 from typing import overload, Union, Optional, Collection, Iterator, List, Set
-from urllib.parse import urlparse
+from urllib.parse import urlparse, urljoin
 
 from lightweight.content.content import Content
 from lightweight.content.copy import FileCopy, DirectoryCopy
@@ -141,10 +141,7 @@ class Site(Content):
         return f'<{type(self).__name__} title={self.title} url={self.url} at 0x{id(self):02x}>'
 
     def __truediv__(self, location: str):
-        if location.startswith('/'):
-            return f'{self.url}{location}'
-        else:
-            return f'{self.url}/{location}'
+        return urljoin(self.url, location)
 
     def __getitem__(self, path: str) -> Site:
         """Get a collection of content included at provided path.
@@ -168,7 +165,7 @@ class Site(Content):
         content = self.content_at_path(path)
         if not content:
             raise KeyError(f'There is no content at path "{path}"')
-        return self.copy(content=content, url=self / path)
+        return self.copy(content=content, url=self / path + '/')
 
     def __iter__(self) -> Iterator[IncludedContent]:
         """Iterate `Content` objects in this collection."""
@@ -176,11 +173,13 @@ class Site(Content):
 
     def content_at_path(self, target: str) -> Collection[IncludedContent]:
         target_parts = Path(target).parts
-        return [
-            ic
-            for ic in self.content
-            if all(actual == expected for actual, expected in zip(Path(ic.path).parts, target_parts))
-        ]
+        new_path = lambda source: '/'.join(source[len(target_parts):])
+        result = []
+        for ic in self.content:
+            source_parts = Path(ic.path).parts
+            if all(actual == expected for actual, expected in zip(source_parts, target_parts)):
+                result.append(replace(ic, path=new_path(source_parts)))
+        return result
 
     def __contains__(self, path: str) -> bool:
         return path in map(lambda c: c.path, self.content)
