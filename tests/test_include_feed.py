@@ -79,7 +79,7 @@ class SymbolEntries(EntryFactory[Symbol]):
             updated=apr_20,
         )
 
-    def accepts(self, path: str, content: Content) -> bool:
+    def accepts(self, location: str, content: Content) -> bool:
         return isinstance(content, Symbol)
 
 

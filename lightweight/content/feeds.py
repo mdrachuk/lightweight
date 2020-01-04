@@ -179,13 +179,13 @@ class EntryFactory(ABC, Generic[T]):
         """"""
 
     @abstractmethod
-    def accepts(self, path: str, content: Content) -> bool:
+    def accepts(self, location: str, content: Content) -> bool:
         """"""
 
 
 class MarkdownEntries(EntryFactory):
 
-    def accepts(self, path: str, content: Content):
+    def accepts(self, location: str, content: Content):
         return isinstance(content, MarkdownPage)
 
     def rss(self, location: str, content: MarkdownPage, site: Site) -> RssEntry:
@@ -226,12 +226,12 @@ class FeedGenerator:
     def __init__(self):
         self._factories = []
 
-    def _factory(self, path, content):
+    def _factory(self, location: str, content: Content):
         for factory in self._factories:
-            if factory.accepts(path, content):
+            if factory.accepts(location, content):
                 return factory
         else:
-            raise ValueError(f'Missing an Entry factory that can handle "{content}" at path "{path}"')
+            raise ValueError(f'Missing an Entry factory that can handle "{content}" at path "{location}"')
 
     def add_factory(self, factory: EntryFactory):
         self._factories.insert(0, factory)
@@ -242,8 +242,8 @@ class RssGenerator(FeedGenerator):
         """Create an RSS feed."""
         authors = tuple(source.authors)
         entries = [
-            self._factory(ic.path, ic.content)
-                .rss(ic.path, ic.content, source)
+            self._factory(ic.location, ic.content)
+                .rss(ic.location, ic.content, source)
             for ic in source.content
         ]
 
@@ -267,8 +267,8 @@ class AtomGenerator(FeedGenerator):
     def __call__(self, source: Site):
         """Create an Atom feed."""
         entries = [
-            self._factory(ic.path, ic.content)
-                .atom(ic.path, ic.content, source)
+            self._factory(ic.location, ic.content)
+                .atom(ic.location, ic.content, source)
             for ic in source.content
         ]
         if not source.title or not source.description:
