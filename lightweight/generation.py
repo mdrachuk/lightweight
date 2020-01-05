@@ -1,13 +1,13 @@
 from __future__ import annotations
 
-from dataclasses import dataclass
+from dataclasses import dataclass, replace
 from pathlib import Path, PurePath
-from typing import Union, Tuple, TYPE_CHECKING, TextIO, BinaryIO
-
-from .files import directory
+from typing import TYPE_CHECKING, Union, Tuple, TextIO, BinaryIO, Callable
 
 if TYPE_CHECKING:
     from lightweight import Site, Content
+
+UrlFactory = Callable[[str], str]
 
 
 @dataclass(frozen=True)
@@ -16,30 +16,21 @@ class GenTask:
     content: Content
     cwd: str
 
-    def perform(self, ctx: GenContext):
-        with directory(self.cwd):
-            self.content.write(self.path, ctx)
-
 
 class GenContext:
     site: Site
     out: Path
-
-    paths: Tuple[GenPath, ...]
-    contents: Tuple[Content, ...]
+    tasks: Tuple[GenTask, ...]
 
     def __init__(self, out: Path, site: Site):
-        self.site = site
         self.out = out
-        self.tasks = [GenTask(self.path(c.path), c.content, c.cwd) for c in site.content]
+        self.site = site
 
     def path(self, p: Union[Path, str]) -> GenPath:
-        return GenPath(p, self.out, lambda location: self.site / location)
-
-    def perform(self):
-        [task.perform(self) for task in self.tasks]
+        return GenPath(Path(p), self.out, lambda location: self.site / location)
 
 
+@dataclass(frozen=True)
 class GenPath:
     """An implementation of Path interface.
     File system operations performed on real_path; relative path is used for all other operations.
@@ -52,11 +43,9 @@ class GenPath:
     Added:
     - create -- create file with contents.
     """
-
-    def __init__(self, path: Union[Path, str], out: Path, url_factory):
-        self.out = out
-        self.url_factory = url_factory
-        self.relative_path = Path(path) if isinstance(path, str) else path
+    relative_path: Path
+    out: Path
+    url_factory: UrlFactory
 
     @property
     def real_path(self):
@@ -72,7 +61,7 @@ class GenPath:
 
     @property
     def parent(self) -> GenPath:
-        return self.copy(path=self.relative_path.parent)
+        return replace(self, relative_path=self.relative_path.parent)
 
     @property
     def suffix(self) -> str:
@@ -80,7 +69,7 @@ class GenPath:
 
     @property
     def url(self) -> str:
-        return self.url_factory(self.location)
+        return self.url_factory(self.location)  # type: ignore # Invalid self argument mypy error
 
     @property
     def location(self) -> str:
@@ -103,27 +92,22 @@ class GenPath:
             other_path = other
         else:
             raise ValueError(f'Cannot make a path with {other}')
-        return self.copy(path=self.relative_path / other_path)
+        return replace(self, relative_path=self.relative_path / other_path)
 
     def __str__(self):
         return str(self.relative_path)
 
     def with_name(self, name: str) -> GenPath:
-        return self.copy(path=self.relative_path.with_name(name))
+        return replace(self, relative_path=self.relative_path.with_name(name))
 
     def open(self, mode='r', buffering=-1, encoding=None, errors=None, newline=None) -> Union[TextIO, BinaryIO]:
         return self.real_path.open(mode=mode, buffering=buffering, encoding=encoding, errors=errors, newline=newline)
 
     def with_suffix(self, suffix: str) -> GenPath:
-        return self.copy(path=self.relative_path.with_suffix(suffix))
+        return replace(self, relative_path=self.relative_path.with_suffix(suffix))
 
     def create(self, content: Union[str, bytes]) -> None:
         self.parent.mkdir()
         binary_mode = isinstance(content, bytes)
         with self.open('xb' if binary_mode else 'w') as f:
             f.write(content)  # type: ignore
-
-    def copy(self, *, path: Path = None):
-        if path is None:
-            path = self.relative_path
-        return GenPath(path, self.out, self.url_factory)

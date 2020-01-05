@@ -13,8 +13,8 @@ from lightweight.content.content import Content
 from lightweight.content.copy import FileCopy, DirectoryCopy
 from lightweight.empty import Empty, empty
 from lightweight.errors import AbsolutePathIncluded, IncludedDuplicate
-from lightweight.files import paths
-from lightweight.path import GenContext, GenPath
+from lightweight.files import paths, directory
+from lightweight.generation import GenContext, GenPath, GenTask
 
 
 class Site(Content):
@@ -136,13 +136,18 @@ class Site(Content):
         if out.exists():
             rmtree(out)
         out.mkdir(parents=True, exist_ok=True)
-
-        ctx = GenContext(out=out, site=self)
-        ctx.perform()
+        self._generate(out)
 
     def write(self, path: GenPath, ctx: GenContext):
-        rendering = GenContext(out=(ctx.out / path.relative_path).absolute(), site=self)
-        rendering.perform()
+        self._generate((ctx.out / path.relative_path).absolute())
+
+    def _generate(self, out: Path):
+        ctx = GenContext(out=out, site=self)
+        tasks = [GenTask(ctx.path(c.path), c.content, c.cwd) for c in ctx.site.content]
+        ctx.tasks = tuple(tasks)  # injecting tasks, for other content to have access to site structure
+        for task in tasks:
+            with directory(task.cwd):
+                task.content.write(task.path, ctx)
 
     def __repr__(self):
         return f'<{type(self).__name__} title={self.title} url={self.url} at 0x{id(self):02x}>'
