@@ -4,4 +4,4 @@ from .files import paths, directory
 from .path import GenPath, GenContext
 from .template import template, jinja_env
 
-__version__ = '1.0.0.dev32'
+__version__ = '1.0.0.dev33'
