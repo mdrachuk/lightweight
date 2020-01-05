@@ -17,7 +17,7 @@ def assert_site_render(src_location, content, tmp_path):
     test_out = tmp_path / 'out'
     site = Site(url='https://example.com')
     site.include(content)
-    site.render(test_out)
+    site.generate(test_out)
     assert (test_out / src_location).exists()
     assert (test_out / src_location).read_text() == src_content
 

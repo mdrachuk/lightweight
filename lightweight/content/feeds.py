@@ -12,7 +12,7 @@ from lightweight.content import Content
 from .markdown import MarkdownPage
 
 if TYPE_CHECKING:
-    from lightweight import Site, RenderPath, Author
+    from lightweight import Site, GenPath, Author, GenContext
 
 
 @dataclass(frozen=True)
@@ -29,7 +29,7 @@ class RssFeed(Content):
 
     entries: Tuple[RssEntry, ...]
 
-    def render(self):
+    def compile(self):
         return self._as_fg().rss_str(pretty=True)
 
     def _as_fg(self) -> fgf.FeedGenerator:
@@ -53,8 +53,8 @@ class RssFeed(Content):
 
         return gen
 
-    def write(self, path: RenderPath):
-        target = self.render()
+    def write(self, path: GenPath, ctx: GenContext):
+        target = self.compile()
         path.create(target)
 
 
@@ -73,7 +73,7 @@ class AtomFeed(Content):
 
     entries: Tuple[AtomEntry, ...]
 
-    def render(self):
+    def compile(self):
         return self._as_fg().atom_str(pretty=True)
 
     def _as_fg(self):
@@ -97,8 +97,8 @@ class AtomFeed(Content):
         [gen.add_entry(entry._as_fg()) for entry in self.entries]
         return gen
 
-    def write(self, path: RenderPath):
-        target = self.render()
+    def write(self, path: GenPath, ctx: GenContext):
+        target = self.compile()
         path.create(target)
 
 

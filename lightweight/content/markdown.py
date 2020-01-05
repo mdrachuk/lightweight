@@ -13,7 +13,7 @@ from .content import Content
 from .lwmd import LwRenderer, TableOfContents
 
 if TYPE_CHECKING:
-    from lightweight import RenderPath, Rendering
+    from lightweight import GenPath, GenContext
 
 
 @dataclass(frozen=True)
@@ -32,7 +32,7 @@ class MarkdownPage(Content):
 
     options: Dict[str, Any]
 
-    def render(self, ctx: Rendering):
+    def render(self, ctx: GenContext):
         link_mapping = self.map_links(ctx)
         renderer = self.renderer(link_mapping)
         html = Markdown(renderer).render(self.source)
@@ -50,7 +50,7 @@ class MarkdownPage(Content):
         )
 
     @staticmethod
-    def map_links(ctx: Rendering):
+    def map_links(ctx: GenContext):
         link_mapping = {str(task.path): task.path.url for task in ctx.tasks}
         link_mapping.update({
             str(task.content.path): task.path.url
@@ -65,12 +65,12 @@ class MarkdownPage(Content):
         preview_html = preview_split[0] if len(preview_split) == 2 else None
         return preview_html
 
-    def write(self, path: RenderPath):
+    def write(self, path: GenPath, ctx: GenContext):
         path.create(self.template.render(
-            site=path.ctx.site,
-            ctx=path.ctx,
+            site=ctx.site,
+            ctx=ctx,
             source=self,
-            markdown=self.render(path.ctx)
+            markdown=self.render(ctx)
         ))
 
 

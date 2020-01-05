@@ -11,7 +11,7 @@ def test_render_markdown(tmp_path: Path):
     site = Site(url='https://example.com')
 
     site.include(out_location, markdown(src_location, template('templates/md/plain.html')))
-    site.render(test_out)
+    site.generate(test_out)
 
     assert (test_out / out_location).exists()
     with open('expected/md/plain.html') as expected:
@@ -26,7 +26,7 @@ def test_render_toc(tmp_path: Path):
     site = Site(url='https://example.com')
 
     site.include(out_location, markdown(src_location, template('templates/md/toc.html')))
-    site.render(test_out)
+    site.generate(test_out)
 
     assert (test_out / out_location).exists()
     with open('expected/md/toc.html') as expected:
@@ -41,7 +41,7 @@ def test_render_file(tmp_path: Path):
     site = Site(url='https://example.com')
 
     site.include(out_location, markdown(src_location, template('templates/md/file.html')))
-    site.render(test_out)
+    site.generate(test_out)
 
     assert (test_out / out_location).exists()
     with open('expected/md/file.html') as expected:
@@ -58,7 +58,7 @@ def test_render_markdown_link(tmp_path: Path):
 
     site.include('plain.html', markdown(link_target_location, template('templates/md/plain.html')))
     site.include(out_location, markdown(src_location, template('templates/md/plain.html')))
-    site.render(test_out)
+    site.generate(test_out)
 
     assert (test_out / out_location).exists()
     with open('expected/md/md-link.html') as expected:
@@ -71,7 +71,7 @@ def test_resolves_sub_site_markdown_template_by_cwd(tmp_path: Path):
         subsite = Site('http://example.org')
         subsite.include('markdown.html', markdown('text.md', template=template('markdown.html')))
     site.include('subsite', subsite)
-    site.render(out=tmp_path)
+    site.generate(out=tmp_path)
 
     with open('expected/subsite/markdown.html') as expected:
         assert (tmp_path / 'subsite' / 'markdown.html').read_text() == expected.read()

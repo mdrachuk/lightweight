@@ -14,7 +14,7 @@ from lightweight.content.copy import FileCopy, DirectoryCopy
 from lightweight.empty import Empty, empty
 from lightweight.errors import AbsolutePathIncluded, IncludedDuplicate
 from lightweight.files import paths
-from lightweight.path import Rendering, RenderPath
+from lightweight.path import GenContext, GenPath
 
 
 class Site(Content):
@@ -131,17 +131,17 @@ class Site(Content):
             )
         )
 
-    def render(self, out: Union[str, Path] = 'out'):
+    def generate(self, out: Union[str, Path] = 'out'):
         out = Path(out)
         if out.exists():
             rmtree(out)
         out.mkdir(parents=True, exist_ok=True)
 
-        rendering = Rendering(out=out, site=self)
-        rendering.perform()
+        ctx = GenContext(out=out, site=self)
+        ctx.perform()
 
-    def write(self, path: RenderPath):
-        rendering = Rendering(out=(path.ctx.out / path.relative_path).absolute(), site=self)
+    def write(self, path: GenPath, ctx: GenContext):
+        rendering = GenContext(out=(ctx.out / path.relative_path).absolute(), site=self)
         rendering.perform()
 
     def __repr__(self):
