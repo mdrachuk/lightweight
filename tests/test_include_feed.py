@@ -5,7 +5,7 @@ from urllib.parse import urljoin
 
 import pytest
 
-from lightweight import Site, markdown, template, paths, atom, rss, Content, RenderPath
+from lightweight import Site, markdown, template, paths, atom, rss, Content, GenPath
 from lightweight.content.feeds import RssGenerator, EntryFactory, AtomEntry, RssEntry, AtomGenerator
 
 PDT = timezone(timedelta(hours=-7))
@@ -23,7 +23,7 @@ def test_create_atom(tmp_path: Path):
     [site.include(f'posts/{md.path.stem}.html', md) for md in md_posts('resources/md/collection/*.md')]
     site.include('posts.atom.xml', atom(site['posts']))
 
-    site.render(test_out)
+    site.generate(test_out)
 
     assert (test_out / 'posts.atom.xml').exists()
     with open('expected/feed/posts.atom.xml') as expected:
@@ -37,7 +37,7 @@ def test_create_rss(tmp_path: Path):
     [site.include(f'posts/{md.path.stem}.html', md) for md in md_posts('resources/md/collection/*.md')]
     site.include('posts.rss.xml', rss(site['posts']))
 
-    site.render(test_out)
+    site.generate(test_out)
 
     assert (test_out / 'posts.rss.xml').exists()
     with open('expected/feed/posts.rss.xml') as expected:
@@ -48,7 +48,7 @@ def test_create_rss(tmp_path: Path):
 class Symbol(Content):
     value: str
 
-    def write(self, path: RenderPath):
+    def write(self, path: GenPath, ctx):
         path.create(self.value)
 
 
@@ -79,7 +79,7 @@ class SymbolEntries(EntryFactory[Symbol]):
             updated=apr_20,
         )
 
-    def accepts(self, path: str, content: Content) -> bool:
+    def accepts(self, location: str, content: Content) -> bool:
         return isinstance(content, Symbol)
 
 
@@ -107,7 +107,7 @@ def test_custom_content_factory(tmp_path):
     site.include('symbols.rss.xml', my_rss(site['symbols']))
     site.include('symbols.atom.xml', my_atom(site['symbols']))
 
-    site.render(test_out)
+    site.generate(test_out)
 
     assert (test_out / 'symbols.rss.xml').exists()
     assert (test_out / 'symbols.atom.xml').exists()

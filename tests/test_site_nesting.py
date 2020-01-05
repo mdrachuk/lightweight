@@ -17,6 +17,6 @@ def test_include_site(tmp_path: Path):
 
     root.include('child', child)
 
-    root.render(tmp_path)
+    root.generate(tmp_path)
     assert (test_out / 'child/test.html').exists()
     assert (test_out / 'child/test.html').read_text() == src_content

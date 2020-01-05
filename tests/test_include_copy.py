@@ -16,7 +16,7 @@ def test_include_file(tmp_path: Path):
     site = Site(url='https://example.com')
 
     site.include(src_location)
-    site.render(test_out)
+    site.generate(test_out)
 
     assert (test_out / src_location).exists()
     assert (test_out / src_location).read_text() == src_content
@@ -39,7 +39,7 @@ def test_include_directory(tmp_path: Path):
     site = Site(url='https://example.com')
 
     site.include('resources/test_nested')
-    site.render(test_out)
+    site.generate(test_out)
 
     assert (test_out / src_location).exists()
     assert (test_out / src_location).read_text() == src_content
@@ -49,7 +49,7 @@ def test_include_glob(tmp_path: Path):
     test_out = tmp_path / 'out'
     site = Site(url='https://example.com')
     site.include('resources/glob/**/*.html')
-    site.render(test_out)
+    site.generate(test_out)
     result = test_out / 'resources' / 'glob'
     assert (result / 'a.html').exists()
     assert (result / 'b.html').exists()
@@ -66,7 +66,7 @@ def test_include_file_under_different_name(tmp_path: Path):
     site = Site(url='https://example.com')
 
     site.include('a.html', src_location)
-    site.render(test_out)
+    site.generate(test_out)
 
     assert (test_out / 'a.html').exists()
     assert (test_out / 'a.html').read_text() == src_content
@@ -82,7 +82,7 @@ def test_include_dir_under_different_name(tmp_path: Path):
     site = Site(url='https://example.com')
 
     site.include('successful_test', 'resources/test_nested')
-    site.render(test_out)
+    site.generate(test_out)
 
     assert (test_out / 'successful_test/test2/test3/test.html').exists()
     assert (test_out / 'successful_test/test2/test3/test.html').read_text() == src_content

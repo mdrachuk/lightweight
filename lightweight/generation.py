@@ -1,49 +1,37 @@
 from __future__ import annotations
 
-from dataclasses import dataclass
+from dataclasses import dataclass, replace
 from pathlib import Path, PurePath
-from typing import Union, Tuple, TYPE_CHECKING
-
-from .files import directory
+from typing import TYPE_CHECKING, Union, Tuple, TextIO, BinaryIO, Callable
 
 if TYPE_CHECKING:
     from lightweight import Site, Content
 
+UrlFactory = Callable[[str], str]
+
 
 @dataclass(frozen=True)
-class RenderTask:
-    path: RenderPath
+class GenTask:
+    path: GenPath
     content: Content
     cwd: str
 
-    def perform(self):
-        with directory(self.cwd):
-            self.content.write(self.path)
 
-
-class Rendering:
+class GenContext:
     site: Site
     out: Path
-
-    paths: Tuple[RenderPath, ...]
-    contents: Tuple[Content, ...]
+    tasks: Tuple[GenTask, ...]
 
     def __init__(self, out: Path, site: Site):
-        self.site = site
         self.out = out
-        self.tasks = [
-            RenderTask(self.path(c.path), c.content, c.cwd)
-            for c in site.content
-        ]
+        self.site = site
 
-    def path(self, p: Union[Path, str]) -> RenderPath:
-        return RenderPath(p, self)
-
-    def perform(self):
-        [task.perform() for task in self.tasks]
+    def path(self, p: Union[Path, str]) -> GenPath:
+        return GenPath(Path(p), self.out, lambda location: self.site / location)
 
 
-class RenderPath:
+@dataclass(frozen=True)
+class GenPath:
     """An implementation of Path interface.
     File system operations performed on real_path; relative path is used for all other operations.
 
@@ -55,14 +43,13 @@ class RenderPath:
     Added:
     - create -- create file with contents.
     """
-
-    def __init__(self, path: Union[Path, str], ctx: Rendering):
-        self.ctx = ctx
-        self.relative_path = Path(path) if isinstance(path, str) else path
+    relative_path: Path
+    out: Path
+    url_factory: UrlFactory
 
     @property
     def real_path(self):
-        return self.ctx.out / self.relative_path
+        return self.out / self.relative_path
 
     @property
     def name(self):
@@ -73,8 +60,8 @@ class RenderPath:
         return self.relative_path.parts
 
     @property
-    def parent(self) -> RenderPath:
-        return self.ctx.path(self.relative_path.parent)
+    def parent(self) -> GenPath:
+        return replace(self, relative_path=self.relative_path.parent)
 
     @property
     def suffix(self) -> str:
@@ -82,7 +69,7 @@ class RenderPath:
 
     @property
     def url(self) -> str:
-        return self.ctx.site / self.location
+        return self.url_factory(self.location)  # type: ignore # Invalid self argument mypy error
 
     @property
     def location(self) -> str:
@@ -97,30 +84,30 @@ class RenderPath:
     def mkdir(self, mode=0o777, parents=True, exist_ok=True):
         return self.real_path.mkdir(mode=mode, parents=parents, exist_ok=exist_ok)
 
-    def __truediv__(self, other: Union[RenderPath, PurePath, str]):
+    def __truediv__(self, other: Union[GenPath, PurePath, str]):
         other_path: Union[PurePath, str]
-        if isinstance(other, RenderPath):
+        if isinstance(other, GenPath):
             other_path = other.relative_path
         elif isinstance(other, PurePath) or isinstance(other, str):
             other_path = other
         else:
             raise ValueError(f'Cannot make a path with {other}')
-        return self.ctx.path(self.relative_path / other_path)
+        return replace(self, relative_path=self.relative_path / other_path)
 
     def __str__(self):
         return str(self.relative_path)
 
-    def with_name(self, name: str) -> RenderPath:
-        return self.ctx.path(self.relative_path.with_name(name))
+    def with_name(self, name: str) -> GenPath:
+        return replace(self, relative_path=self.relative_path.with_name(name))
 
-    def open(self, mode='r', buffering=-1, encoding=None, errors=None, newline=None):
+    def open(self, mode='r', buffering=-1, encoding=None, errors=None, newline=None) -> Union[TextIO, BinaryIO]:
         return self.real_path.open(mode=mode, buffering=buffering, encoding=encoding, errors=errors, newline=newline)
 
-    def with_suffix(self, suffix: str) -> RenderPath:
-        return self.ctx.path(self.relative_path.with_suffix(suffix))
+    def with_suffix(self, suffix: str) -> GenPath:
+        return replace(self, relative_path=self.relative_path.with_suffix(suffix))
 
     def create(self, content: Union[str, bytes]) -> None:
         self.parent.mkdir()
         binary_mode = isinstance(content, bytes)
         with self.open('xb' if binary_mode else 'w') as f:
-            f.write(content)
+            f.write(content)  # type: ignore

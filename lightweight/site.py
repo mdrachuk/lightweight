@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import os
 from dataclasses import dataclass, replace
 from datetime import datetime
 from os import getcwd
@@ -12,8 +13,8 @@ from lightweight.content.content import Content
 from lightweight.content.copy import FileCopy, DirectoryCopy
 from lightweight.empty import Empty, empty
 from lightweight.errors import AbsolutePathIncluded, IncludedDuplicate
-from lightweight.files import paths
-from lightweight.path import Rendering, RenderPath
+from lightweight.files import paths, directory
+from lightweight.generation import GenContext, GenPath, GenTask
 
 
 class Site(Content):
@@ -89,53 +90,64 @@ class Site(Content):
         )
 
     @overload
-    def include(self, path: str):
+    def include(self, location: str):
         """Include a file, a directory, or multiple files with a glob pattern."""
 
     @overload
-    def include(self, path: str, content: Content):
-        """Create a file at path with content."""
+    def include(self, location: str, content: Content):
+        """Create a file at location with content."""
 
     @overload
-    def include(self, path: str, content: str):
-        """Create a file at path with contents of a file at content path."""
+    def include(self, location: str, content: str):
+        """Create a file at location with contents of a file at content path."""
 
-    def include(self, path: str, content: Union[Content, str, None] = None):
+    def include(self, location: str, content: Union[Content, str, None] = None):
         cwd = getcwd()
-        if path.startswith('/'):
+        if location.startswith('/'):
             raise AbsolutePathIncluded()
         if content is None:
-            contents = {str(path): file_or_dir(path) for path in paths(path)}
+            contents = {str(path): file_or_dir(path) for path in paths(location)}
             if not len(contents):
                 raise FileNotFoundError()
             [self._include(path, content_, cwd) for path, content_ in contents.items()]
         elif isinstance(content, Content):
-            self._include(path, content, cwd)
+            self._include(location, content, cwd)
         elif isinstance(content, str):
             source = Path(content)
             if not source.exists():
                 raise FileNotFoundError()
-            self._include(path, file_or_dir(source), cwd)
+            self._include(location, file_or_dir(source), cwd)
         else:
             raise Exception(ValueError('Content, str, or None types are accepted as include parameter'))
 
-    def _include(self, path: str, content: Content, cwd: str):
-        if path in self:
+    def _include(self, location: str, content: Content, cwd: str):
+        if location in self:
             raise IncludedDuplicate()
-        self.content.append(IncludedContent(path, content, cwd))
+        self.content.append(
+            IncludedContent(
+                location=location,
+                content=content,
+                cwd=cwd
+            )
+        )
 
-    def render(self, out: Union[str, Path] = 'out'):
+    def generate(self, out: Union[str, Path] = 'out'):
         out = Path(out)
         if out.exists():
             rmtree(out)
         out.mkdir(parents=True, exist_ok=True)
+        self._generate(out)
 
-        rendering = Rendering(out=out, site=self)
-        rendering.perform()
+    def write(self, path: GenPath, ctx: GenContext):
+        self._generate((ctx.out / path.relative_path).absolute())
 
-    def write(self, path: RenderPath):
-        rendering = Rendering(out=(path.ctx.out / path.relative_path).absolute(), site=self)
-        rendering.perform()
+    def _generate(self, out: Path):
+        ctx = GenContext(out=out, site=self)
+        tasks = [GenTask(ctx.path(c.path), c.content, c.cwd) for c in ctx.site.content]
+        ctx.tasks = tuple(tasks)  # injecting tasks, for other content to have access to site structure
+        for task in tasks:
+            with directory(task.cwd):
+                task.content.write(task.path, ctx)
 
     def __repr__(self):
         return f'<{type(self).__name__} title={self.title} url={self.url} at 0x{id(self):02x}>'
@@ -143,7 +155,7 @@ class Site(Content):
     def __truediv__(self, location: str):
         return urljoin(self.url, location)
 
-    def __getitem__(self, path: str) -> Site:
+    def __getitem__(self, location: str) -> Site:
         """Get a collection of content included at provided path.
 
             :Example:
@@ -162,27 +174,29 @@ class Site(Content):
             >>> assert <post-3> in posts
             >>> assert <static> not in posts
         """
-        content = self.content_at_path(path)
+        content = self.content_at_path(Path(location))
         if not content:
-            raise KeyError(f'There is no content at path "{path}"')
-        return self.copy(content=content, url=self / path + '/')
+            raise KeyError(f'There is no content at path "{location}"')
+        return self.copy(content=content, url=self / location + '/')
 
     def __iter__(self) -> Iterator[IncludedContent]:
         """Iterate `Content` objects in this collection."""
         return iter(self.content)
 
-    def content_at_path(self, target: str) -> Collection[IncludedContent]:
-        target_parts = Path(target).parts
-        new_path = lambda source: '/'.join(source[len(target_parts):])
-        result = []
-        for ic in self.content:
-            source_parts = Path(ic.path).parts
-            if all(actual == expected for actual, expected in zip(source_parts, target_parts)):
-                result.append(replace(ic, path=new_path(source_parts)))
-        return result
+    def content_at_path(self, target: Path) -> Collection[IncludedContent]:
+        target = Path(target)
+        return [
+            replace(ic, location=clip_path_parts(len(target.parts), ic.path))
+            for ic in self.content
+            if all(actual == expected for actual, expected in zip(ic.path.parts, target.parts))
+        ]
 
-    def __contains__(self, path: str) -> bool:
-        return path in map(lambda c: c.path, self.content)
+    def __contains__(self, location: str) -> bool:
+        return location in map(lambda c: c.location, self.content)
+
+
+def clip_path_parts(number: int, path: Path) -> str:
+    return os.path.join(*path.parts[number:])
 
 
 def file_or_dir(path: Path):
@@ -191,9 +205,13 @@ def file_or_dir(path: Path):
 
 @dataclass(frozen=True)
 class IncludedContent:
-    path: str
+    location: str
     content: Content
     cwd: str
+
+    @property
+    def path(self):
+        return Path(self.location)
 
 
 @dataclass(frozen=True)

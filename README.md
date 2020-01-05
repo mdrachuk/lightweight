@@ -34,12 +34,12 @@ from lightweight import Site, markdown, paths, jinja, template, rss, atom, sass
 
 
 def blog_posts(source):
-    post_template = template('blog-post.html')
+    post_template = template('posts/_template.html')
     # Use globs to select files.
     return (markdown(path, post_template) for path in paths(source))
 
 
-site = Site()
+site = Site(url='https://example.org')
 
 # Render an index page from Jinja2 template.
 site.include('index.html', jinja('pages/index.html'))
@@ -60,7 +60,7 @@ site.include('img')
 site.include('js')
 
 # Execute all included content. 
-site.render(url='https://example.org')
+site.generate()
 ```
 
 ## Dev Server

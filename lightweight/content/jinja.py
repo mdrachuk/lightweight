@@ -10,7 +10,7 @@ from .content import Content
 from ..template import template
 
 if TYPE_CHECKING:
-    from lightweight import RenderPath
+    from lightweight import GenPath, GenContext
 
 
 @dataclass(frozen=True)
@@ -19,10 +19,10 @@ class JinjaPage(Content):
     path: Path
     params: Dict[str, Any]
 
-    def write(self, path: RenderPath):
+    def write(self, path: GenPath, ctx: GenContext):
         path.create(self.template.render(
-            site=path.ctx.site,
-            ctx=path.ctx,
+            site=ctx.site,
+            ctx=ctx,
             source=self,
             **self.params
         ))
