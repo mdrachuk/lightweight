@@ -1,7 +1,7 @@
 from __future__ import annotations
 
 from dataclasses import dataclass
-from datetime import date, datetime, timezone
+from datetime import datetime, timezone
 from pathlib import Path
 from typing import Optional, Union, TYPE_CHECKING, Type, Dict, Any
 
@@ -22,8 +22,8 @@ class MarkdownPage(Content):
     """Content generated from rendering a markdown file to a Jinja template."""
 
     template: Template  # Jinja2 template
-    source: str  # the contents of a markdown file
     source_path: Path  # path to the markdown file
+    text: str  # the contents of a markdown file
 
     renderer: Type[LwRenderer]
 
@@ -31,12 +31,13 @@ class MarkdownPage(Content):
     summary: Optional[str]
     created: Optional[datetime]
     updated: Optional[datetime]
-    order: Optional[Union[int, float]]
 
     front_matter: Dict[str, Any]
     props: Dict[str, Any]
 
     def write(self, path: GenPath, ctx: GenContext):
+        """Writes a rendered Jinja template with rendered Markdown, parameters from front-matter and code
+        to the file provided path."""
         # TODO:mdrachuk:06.01.2020: warn if site, ctx, source are in props or front matter!
         path.create(self.template.render(
             site=ctx.site,
@@ -48,23 +49,22 @@ class MarkdownPage(Content):
         ))
 
     def render(self, ctx: GenContext):
+        """Render Markdown to html, extracting the ToC."""
         link_mapping = self.map_links(ctx)
         renderer = self.renderer(link_mapping)
-        html = Markdown(renderer).render(self.source)
+        html = Markdown(renderer).render(self.text)
         toc = renderer.table_of_contents(level=3)
         preview_html = self.extract_preview(html)
         return RenderedMarkdown(
             html=html,
             preview_html=preview_html,
-            toc=toc,
-            title=self.title,
-            summary=self.summary,
-            created=self.created,
-            updated=self.updated,
+            toc=toc
         )
 
     @staticmethod
     def map_links(ctx: GenContext):
+        """Map links allowing in Markdown to reference other Markdown pages by their ".md" files
+        and using relative paths for other files."""
         link_mapping = {str(task.path): task.path.url for task in ctx.tasks}
         link_mapping.update({
             str(task.content.source_path): task.path.url
@@ -84,6 +84,13 @@ class MarkdownPage(Content):
 
 
 def markdown(md_path: Union[str, Path], template: Template, *, renderer=LwRenderer, **kwargs) -> MarkdownPage:
+    """Create a markdown page that can be included by a Site.
+    Markdown page is compiled from a markdown file at path (*.md) and a [Jinja Template][lightweight.template.template].
+
+    Provided key-word arguments are passed as props to the template on render.
+    Such props can also be lazily evaluated from [GenContext]
+    by using the [from_ctx(func) decorator][lightweight.content.jinja.from_ctx].
+    """
     path = Path(md_path)
     with path.open() as f:
         source = f.read()
@@ -98,10 +105,9 @@ def markdown(md_path: Union[str, Path], template: Template, *, renderer=LwRender
     if updated is not None:
         assert isinstance(updated, datetime), '"updated" is not a valid datetime object'
         updated = updated.replace(tzinfo=timezone.utc)
-    order = fm.get('order', None)
     return MarkdownPage(
         template=template,
-        source=fm.content,
+        text=fm.content,
         source_path=path,
 
         renderer=renderer,
@@ -110,7 +116,7 @@ def markdown(md_path: Union[str, Path], template: Template, *, renderer=LwRender
         summary=summary,
         created=created,
         updated=updated,
-        order=order,
+
         front_matter=fm,
         props=dict(kwargs),
     )
