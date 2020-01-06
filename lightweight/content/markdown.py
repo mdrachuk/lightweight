@@ -37,20 +37,17 @@ class MarkdownPage(Content):
     params: Dict[str, Any]
 
     def write(self, path: GenPath, ctx: GenContext):
-        path.create(self.render_template(ctx))
-
-    def render_template(self, ctx):
         # TODO:mdrachuk:06.01.2020: warn if site, ctx, source are in params or front matter!
-        return self.template.render(
+        path.create(self.template.render(
             site=ctx.site,
             ctx=ctx,
             content=self,
-            markdown=self.render_md(ctx),
+            markdown=self.render(ctx),
             **self.front_matter,
             **self._evaluated_params(ctx),
-        )
+        ))
 
-    def render_md(self, ctx: GenContext):
+    def render(self, ctx: GenContext):
         link_mapping = self.map_links(ctx)
         renderer = self.renderer(link_mapping)
         html = Markdown(renderer).render(self.source)
