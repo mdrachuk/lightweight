@@ -10,9 +10,9 @@ def test_include_site(tmp_path: Path):
     with Path(src_location).open() as f:
         src_content = f.read()
 
-    root = Site('http://example.org')
+    root = Site('https://example.org/')
 
-    child = Site('http://example.org/child')
+    child = Site('https://example.org/child')
     child.include('test.html', FileCopy(src_location))
 
     root.include('child', child)

@@ -47,6 +47,8 @@ class Site(Content):
     ):
         url_parts = urlparse(url)
         assert url_parts.scheme, 'Missing scheme in Site URL.'
+        if not url.endswith('/'):
+            raise ValueError(f'Site URL ({url}) must end with a forward slash (/).')
         self.url = url
         self.content = [] if not content else list(content)
         self.title = title
@@ -159,7 +161,7 @@ class Site(Content):
         """Get a collection of content included at provided path.
 
             :Example:
-            >>> site = Site(url='http://example.org', ...) # site is a collection of content
+            >>> site = Site(url='https://example.org/', ...) # site is a collection of content
 
             >>> site.include('index.html', <index>)
             >>> site.include('posts/1', <post-1>)
@@ -168,7 +170,7 @@ class Site(Content):
             >>> site.include('static', <static>)
 
             >>> posts = site['posts']
-            >>> assert posts.url is 'http://example.org/posts'
+            >>> assert posts.url is 'https://example.org/posts'
             >>> assert <post-1> in posts
             >>> assert <post-2> in posts
             >>> assert <post-3> in posts

@@ -18,7 +18,7 @@ def md_posts(location):
 
 def test_create_atom(tmp_path: Path):
     test_out = tmp_path / 'out'
-    site = Site(url='https://example.com', title='Tests', description='Test site', updated=apr_20)
+    site = Site(url='https://example.org/', title='Tests', description='Test site', updated=apr_20)
 
     [site.include(f'posts/{md.source_path.stem}.html', md) for md in md_posts('resources/md/collection/*.md')]
     site.include('posts.atom.xml', atom(site['posts']))
@@ -32,7 +32,7 @@ def test_create_atom(tmp_path: Path):
 
 def test_create_rss(tmp_path: Path):
     test_out = tmp_path / 'out'
-    site = Site(url='https://example.com', title='Tests', description='Test site', updated=apr_20)
+    site = Site(url='https://example.org/', title='Tests', description='Test site', updated=apr_20)
 
     [site.include(f'posts/{md.source_path.stem}.html', md) for md in md_posts('resources/md/collection/*.md')]
     site.include('posts.rss.xml', rss(site['posts']))
@@ -84,7 +84,7 @@ class SymbolEntries(EntryFactory[Symbol]):
 
 
 def test_custom_content_errors(tmp_path):
-    site = Site(url='https://example.com', title='Tests', description='Test site')
+    site = Site(url='https://example.org/', title='Tests', description='Test site')
 
     [site.include(s, Symbol(s)) for s in 'abcdefghijklmnopqrstvuwxyz']
     with pytest.raises(ValueError):
@@ -95,7 +95,7 @@ def test_custom_content_errors(tmp_path):
 
 def test_custom_content_factory(tmp_path):
     test_out = tmp_path / 'out'
-    site = Site(url='https://example.com', title='Tests', description='Test site', updated=apr_20)
+    site = Site(url='https://example.org/', title='Tests', description='Test site', updated=apr_20)
 
     [site.include(f'symbols/{s}', Symbol(s)) for s in 'abcdefghijklmnopqrstvuwxyz']
     _symbol_entry_factory = SymbolEntries()

@@ -13,7 +13,7 @@ def test_include_file(tmp_path: Path):
         src_content = f.read()
 
     test_out = tmp_path / 'out'
-    site = Site(url='https://example.com')
+    site = Site(url='https://example.org/')
 
     site.include(src_location)
     site.generate(test_out)
@@ -23,7 +23,7 @@ def test_include_file(tmp_path: Path):
 
 
 def test_include_not_found(tmp_path: Path):
-    site = Site(url='https://example.com')
+    site = Site(url='https://example.org/')
 
     with pytest.raises(FileNotFoundError):
         site.include(str(uuid4()))
@@ -36,7 +36,7 @@ def test_include_directory(tmp_path: Path):
         src_content = f.read()
 
     test_out = tmp_path / 'out'
-    site = Site(url='https://example.com')
+    site = Site(url='https://example.org/')
 
     site.include('resources/test_nested')
     site.generate(test_out)
@@ -47,7 +47,7 @@ def test_include_directory(tmp_path: Path):
 
 def test_include_glob(tmp_path: Path):
     test_out = tmp_path / 'out'
-    site = Site(url='https://example.com')
+    site = Site(url='https://example.org/')
     site.include('resources/glob/**/*.html')
     site.generate(test_out)
     result = test_out / 'resources' / 'glob'
@@ -63,7 +63,7 @@ def test_include_file_under_different_name(tmp_path: Path):
         src_content = f.read()
 
     test_out = tmp_path / 'out'
-    site = Site(url='https://example.com')
+    site = Site(url='https://example.org/')
 
     site.include('a.html', src_location)
     site.generate(test_out)
@@ -79,7 +79,7 @@ def test_include_dir_under_different_name(tmp_path: Path):
         src_content = f.read()
 
     test_out = tmp_path / 'out'
-    site = Site(url='https://example.com')
+    site = Site(url='https://example.org/')
 
     site.include('successful_test', 'resources/test_nested')
     site.generate(test_out)
@@ -89,7 +89,7 @@ def test_include_dir_under_different_name(tmp_path: Path):
 
 
 def test_include_not_found_under_different_name(tmp_path: Path):
-    site = Site(url='https://example.com')
+    site = Site(url='https://example.org/')
 
     with pytest.raises(FileNotFoundError):
         site.include('t.html', str(uuid4()))
