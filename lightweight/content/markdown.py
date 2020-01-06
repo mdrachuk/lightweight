@@ -34,10 +34,10 @@ class MarkdownPage(Content):
     order: Optional[Union[int, float]]
 
     front_matter: Dict[str, Any]
-    params: Dict[str, Any]
+    props: Dict[str, Any]
 
     def write(self, path: GenPath, ctx: GenContext):
-        # TODO:mdrachuk:06.01.2020: warn if site, ctx, source are in params or front matter!
+        # TODO:mdrachuk:06.01.2020: warn if site, ctx, source are in props or front matter!
         path.create(self.template.render(
             site=ctx.site,
             ctx=ctx,
@@ -80,7 +80,7 @@ class MarkdownPage(Content):
         return preview_html
 
     def _evaluated_params(self, ctx) -> Dict[str, Any]:
-        return {key: eval_if_lazy(value, ctx) for key, value in self.params.items()}
+        return {key: eval_if_lazy(value, ctx) for key, value in self.props.items()}
 
 
 def markdown(md_path: Union[str, Path], template: Template, *, renderer=LwRenderer, **kwargs) -> MarkdownPage:
@@ -112,7 +112,7 @@ def markdown(md_path: Union[str, Path], template: Template, *, renderer=LwRender
         updated=updated,
         order=order,
         front_matter=fm,
-        params=dict(kwargs),
+        props=dict(kwargs),
     )
 
 
