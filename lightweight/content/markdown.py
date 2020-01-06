@@ -18,9 +18,11 @@ if TYPE_CHECKING:
 
 @dataclass(frozen=True)
 class MarkdownPage(Content):
+    """Content generated from rendering a markdown file to a Jinja template."""
+
     template: Template  # Jinja2 template
     source: str  # the contents of a markdown file
-    path: Path  # path to the markdown file
+    source_path: Path  # path to the markdown file
 
     renderer: Type[LwRenderer]
 
@@ -30,9 +32,20 @@ class MarkdownPage(Content):
     updated: Optional[datetime]
     order: Optional[Union[int, float]]
 
-    options: Dict[str, Any]
+    params: Dict[str, Any]
 
-    def render(self, ctx: GenContext):
+    def write(self, path: GenPath, ctx: GenContext):
+        path.create(self.render_template(ctx))
+
+    def render_template(self, ctx):
+        return self.template.render(
+            site=ctx.site,
+            ctx=ctx,
+            content=self,
+            markdown=self.render_md(ctx)
+        )
+
+    def render_md(self, ctx: GenContext):
         link_mapping = self.map_links(ctx)
         renderer = self.renderer(link_mapping)
         html = Markdown(renderer).render(self.source)
@@ -53,7 +66,7 @@ class MarkdownPage(Content):
     def map_links(ctx: GenContext):
         link_mapping = {str(task.path): task.path.url for task in ctx.tasks}
         link_mapping.update({
-            str(task.content.path): task.path.url
+            str(task.content.source_path): task.path.url
             for task in ctx.tasks
             if isinstance(task.content, MarkdownPage)
         })
@@ -74,7 +87,7 @@ class MarkdownPage(Content):
         ))
 
 
-def markdown(md_path: Union[str, Path], template: Template, *, renderer=LwRenderer) -> MarkdownPage:
+def markdown(md_path: Union[str, Path], template: Template, *, renderer=LwRenderer, **kwargs) -> MarkdownPage:
     path = Path(md_path)
     with path.open() as f:
         source = f.read()
@@ -93,7 +106,7 @@ def markdown(md_path: Union[str, Path], template: Template, *, renderer=LwRender
     return MarkdownPage(
         template=template,
         source=post.content,
-        path=path,
+        source_path=path,
 
         renderer=renderer,
 
@@ -102,7 +115,8 @@ def markdown(md_path: Union[str, Path], template: Template, *, renderer=LwRender
         created=created,
         updated=updated,
         order=order,
-        options=dict(post),
+
+        params=dict(post, **kwargs),
     )
 
 
@@ -116,4 +130,5 @@ class RenderedMarkdown:
     summary: Optional[str]
     updated: Optional[date]
     created: Optional[date]
-    options: Dict[str, Any]
+
+    params: Dict[str, Any]
