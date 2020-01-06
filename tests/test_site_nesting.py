@@ -12,7 +12,7 @@ def test_include_site(tmp_path: Path):
 
     root = Site('https://example.org/')
 
-    child = Site('https://example.org/child')
+    child = Site('https://example.org/child/')
     child.include('test.html', FileCopy(src_location))
 
     root.include('child', child)
