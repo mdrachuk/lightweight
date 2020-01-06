@@ -15,6 +15,7 @@ if TYPE_CHECKING:
 
 @dataclass(frozen=True)
 class Sass(Content):
+    """Content created by compiling Sass and SCSS."""
     path: Path
     sourcemap: bool
 
@@ -54,7 +55,17 @@ def _write(source: Path, target: GenPath, *, include_sourcemap: bool):
         sourcemap_path.create(sourcemap)
 
 
-def sass(location: str, *, sourcemap=True) -> Sass:
+def sass(location: str, *, sourcemap: bool = True) -> Sass:
+    """Run Sass/SCSS compiler on files at location. Can be a file name or a directory.
+
+    @example
+    Sourcemaps are written under "<location>.map".
+
+    ```python
+    site.include('css/style.css', sass('styles/style.scss'))
+    ```
+    Creates 2 files: `css/styles.css` and `css/styles.css.map`.
+    """
     path = Path(location)
     if not path.exists():
         raise FileNotFoundError(f'Sass file not found: {location}')
