@@ -10,6 +10,7 @@ from jinja2 import Template
 from mistune import Markdown  # type: ignore
 
 from .content import Content
+from .jinja import eval_if_lazy
 from .lwmd import LwRenderer, TableOfContents
 
 if TYPE_CHECKING:
@@ -18,9 +19,11 @@ if TYPE_CHECKING:
 
 @dataclass(frozen=True)
 class MarkdownPage(Content):
+    """Content generated from rendering a markdown file to a Jinja template."""
+
     template: Template  # Jinja2 template
     source: str  # the contents of a markdown file
-    path: Path  # path to the markdown file
+    source_path: Path  # path to the markdown file
 
     renderer: Type[LwRenderer]
 
@@ -30,9 +33,24 @@ class MarkdownPage(Content):
     updated: Optional[datetime]
     order: Optional[Union[int, float]]
 
-    options: Dict[str, Any]
+    front_matter: Dict[str, Any]
+    params: Dict[str, Any]
 
-    def render(self, ctx: GenContext):
+    def write(self, path: GenPath, ctx: GenContext):
+        path.create(self.render_template(ctx))
+
+    def render_template(self, ctx):
+        # TODO:mdrachuk:06.01.2020: warn if site, ctx, source are in params or front matter!
+        return self.template.render(
+            site=ctx.site,
+            ctx=ctx,
+            content=self,
+            markdown=self.render_md(ctx),
+            **self.front_matter,
+            **self._evaluated_params(ctx),
+        )
+
+    def render_md(self, ctx: GenContext):
         link_mapping = self.map_links(ctx)
         renderer = self.renderer(link_mapping)
         html = Markdown(renderer).render(self.source)
@@ -46,14 +64,13 @@ class MarkdownPage(Content):
             summary=self.summary,
             created=self.created,
             updated=self.updated,
-            options=self.options,
         )
 
     @staticmethod
     def map_links(ctx: GenContext):
         link_mapping = {str(task.path): task.path.url for task in ctx.tasks}
         link_mapping.update({
-            str(task.content.path): task.path.url
+            str(task.content.source_path): task.path.url
             for task in ctx.tasks
             if isinstance(task.content, MarkdownPage)
         })
@@ -65,35 +82,30 @@ class MarkdownPage(Content):
         preview_html = preview_split[0] if len(preview_split) == 2 else None
         return preview_html
 
-    def write(self, path: GenPath, ctx: GenContext):
-        path.create(self.template.render(
-            site=ctx.site,
-            ctx=ctx,
-            source=self,
-            markdown=self.render(ctx)
-        ))
+    def _evaluated_params(self, ctx) -> Dict[str, Any]:
+        return {key: eval_if_lazy(value, ctx) for key, value in self.params.items()}
 
 
-def markdown(md_path: Union[str, Path], template: Template, *, renderer=LwRenderer) -> MarkdownPage:
+def markdown(md_path: Union[str, Path], template: Template, *, renderer=LwRenderer, **kwargs) -> MarkdownPage:
     path = Path(md_path)
     with path.open() as f:
         source = f.read()
-    post = frontmatter.loads(source)
-    title = post.get('title', None)
-    summary = post.get('summary', None)
-    created = post.get('created', None)
-    updated = post.get('updated', created)
+    fm = frontmatter.loads(source)
+    title = fm.get('title', None)
+    summary = fm.get('summary', None)
+    created = fm.get('created', None)
+    updated = fm.get('updated', created)
     if created is not None:
         assert isinstance(created, datetime), '"created" is not a valid datetime object'
         created = created.replace(tzinfo=timezone.utc)
     if updated is not None:
         assert isinstance(updated, datetime), '"updated" is not a valid datetime object'
         updated = updated.replace(tzinfo=timezone.utc)
-    order = post.get('order', None)
+    order = fm.get('order', None)
     return MarkdownPage(
         template=template,
-        source=post.content,
-        path=path,
+        source=fm.content,
+        source_path=path,
 
         renderer=renderer,
 
@@ -102,7 +114,8 @@ def markdown(md_path: Union[str, Path], template: Template, *, renderer=LwRender
         created=created,
         updated=updated,
         order=order,
-        options=dict(post),
+        front_matter=fm,
+        params=dict(kwargs),
     )
 
 
@@ -116,4 +129,3 @@ class RenderedMarkdown:
     summary: Optional[str]
     updated: Optional[date]
     created: Optional[date]
-    options: Dict[str, Any]

@@ -1,6 +1,6 @@
 from pathlib import Path
 
-from lightweight import Site, markdown, template, directory
+from lightweight import Site, markdown, template, directory, from_ctx
 
 
 def test_render_markdown(tmp_path: Path):
@@ -75,3 +75,19 @@ def test_resolves_sub_site_markdown_template_by_cwd(tmp_path: Path):
 
     with open('expected/subsite/markdown.html') as expected:
         assert (tmp_path / 'subsite' / 'markdown.html').read_text() == expected.read()
+
+
+def test_lazy_params(tmp_path: Path):
+    src_location = 'resources/md/collection/post-1.md'
+    out_location = 'lazy.html'
+
+    test_out = tmp_path / 'out'
+    site = Site(url='https://example.com')
+
+    site.include(out_location, markdown(src_location, template('templates/md/lazy.html'),
+                                        lazy=from_ctx(lambda ctx: f'Hello there! {ctx.tasks[0].path}')))
+    site.generate(test_out)
+
+    assert (test_out / out_location).exists()
+    with open('expected/md/lazy.html') as expected:
+        assert (test_out / out_location).read_text() == expected.read()
