@@ -4,7 +4,7 @@ from pathlib import Path
 import pytest
 from jinja2 import TemplateNotFound
 
-from lightweight import Site, jinja, Content, directory, GenContext, GenPath
+from lightweight import Site, jinja, Content, directory, GenContext, GenPath, from_ctx
 
 
 def test_render_jinja(tmp_path: Path):
@@ -70,3 +70,18 @@ def test_resolves_sub_site_template_by_cwd(tmp_path: Path):
 
     with open('expected/subsite/page.html') as expected:
         assert (tmp_path / 'subsite' / 'page.html').read_text() == expected.read()
+
+
+def test_lazy_params(tmp_path: Path):
+    src_location = 'resources/jinja/lazy.html'
+    out_location = 'lazy.html'
+
+    test_out = tmp_path / 'out'
+    site = Site(url='https://example.com')
+
+    site.include(out_location, jinja(src_location, lazy=from_ctx(lambda ctx: f'Hello there! {ctx.tasks[0].path}')))
+    site.generate(test_out)
+
+    assert (test_out / out_location).exists()
+    with open('expected/jinja/lazy.html') as expected:
+        assert (test_out / out_location).read_text() == expected.read()
