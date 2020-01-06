@@ -10,7 +10,7 @@ from typing import overload, Union, Optional, Collection, Iterator, List, Set
 from urllib.parse import urlparse, urljoin
 
 from lightweight.content.content import Content
-from lightweight.content.copy import FileCopy, DirectoryCopy
+from lightweight.content.files import copy
 from lightweight.empty import Empty, empty
 from lightweight.errors import AbsolutePathIncluded, IncludedDuplicate
 from lightweight.files import paths, directory
@@ -108,7 +108,7 @@ class Site(Content):
         if location.startswith('/'):
             raise AbsolutePathIncluded()
         if content is None:
-            contents = {str(path): file_or_dir(path) for path in paths(location)}
+            contents = {str(path): copy(path) for path in paths(location)}
             if not len(contents):
                 raise FileNotFoundError()
             [self._include(path, content_, cwd) for path, content_ in contents.items()]
@@ -118,7 +118,7 @@ class Site(Content):
             source = Path(content)
             if not source.exists():
                 raise FileNotFoundError()
-            self._include(location, file_or_dir(source), cwd)
+            self._include(location, copy(source), cwd)
         else:
             raise Exception(ValueError('Content, str, or None types are accepted as include parameter'))
 
@@ -199,10 +199,6 @@ class Site(Content):
 
 def clip_path_parts(number: int, path: Path) -> str:
     return os.path.join(*path.parts[number:])
-
-
-def file_or_dir(path: Path):
-    return FileCopy(path) if path.is_file() else DirectoryCopy(path)
 
 
 @dataclass(frozen=True)
