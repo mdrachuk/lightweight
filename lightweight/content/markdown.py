@@ -118,11 +118,7 @@ def markdown(md_path: Union[str, Path], template: Template, *, renderer=LwRender
 
 @dataclass(frozen=True)
 class RenderedMarkdown:
+    """The result of parsing and rendering markdown."""
     html: str
     preview_html: str
     toc: TableOfContents
-
-    title: Optional[str]
-    summary: Optional[str]
-    updated: Optional[date]
-    created: Optional[date]
