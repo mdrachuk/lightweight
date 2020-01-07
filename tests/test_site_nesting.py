@@ -1,7 +1,7 @@
 from pathlib import Path
 
 from lightweight import Site
-from lightweight.content.files import FileCopy
+from lightweight.content.copies import FileCopy
 
 
 def test_include_site(tmp_path: Path):

@@ -10,7 +10,7 @@ from typing import overload, Union, Optional, Collection, Iterator, List, Set
 from urllib.parse import urlparse, urljoin
 
 from lightweight.content.content import Content
-from lightweight.content.files import copy
+from lightweight.content.copies import copy
 from lightweight.empty import Empty, empty
 from lightweight.errors import AbsolutePathIncluded, IncludedDuplicate
 from lightweight.files import paths, directory
