@@ -1,10 +1,4 @@
 class _SingletonMeta(type):
-    """
-    The Singleton class can be implemented in different ways in Python. Some
-    possible methods include: base class, decorator, metaclass. We will use the
-    metaclass because it is best suited for this purpose.
-    """
-
     _instance = None
 
     def __call__(self):
@@ -14,7 +8,14 @@ class _SingletonMeta(type):
 
 
 class Empty(metaclass=_SingletonMeta):
-    """"""
+    """An alternative to None, when None is a legitimate option for a function argument,
+    but it also such an argument can be omitted. See [Site.copy(...)][lightweight.site.copy]
+
+    Empty is a singleton.
+    """
+
+    def __eq__(self, other):
+        return isinstance(other, Empty)
 
 
 empty = Empty()
