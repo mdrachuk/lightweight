@@ -1,16 +1,16 @@
 <?xml version='1.0' encoding='UTF-8'?>
 <feed xmlns="http://www.w3.org/2005/Atom">
-  <id>https://example.com/symbols/</id>
+  <id>https://example.org/symbols/</id>
   <title>Tests</title>
   <updated>2020-04-20T16:20:00-07:00</updated>
-  <link href="https://example.com/symbols/" rel="alternate"/>
+  <link href="https://example.org/symbols/" rel="alternate"/>
   <generator uri="http://lkiesow.github.io/python-feedgen" version="0.8.0">python-feedgen</generator>
   <subtitle>Test site</subtitle>
   <entry>
     <id>z</id>
     <title>Z</title>
     <updated>2020-04-20T16:20:00-07:00</updated>
-    <link href="https://example.com/symbols/z" rel="alternate"/>
+    <link href="https://example.org/symbols/z" rel="alternate"/>
     <summary>z</summary>
     <published>2020-04-20T16:20:00-07:00</published>
   </entry>
@@ -18,7 +18,7 @@
     <id>y</id>
     <title>Y</title>
     <updated>2020-04-20T16:20:00-07:00</updated>
-    <link href="https://example.com/symbols/y" rel="alternate"/>
+    <link href="https://example.org/symbols/y" rel="alternate"/>
     <summary>y</summary>
     <published>2020-04-20T16:20:00-07:00</published>
   </entry>
@@ -26,7 +26,7 @@
     <id>x</id>
     <title>X</title>
     <updated>2020-04-20T16:20:00-07:00</updated>
-    <link href="https://example.com/symbols/x" rel="alternate"/>
+    <link href="https://example.org/symbols/x" rel="alternate"/>
     <summary>x</summary>
     <published>2020-04-20T16:20:00-07:00</published>
   </entry>
@@ -34,7 +34,7 @@
     <id>w</id>
     <title>W</title>
     <updated>2020-04-20T16:20:00-07:00</updated>
-    <link href="https://example.com/symbols/w" rel="alternate"/>
+    <link href="https://example.org/symbols/w" rel="alternate"/>
     <summary>w</summary>
     <published>2020-04-20T16:20:00-07:00</published>
   </entry>
@@ -42,7 +42,7 @@
     <id>u</id>
     <title>U</title>
     <updated>2020-04-20T16:20:00-07:00</updated>
-    <link href="https://example.com/symbols/u" rel="alternate"/>
+    <link href="https://example.org/symbols/u" rel="alternate"/>
     <summary>u</summary>
     <published>2020-04-20T16:20:00-07:00</published>
   </entry>
@@ -50,7 +50,7 @@
     <id>v</id>
     <title>V</title>
     <updated>2020-04-20T16:20:00-07:00</updated>
-    <link href="https://example.com/symbols/v" rel="alternate"/>
+    <link href="https://example.org/symbols/v" rel="alternate"/>
     <summary>v</summary>
     <published>2020-04-20T16:20:00-07:00</published>
   </entry>
@@ -58,7 +58,7 @@
     <id>t</id>
     <title>T</title>
     <updated>2020-04-20T16:20:00-07:00</updated>
-    <link href="https://example.com/symbols/t" rel="alternate"/>
+    <link href="https://example.org/symbols/t" rel="alternate"/>
     <summary>t</summary>
     <published>2020-04-20T16:20:00-07:00</published>
   </entry>
@@ -66,7 +66,7 @@
     <id>s</id>
     <title>S</title>
     <updated>2020-04-20T16:20:00-07:00</updated>
-    <link href="https://example.com/symbols/s" rel="alternate"/>
+    <link href="https://example.org/symbols/s" rel="alternate"/>
     <summary>s</summary>
     <published>2020-04-20T16:20:00-07:00</published>
   </entry>
@@ -74,7 +74,7 @@
     <id>r</id>
     <title>R</title>
     <updated>2020-04-20T16:20:00-07:00</updated>
-    <link href="https://example.com/symbols/r" rel="alternate"/>
+    <link href="https://example.org/symbols/r" rel="alternate"/>
     <summary>r</summary>
     <published>2020-04-20T16:20:00-07:00</published>
   </entry>
@@ -82,7 +82,7 @@
     <id>q</id>
     <title>Q</title>
     <updated>2020-04-20T16:20:00-07:00</updated>
-    <link href="https://example.com/symbols/q" rel="alternate"/>
+    <link href="https://example.org/symbols/q" rel="alternate"/>
     <summary>q</summary>
     <published>2020-04-20T16:20:00-07:00</published>
   </entry>
@@ -90,7 +90,7 @@
     <id>p</id>
     <title>P</title>
     <updated>2020-04-20T16:20:00-07:00</updated>
-    <link href="https://example.com/symbols/p" rel="alternate"/>
+    <link href="https://example.org/symbols/p" rel="alternate"/>
     <summary>p</summary>
     <published>2020-04-20T16:20:00-07:00</published>
   </entry>
@@ -98,7 +98,7 @@
     <id>o</id>
     <title>O</title>
     <updated>2020-04-20T16:20:00-07:00</updated>
-    <link href="https://example.com/symbols/o" rel="alternate"/>
+    <link href="https://example.org/symbols/o" rel="alternate"/>
     <summary>o</summary>
     <published>2020-04-20T16:20:00-07:00</published>
   </entry>
@@ -106,7 +106,7 @@
     <id>n</id>
     <title>N</title>
     <updated>2020-04-20T16:20:00-07:00</updated>
-    <link href="https://example.com/symbols/n" rel="alternate"/>
+    <link href="https://example.org/symbols/n" rel="alternate"/>
     <summary>n</summary>
     <published>2020-04-20T16:20:00-07:00</published>
   </entry>
@@ -114,7 +114,7 @@
     <id>m</id>
     <title>M</title>
     <updated>2020-04-20T16:20:00-07:00</updated>
-    <link href="https://example.com/symbols/m" rel="alternate"/>
+    <link href="https://example.org/symbols/m" rel="alternate"/>
     <summary>m</summary>
     <published>2020-04-20T16:20:00-07:00</published>
   </entry>
@@ -122,7 +122,7 @@
     <id>l</id>
     <title>L</title>
     <updated>2020-04-20T16:20:00-07:00</updated>
-    <link href="https://example.com/symbols/l" rel="alternate"/>
+    <link href="https://example.org/symbols/l" rel="alternate"/>
     <summary>l</summary>
     <published>2020-04-20T16:20:00-07:00</published>
   </entry>
@@ -130,7 +130,7 @@
     <id>k</id>
     <title>K</title>
     <updated>2020-04-20T16:20:00-07:00</updated>
-    <link href="https://example.com/symbols/k" rel="alternate"/>
+    <link href="https://example.org/symbols/k" rel="alternate"/>
     <summary>k</summary>
     <published>2020-04-20T16:20:00-07:00</published>
   </entry>
@@ -138,7 +138,7 @@
     <id>j</id>
     <title>J</title>
     <updated>2020-04-20T16:20:00-07:00</updated>
-    <link href="https://example.com/symbols/j" rel="alternate"/>
+    <link href="https://example.org/symbols/j" rel="alternate"/>
     <summary>j</summary>
     <published>2020-04-20T16:20:00-07:00</published>
   </entry>
@@ -146,7 +146,7 @@
     <id>i</id>
     <title>I</title>
     <updated>2020-04-20T16:20:00-07:00</updated>
-    <link href="https://example.com/symbols/i" rel="alternate"/>
+    <link href="https://example.org/symbols/i" rel="alternate"/>
     <summary>i</summary>
     <published>2020-04-20T16:20:00-07:00</published>
   </entry>
@@ -154,7 +154,7 @@
     <id>h</id>
     <title>H</title>
     <updated>2020-04-20T16:20:00-07:00</updated>
-    <link href="https://example.com/symbols/h" rel="alternate"/>
+    <link href="https://example.org/symbols/h" rel="alternate"/>
     <summary>h</summary>
     <published>2020-04-20T16:20:00-07:00</published>
   </entry>
@@ -162,7 +162,7 @@
     <id>g</id>
     <title>G</title>
     <updated>2020-04-20T16:20:00-07:00</updated>
-    <link href="https://example.com/symbols/g" rel="alternate"/>
+    <link href="https://example.org/symbols/g" rel="alternate"/>
     <summary>g</summary>
     <published>2020-04-20T16:20:00-07:00</published>
   </entry>
@@ -170,7 +170,7 @@
     <id>f</id>
     <title>F</title>
     <updated>2020-04-20T16:20:00-07:00</updated>
-    <link href="https://example.com/symbols/f" rel="alternate"/>
+    <link href="https://example.org/symbols/f" rel="alternate"/>
     <summary>f</summary>
     <published>2020-04-20T16:20:00-07:00</published>
   </entry>
@@ -178,7 +178,7 @@
     <id>e</id>
     <title>E</title>
     <updated>2020-04-20T16:20:00-07:00</updated>
-    <link href="https://example.com/symbols/e" rel="alternate"/>
+    <link href="https://example.org/symbols/e" rel="alternate"/>
     <summary>e</summary>
     <published>2020-04-20T16:20:00-07:00</published>
   </entry>
@@ -186,7 +186,7 @@
     <id>d</id>
     <title>D</title>
     <updated>2020-04-20T16:20:00-07:00</updated>
-    <link href="https://example.com/symbols/d" rel="alternate"/>
+    <link href="https://example.org/symbols/d" rel="alternate"/>
     <summary>d</summary>
     <published>2020-04-20T16:20:00-07:00</published>
   </entry>
@@ -194,7 +194,7 @@
     <id>c</id>
     <title>C</title>
     <updated>2020-04-20T16:20:00-07:00</updated>
-    <link href="https://example.com/symbols/c" rel="alternate"/>
+    <link href="https://example.org/symbols/c" rel="alternate"/>
     <summary>c</summary>
     <published>2020-04-20T16:20:00-07:00</published>
   </entry>
@@ -202,7 +202,7 @@
     <id>b</id>
     <title>B</title>
     <updated>2020-04-20T16:20:00-07:00</updated>
-    <link href="https://example.com/symbols/b" rel="alternate"/>
+    <link href="https://example.org/symbols/b" rel="alternate"/>
     <summary>b</summary>
     <published>2020-04-20T16:20:00-07:00</published>
   </entry>
@@ -210,7 +210,7 @@
     <id>a</id>
     <title>A</title>
     <updated>2020-04-20T16:20:00-07:00</updated>
-    <link href="https://example.com/symbols/a" rel="alternate"/>
+    <link href="https://example.org/symbols/a" rel="alternate"/>
     <summary>a</summary>
     <published>2020-04-20T16:20:00-07:00</published>
   </entry>

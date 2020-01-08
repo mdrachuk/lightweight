@@ -19,13 +19,13 @@ class JinjaPage(Content):
 
     template: Template
     source_path: Path
-    params: Dict[str, Any]
+    props: Dict[str, Any]
 
     def write(self, path: GenPath, ctx: GenContext):
         path.create(self.render(ctx))
 
     def render(self, ctx):
-        # TODO:mdrachuk:06.01.2020: warn if site, ctx, source are in params!
+        # TODO:mdrachuk:06.01.2020: warn if site, ctx, source are in props!
         return self.template.render(
             site=ctx.site,
             ctx=ctx,
@@ -34,10 +34,10 @@ class JinjaPage(Content):
         )
 
     def _evaluated_params(self, ctx) -> Dict[str, Any]:
-        return {key: eval_if_lazy(value, ctx) for key, value in self.params.items()}
+        return {key: eval_if_lazy(value, ctx) for key, value in self.props.items()}
 
 
-def jinja(template_path: Union[str, Path], **params) -> JinjaPage:
+def jinja(template_path: Union[str, Path], **props) -> JinjaPage:
     """Renders the page at path with provided parameters.
 
     Templates are resolved from the current directory (cwd).
@@ -46,7 +46,7 @@ def jinja(template_path: Union[str, Path], **params) -> JinjaPage:
     return JinjaPage(
         template=template(path),
         source_path=path,
-        params=params,
+        props=props,
     )
 
 

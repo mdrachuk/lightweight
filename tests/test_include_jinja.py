@@ -12,7 +12,7 @@ def test_render_jinja(tmp_path: Path):
     out_location = 'title.html'
 
     test_out = tmp_path / 'out'
-    site = Site(url='https://example.com')
+    site = Site(url='https://example.org/')
 
     site.include(out_location, jinja(src_location, title='99 reasons lightweight rules'))
     site.generate(test_out)
@@ -27,7 +27,7 @@ def test_render_jinja_file(tmp_path: Path):
     out_location = 'jinja/file.html'
 
     test_out = tmp_path / 'out'
-    site = Site(url='https://example.com')
+    site = Site(url='https://example.org/')
 
     site.include(out_location, jinja(src_location))
     site.generate(test_out)
@@ -61,9 +61,9 @@ class TestWorkingDirectory:
 
 
 def test_resolves_sub_site_template_by_cwd(tmp_path: Path):
-    site = Site('http://example.org')
+    site = Site('https://example.org/')
     with directory('site'):
-        subsite = Site('http://example.org')
+        subsite = Site('https://example.org/')
         subsite.include('page.html', jinja('page.html'))
     site.include('subsite', subsite)
     site.generate(out=tmp_path)
@@ -77,7 +77,7 @@ def test_lazy_params(tmp_path: Path):
     out_location = 'lazy.html'
 
     test_out = tmp_path / 'out'
-    site = Site(url='https://example.com')
+    site = Site(url='https://example.org/')
 
     site.include(out_location, jinja(src_location, lazy=from_ctx(lambda ctx: f'Hello there! {ctx.tasks[0].path}')))
     site.generate(test_out)

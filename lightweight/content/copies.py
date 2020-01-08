@@ -3,7 +3,7 @@ from __future__ import annotations
 from dataclasses import dataclass
 from distutils.dir_util import copy_tree
 from pathlib import Path
-from shutil import copy
+from shutil import copy as shcopy
 from typing import TYPE_CHECKING, Union
 
 from .content import Content
@@ -14,6 +14,7 @@ if TYPE_CHECKING:
 
 @dataclass(frozen=True)
 class DirectoryCopy(Content):
+    """Site content which is a copy of a directory from the path provided as source."""
     source: Union[Path, str]
 
     def write(self, path: GenPath, ctx: GenContext):
@@ -23,8 +24,15 @@ class DirectoryCopy(Content):
 
 @dataclass(frozen=True)
 class FileCopy(Content):
+    """Site content which is a copy fof a file from the path provided as source."""
     source: Union[Path, str]
 
     def write(self, path: GenPath, ctx: GenContext):
         path.parent.mkdir()
-        copy(str(self.source), str(path.absolute()))
+        shcopy(str(self.source), str(path.absolute()))
+
+
+def copy(path: Union[str, Path]):
+    """Copy file or directory at path, ensuring their existence."""
+    path = Path(path)
+    return FileCopy(path) if path.is_file() else DirectoryCopy(path)

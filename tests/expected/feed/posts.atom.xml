@@ -1,16 +1,16 @@
 <?xml version='1.0' encoding='UTF-8'?>
 <feed xmlns="http://www.w3.org/2005/Atom">
-  <id>https://example.com/posts/</id>
+  <id>https://example.org/posts/</id>
   <title>Tests</title>
   <updated>2020-04-20T16:20:00-07:00</updated>
-  <link href="https://example.com/posts/" rel="alternate"/>
+  <link href="https://example.org/posts/" rel="alternate"/>
   <generator uri="http://lkiesow.github.io/python-feedgen" version="0.8.0">python-feedgen</generator>
   <subtitle>Test site</subtitle>
   <entry>
     <id>post-1.html</id>
     <title>This is a test</title>
     <updated>2020-04-20T16:20:00+00:00</updated>
-    <link href="https://example.com/posts/post-1.html" rel="alternate"/>
+    <link href="https://example.org/posts/post-1.html" rel="alternate"/>
     <published>2020-04-20T16:20:00+00:00</published>
   </entry>
 </feed>

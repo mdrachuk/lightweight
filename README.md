@@ -17,7 +17,7 @@ Python code over configuration static site generator.
 - [x] Jinja2 templates
 - [x] Markdown rendering
 - [x] Sass/SCSS rendering
-- [ ] RSS/Atom feeds
+- [x] RSS/Atom feeds (basic implementation with ability to pass only plaintext to feeds)
 - [x] Dev server
 - [x] Site nesting
 - [ ] CLI
@@ -35,17 +35,17 @@ from lightweight import Site, markdown, paths, jinja, template, rss, atom, sass
 
 def blog_posts(source):
     post_template = template('posts/_template.html')
-    # Use globs to select files.
+    # Use globs to select files. # source = 'posts/**.md'
     return (markdown(path, post_template) for path in paths(source))
 
 
-site = Site(url='https://example.org')
+site = Site(url='https://example.org/')
 
 # Render an index page from Jinja2 template.
 site.include('index.html', jinja('pages/index.html'))
 
 # Render markdown blog posts.
-[site.include(f'posts/{post.path.stem}.html', post) for post in blog_posts('posts/**.md')]
+[site.include(f'posts/{post.source_path.stem}.html', post) for post in blog_posts('posts/**.md')]
 site.include('posts.html', jinja('pages/posts.html'))
 
 # Syndicate RSS and Atom feeds.
