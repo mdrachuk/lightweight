@@ -17,7 +17,7 @@ Python code over configuration static site generator.
 - [x] Jinja2 templates
 - [x] Markdown rendering
 - [x] Sass/SCSS rendering
-- [ ] RSS/Atom feeds
+- [x] RSS/Atom feeds (basic implementation with ability to pass only plaintext to feeds)
 - [x] Dev server
 - [x] Site nesting
 - [ ] CLI
