@@ -12,3 +12,6 @@ class IncludedDuplicate(Exception):
     def __init__(self):
         super().__init__('Site cannot include duplicates.')
 
+
+class InvalidCommand(Exception):
+    """An invalid CLI command."""

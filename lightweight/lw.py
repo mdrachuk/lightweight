@@ -1,14 +1,18 @@
 #!/usr/bin/env python
 import asyncio
+import inspect
 import os
+import sys
 from argparse import ArgumentParser
 from contextlib import contextmanager
 from importlib.machinery import SourceFileLoader
 from importlib.util import module_from_spec, spec_from_loader
 from os import getcwd
 from pathlib import Path
-from typing import Any, Optional
+from typing import Any, Optional, Callable
 
+import lightweight
+from lightweight.errors import InvalidCommand
 from lightweight.server import DevServer, LiveReloadServer, RunGenerate
 
 
@@ -16,7 +20,11 @@ def get_generator(executable_name: str, *, source: str, out: str, host: str, por
     func = get_executable(source, executable_name)
 
     def generate():
-        return func(host, port).generate(out)
+        site = func(host, port)
+        if not hasattr(site, 'generate') or not positional_args_count(site.generate, equals=1):
+            raise InvalidCommand(f'"{executable_name}" did not return an instance of Site '
+                                 f'with a "site.generate(out)" method.')
+        return site.generate(out)
 
     return generate
 
@@ -24,7 +32,26 @@ def get_generator(executable_name: str, *, source: str, out: str, host: str, por
 def get_executable(module_location, path):
     module_name, func_name = path.rsplit(':', maxsplit=1)
     module = load_module(module_name, module_location)
-    return getattr(module, func_name)
+    try:
+        func = getattr(module, func_name)
+    except AttributeError as e:
+        raise InvalidCommand(f'Module "{module.__name__}" ({module.__file__}) is missing method "{func_name}".') from e
+    if not callable(func):
+        raise InvalidCommand(f'"{module.__name__}:{func_name}" member is not callable.')
+    if not positional_args_count(func, equals=2):
+        raise InvalidCommand(f'"{module.__name__}:{func_name}" cannot be called as "{func_name}(host, port)".')
+    return func
+
+
+def positional_args_count(func: Callable, *, equals: int):
+    """
+    @example
+    if not positional_args_count(func, equals=2):
+        ...
+    """
+    count = equals
+    params = inspect.signature(func).parameters
+    return len(params) >= count and all(p.default != p.empty for p in list(params.values())[count:])
 
 
 def load_module(module_name: str, module_location: str) -> Any:
@@ -67,8 +94,10 @@ def start_server(executable_name: str, *, source: str, out: str, host: str, port
     server.serve(host=host, port=port, loop=loop)
     try:
         loop.run_forever()
-    except KeyboardInterrupt:
-        loop.close()
+    except (KeyboardInterrupt, SystemExit):
+        print('Stopping the server.')
+        loop.stop()
+        sys.exit()
 
 
 def absolute_out(out: Optional[str], source_path: Path) -> str:
@@ -85,6 +114,14 @@ def argument_parser():
 
     subparsers = parser.add_subparsers()
 
+    add_server_cli(subparsers)
+    add_init_cli(subparsers)
+    add_version_cli(subparsers)
+
+    return parser
+
+
+def add_server_cli(subparsers):
     server_parser = subparsers.add_parser(name='serve', description='Lightweight development server for static files')
     server_parser.add_argument('executable', type=str,
                                help='Function accepting a host and a port and returning a Site instance '
@@ -106,17 +143,27 @@ def argument_parser():
                                                               port=args.port,
                                                               enable_reload=not args.no_live_reload))
 
+
+def add_init_cli(subparsers):
     qs_parser = subparsers.add_parser(name='init', description='Generate Lightweight quickstart application')
     qs_parser.add_argument('location', type=str, help='the directory to generate application')
     qs_parser.set_defaults(func=lambda args: quickstart(args.directory))
-    return parser
+
+
+def add_version_cli(subparsers):
+    version_parser = subparsers.add_parser(name='version')
+    version_parser.set_defaults(func=lambda args: print(lightweight.__version__))
 
 
 def main():
     parser = argument_parser()
     args = parser.parse_args()
     if hasattr(args, 'func'):
-        args.func(args)
+        try:
+            args.func(args)
+        except InvalidCommand as error:
+            print(f'{type(error).__name__}: {str(error)}', file=sys.stderr)
+            exit(-1)
     else:
         parser.parse_args(['--help'])
 
