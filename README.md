@@ -38,51 +38,60 @@ def blog_posts(source):
     # Use globs to select files. # source = 'posts/**.md'
     return (markdown(path, post_template) for path in paths(source))
 
+def example(url):
+    site = Site(url)
+    
+    # Render an index page from Jinja2 template.
+    site.include('index.html', jinja('pages/index.html'))
+    
+    # Render markdown blog posts.
+    [site.include(f'posts/{post.source_path.stem}.html', post) for post in blog_posts('posts/**.md')]
+    site.include('posts.html', jinja('pages/posts.html'))
+    
+    # Syndicate RSS and Atom feeds.
+    site.include('posts.atom.xml', atom(site['posts']))
+    site.include('posts.rss.xml', rss(site['posts']))
+    
+    # Render SASS to CSS.
+    site.include('css/style.css', sass('styles/style.scss'))
+    
+    # Include a copy of a directory.
+    site.include('img')
+    site.include('js')
+    
+    return site   
 
-site = Site(url='https://example.org/')
-
-# Render an index page from Jinja2 template.
-site.include('index.html', jinja('pages/index.html'))
-
-# Render markdown blog posts.
-[site.include(f'posts/{post.source_path.stem}.html', post) for post in blog_posts('posts/**.md')]
-site.include('posts.html', jinja('pages/posts.html'))
-
-# Syndicate RSS and Atom feeds.
-site.include('posts.atom.xml', atom(site['posts']))
-site.include('posts.rss.xml', rss(site['posts']))
-
-# Render SASS to CSS.
-site.include('css/style.css', sass('styles/style.scss'))
-
-# Include a copy of a directory.
-site.include('img')
-site.include('js')
-
-# Execute all included content. 
-site.generate()
+if __name__ == '__main__':
+    # Create a site and generate by writing all of it’s content. 
+    example(url='https://example.org/').generate()
 ```
 
 ## Dev Server
 
-Lightweight includes a simple static web server with live reload 
-serving at `0.0.0.0:8080` (can be accessed via `localhost:8080`):
+Lightweight includes a simple static web server with live reload serving at `localhost:8080`:
 ```bash
-python -m lightweight.server <directory>
+lw serve site:dev
+```
+Here `site` is a Python module 
+
+Host and port can be set via:
+```bash
+lw serve site:dev --host 0.0.0.0 --port 80
+```
+
+The directory to resolve the module is provided as `--source`. It defaults to cwd.
+The source directory is watched for live reload. 
+```bash
+lw serve site:dev --source ~/Projects/example
 ```
 
 The live reload can be disabled with `--no-live-reload` flag:
 ```bash
-python -m lightweight.server <directory> --no-live-reload
+lw serve site:dev --no-live-reload
 ```
-Otherwise every served html file will be injected with a javascript that polls `/id`.
-The script reloads the page when the `/id` changes.
-The `/id` changes every time on any file change at the served directory.
-
-Host and port can be set via:
-```bash
-python -m lightweight.server <directory> --host 0.0.0.0 --port 8080
-```
+Otherwise every served HTML file will be injected with a javascript that polls `/__live_reload_id__`.
+The script reloads the page when value at that location changes.
+That happens after regenerating the site upon change in `--source` directory.
 
 To stop the server press `Ctrl+C` in terminal.
 
