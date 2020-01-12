@@ -41,4 +41,4 @@ from .generation import GenPath, GenContext
 from .site import Site, Author
 from .template import template, lw_jinja
 
-__version__ = '1.0.0.dev35'
+__version__ = '1.0.0.dev36'
