@@ -190,13 +190,16 @@ def check_directory(working_dir: Path):
     return working_dir
 
 
+RunGenerate = Callable[[], None]
+
+
 class LiveReloadServer(DevServer):
     def __init__(
             self,
             location: str,
             *,
             watch: str,
-            regenerate: Callable[[], None],
+            regenerate: RunGenerate,
             ignored: Collection[str] = tuple()
     ):
         super().__init__(location)
