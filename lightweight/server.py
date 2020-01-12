@@ -191,15 +191,17 @@ def check_directory(working_dir: Path):
 
 
 class LiveReloadServer(DevServer):
-    def __init__(self, location: str,
-                 *,
-                 watch: str,
-                 regenerate: Callable[[], None],
-                 ignored: Collection[str] = tuple()):
+    def __init__(
+            self,
+            location: str,
+            *,
+            watch: str,
+            regenerate: Callable[[], None],
+            ignored: Collection[str] = tuple()
+    ):
         super().__init__(location)
         self.live_reload_id = self._new_id()
-        print('initial_id', self.live_reload_id)
-        self.watch_path = os.path.abspath(watch)
+        self.watch_location = os.path.abspath(watch)
         self.regenerate = regenerate
         self.ignored = ignored
 
@@ -229,17 +231,14 @@ class LiveReloadServer(DevServer):
         writer.write(u(self.live_reload_id))
 
     async def watch_source(self):
-        print("WHAT", self.working_dir)
-        async for changes in awatch(str(self.watch_path)):
-            print("HEY")
+        async for changes in awatch(str(self.watch_location)):
             for change, location in changes:
                 self.process_change(change, location)
 
     def process_change(self, change: Change, location: str):
-        print('CHANGES!', change, location, self.ignored)
         if not any(location.startswith(path) for path in self.ignored):
+            print('Source change. Live reload triggered.')
             self.live_reload_id = self._new_id()
-            print('id changed!', self.live_reload_id)
             self.regenerate()
 
     @staticmethod
