@@ -1,97 +1,185 @@
-from argparse import ArgumentParser
+# Mostly stolen from picoweb web pico-framework for Pycopy 2019 MIT
+
+from __future__ import annotations
+
+import os
+import time
+from asyncio import StreamReader, StreamWriter, start_server
 from dataclasses import dataclass
-from enum import Enum, auto
-from http.server import HTTPServer, BaseHTTPRequestHandler
-from mimetypes import types_map
+from enum import Enum
 from pathlib import Path
-from tempfile import mkstemp
-from typing import Optional
+from typing import Dict, Collection, Callable
 from uuid import uuid4
 
-from watchdog.events import FileSystemEventHandler  # type: ignore
-from watchdog.observers import Observer  # type: ignore
+from watchgod import awatch, Change
 
 
-class FileType(Enum):
-    exact = auto()
-    html = auto()
-    index = auto()
+@dataclass(frozen=True)
+class HttpRequest:
+    """A request processed by the server."""
+    headers: Dict[str, str]
+    reader: StreamReader
+    qs: str
+    location: str
+    method: str
 
 
-@dataclass
+@dataclass(frozen=True)
 class File:
+    """A file that is served via HTTP."""
     path: Path
-    content: bytes
-    type: FileType
+    mime_type: MimeType
+
+    def read(self) -> bytes:
+        with self.path.open('rb') as f:
+            return f.read()
 
 
-class StaticFiles(BaseHTTPRequestHandler):
+class MimeType(Enum):
+    """Mime-type of the file written to response Content-Type."""
+    html = 'text/html'
+    css = 'text/css'
+    image = 'image'
+    plaintext = 'text/plain'
 
-    def do_GET(self):
+    @classmethod
+    def of(cls, path: Path) -> MimeType:
+        if path.suffix == '.html':
+            return cls.html
+        if path.suffix == '.css':
+            return cls.css
+        if path.suffix == '.png' or path.suffix == '.jpg' or path.suffix == '.jpeg' or path.suffix == '.gif':
+            return cls.image
+        return cls.plaintext
+
+
+def u(string: str) -> bytes:
+    """Shortcut to encode string to bytes."""
+    return string.encode('utf8')
+
+
+class DevServer:
+    """A server serving static files from the provided directory.
+
+    @example
+    ```python
+    server = DevServer('app/static')
+    loop = asyncio.get_event_loop()
+    loop.create_task(server.serve('localhost', 8080))
+    try:
+        loop.run_forever()
+    except KeyboardInterrupt:
+        loop.stop()
+    ```
+    """
+
+    def __init__(self, location: str):
+        self.working_dir = Path(os.path.abspath(location))
+        check_directory(self.working_dir)
+
+    def serve(self, host, port, loop):
+        """Creates an asyncio coroutine, that serves requests on the provided host and port.
+
+        @example
+        ```python
+        loop = asyncio.get_event_loop()
+        loop.create_task(server.serve('localhost', 8080))
+        loop.run_forever()
+        ```
+        """
+        loop.create_task(start_server(self.respond, host, port))
+
+    def handle(self, writer: StreamWriter, request: HttpRequest):
+        """Handle the request and write the response."""
+        return self.handle_static(writer, request)
+
+    def handle_static(self, writer: StreamWriter, request: HttpRequest):
+        """Look for file and write it to the writer.
+        In case the file not found or there are other problems -- write an error.
+        """
         try:
-            file = self.file()
-            self.send_response(200)
-            mime_type = types_map.get(file.path.suffix, None)
-            self.send_header('Content-type', mime_type)
-            self.end_headers()
-            body = self.response_body(file)
-            self.wfile.write(body)
-        except IOError:
-            self.send_error(404, f'File Not Found: {self.path}')
+            file = self.find_file(request.location[1:])
+            return self.sendfile(writer, file)
+        except PermissionError:
+            return self.http_error(writer, '403')
+        except FileNotFoundError:
+            return self.http_error(writer, '404')
 
-    def response_body(self, file: File) -> bytes:
-        return file.content
-
-    def file(self) -> File:
-        location = self.path[1:] if self.path.startswith('/') else self.path
-        working_dir: Path = self.server.working_dir  # type: ignore
-        exact = working_dir / location
-        html = working_dir / f'{location}.html'
-        index = working_dir / location / 'index.html'
+    def find_file(self, location: str) -> File:
+        """Override to change how path is resolved to file."""
+        # TODO:mdrachuk:10.01.2020: read file asynchronously
+        exact = self.working_dir / location
+        html = self.working_dir / f'{location}.html'
+        index = self.working_dir / location / 'index.html'
+        if not os.path.abspath(exact).startswith(str(self.working_dir)):
+            raise PermissionError()
         if exact.exists() and not exact.is_dir():
-            file_type = FileType.exact
             path = exact
         elif html.exists() and not html.is_dir():
-            file_type = FileType.html
             path = html
         elif index.exists() and not index.is_dir():
-            file_type = FileType.index
             path = index
         else:
             raise FileNotFoundError()
+        return File(path=path, mime_type=MimeType.of(path))
 
-        with path.open('rb') as f:
-            return File(path, f.read(), file_type)
+    def sendfile(self, writer: StreamWriter, file: File):
+        """Override to response with file is put together."""
+        self.start_response(writer, file.mime_type.value, '200')
+        writer.write(file.read())
 
+    @staticmethod
+    def start_response(writer: StreamWriter,
+                       content_type: str = "text/html; charset=utf-8",
+                       status: str = "200",
+                       headers: Dict[str, str] = None):
+        writer.write(u(f'HTTP/1.0 {status} NA\r\n'))
+        writer.write(u(f'Content-Type: {content_type}'))
+        if headers:
+            writer.write(u('\r\n'))
+            for k, v in headers.items():
+                writer.write(u(f'{k}: {v}'))
+        writer.write(u('\r\n\r\n'))
 
-class LiveStaticFiles(StaticFiles):
-    def do_GET(self):
-        if self.path == '/id':
-            self.send_response(200)
-            self.end_headers()
-            with open(self.server.id_path) as f:
-                id = f.read()
-            self.wfile.write(id.encode('utf8'))
-        else:
-            super().do_GET()
+    @classmethod
+    def http_error(cls, writer: StreamWriter, status: str):
+        cls.start_response(writer, status=status)
+        writer.write(u(status))
 
-    def response_body(self, file: File) -> bytes:
-        if file.path.suffix == '.html':
-            return (file.content
-                    .decode('utf8')
-                    .replace('</body>', f'{LIVE_RELOAD_JS}</body>')
-                    .encode('utf8'))
-        return file.content
+    async def respond(self, reader: StreamReader, writer: StreamWriter):
+        first_line = await reader.readline()
+        method, path, proto = first_line.decode().split()
+        print(f'{time.time():.3f} {writer} "{method} {path}"')
+        try:
+            path, qs = path.split('?', 1) if '?' in path else (path, '')
+            headers = await self._parse_headers(reader)
+            request = HttpRequest(
+                method=method,
+                location=path,
+                headers=headers,
+                qs=qs,
+                reader=reader,
+            )
+            self.handle(writer, request)
+        except Exception:
+            self.http_error(writer, '500')
+            raise
+        finally:
+            await writer.drain()
+            writer.close()
+            await writer.wait_closed()
+            print(f'{time.time():.3f} Finished processing request: {request}')
 
-
-class DevSever(HTTPServer):
-    def __init__(self, directory: str, *, host: str, port: int, watch_id: Optional[str]):
-        self.working_dir = Path(directory).resolve()
-        check_directory(self.working_dir)
-        address = (host, port)
-        handler = LiveStaticFiles if watch_id else StaticFiles
-        super(DevSever, self).__init__(address, handler)
-        self.id_path = watch_id
+    @staticmethod
+    async def _parse_headers(reader: StreamReader):
+        headers = {}
+        while True:
+            line = await reader.readline()
+            if line == b'\r\n':
+                break
+            k, v = line.split(b':', 1)
+            headers[k] = v.strip()
+        return headers
 
 
 def check_directory(working_dir: Path):
@@ -100,6 +188,63 @@ def check_directory(working_dir: Path):
     if not working_dir.is_dir():
         raise NotADirectoryError(f'{working_dir} is not a directory')
     return working_dir
+
+
+class LiveReloadServer(DevServer):
+    def __init__(self, location: str,
+                 *,
+                 watch: str,
+                 regenerate: Callable[[], None],
+                 ignored: Collection[str] = tuple()):
+        super().__init__(location)
+        self.live_reload_id = self._new_id()
+        print('initial_id', self.live_reload_id)
+        self.watch_path = os.path.abspath(watch)
+        self.regenerate = regenerate
+        self.ignored = ignored
+
+    def serve(self, host, port, loop):
+        super().serve(host, port, loop)
+        loop.create_task(self.watch_source())
+
+    def handle(self, writer: StreamWriter, request: HttpRequest):
+        if request.location == '/__live_reload_id__':
+            return self.send_live_reload_id(writer)
+        else:
+            return self.handle_static(writer, request)
+
+    def sendfile(self, writer: StreamWriter, file: File):
+        if file.mime_type == MimeType.html:
+            self.start_response(writer, file.mime_type.value, '200')
+            writer.write(u(
+                file.read()
+                    .decode('utf8')
+                    .replace('</body>', f'{LIVE_RELOAD_JS}</body>')
+            ))
+        else:
+            super().sendfile(writer, file)
+
+    def send_live_reload_id(self, writer: StreamWriter):
+        self.start_response(writer)
+        writer.write(u(self.live_reload_id))
+
+    async def watch_source(self):
+        print("WHAT", self.working_dir)
+        async for changes in awatch(str(self.watch_path)):
+            print("HEY")
+            for change, location in changes:
+                self.process_change(change, location)
+
+    def process_change(self, change: Change, location: str):
+        print('CHANGES!', change, location, self.ignored)
+        if not any(location.startswith(path) for path in self.ignored):
+            self.live_reload_id = self._new_id()
+            print('id changed!', self.live_reload_id)
+            self.regenerate()
+
+    @staticmethod
+    def _new_id():
+        return str(uuid4())
 
 
 LIVE_RELOAD_JS = """
@@ -115,7 +260,7 @@ const liveReload = function f() {
     };
 
     function fetchId() {
-        return fetch('/id').then(data => data.text());
+        return fetch('/__live_reload_id__').then(data => data.text());
     }
 
     function reloadOnChange(currentId) {
@@ -139,41 +284,3 @@ const liveReload = function f() {
 liveReload.start();
 </script>
 """
-
-parser = ArgumentParser(description='Lightweight development server for static files')
-parser.add_argument('directory', type=str, help='the directory to serve files from')
-
-parser.add_argument('--host', type=str, default='0.0.0.0')
-parser.add_argument('--port', type=int, default=8080)
-parser.add_argument('--no-live-reload', action='store_true', default=False, help='disable live reloading')
-
-
-class ChangeId(FileSystemEventHandler):
-    def __init__(self, path: str):
-        super().__init__()
-        self.path = path
-        self.rewrite()
-
-    def on_any_event(self, event):
-        self.rewrite()
-
-    def rewrite(self):
-        with open(self.path, 'w') as f:
-            f.write(str(uuid4()))
-
-
-def start_watchdog(directory: str):
-    _, id_path = mkstemp()
-    observer = Observer()
-    observer.schedule(ChangeId(id_path), directory, recursive=True)
-    observer.start()
-    return id_path
-
-
-if __name__ == '__main__':
-    args = parser.parse_args()
-    enable_reload = not args.no_live_reload
-    id_path = start_watchdog(args.directory) if enable_reload else None
-    server = DevSever(args.directory, host=args.host, port=args.port, watch_id=id_path)
-    print(f'Server for "{args.directory}" starting at "{args.host}:{args.port}"')
-    server.serve_forever()
