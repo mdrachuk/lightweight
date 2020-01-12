@@ -1,10 +1,10 @@
-# lightweight
+# lightweight: a static site generator 
 [![PyPI](https://img.shields.io/pypi/v/lightweight)][pypi]
 [![Build Status](https://img.shields.io/azure-devops/build/misha-drachuk/lightweight/8)](https://dev.azure.com/misha-drachuk/lightweight/_build/latest?definitionId=8&branchName=master)
 [![Test Coverage](https://img.shields.io/coveralls/github/mdrachuk/lightweight/master)](https://coveralls.io/github/mdrachuk/lightweight)
 [![Supported Python](https://img.shields.io/pypi/pyversions/lightweight)][pypi]
 
-Python code over configuration static site generator.
+Code over configuration.
 
 [Documentation][docs]
 
