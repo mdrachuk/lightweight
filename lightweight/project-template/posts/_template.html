@@ -1,0 +1,28 @@
+{% extends "_template.html" %}
+
+{% block main %}
+
+    <article>
+        <h1>{{ content.title }}</h1>
+        {% if not content.front_matter['hide-toc'] %}
+            <nav id="table-of-contents">
+                {{ list_toc(markdown.toc) }}
+            </nav>
+        {% endif %}
+        {{ markdown.html }}
+    </article>
+
+{% endblock %}
+
+{% macro list_toc(toc, level=0, max_level=2) -%}
+    <ol style="margin-left: -1rem;">
+        {%- for section in toc %}
+            <li>
+                <a href="#{{ section.slug }}">{{ section.title }}</a>
+                {%- if level <= max_level and section|length %}
+                    {{ list_toc(section, level+1, max_level) }}
+                {%- endif %}
+            </li>
+        {% endfor -%}
+    </ol>
+{%- endmacro %}

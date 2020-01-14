@@ -1,0 +1,26 @@
+{% extends "_template.html" %}
+
+{% block title %} {! site.title !} | Posts {% endblock %}
+
+{% block main %}
+
+    {%- for task in posts | sort(attribute='content.updated', reverse=True)| sort(attribute='content.created', reverse=True) %}
+        {% set post = task.content.render(ctx) %}
+
+        <article>
+            <a href="{{ task.path.url }}">
+                <h1>{{ task.content.title or task.content.created.strftime('%Y-%m-%d') }}</h1>
+            </a>
+
+            {{ post.preview_html or post.html }}
+
+        </article>
+        <p>{% if post.preview_html %} <a href="{{ task.path.url }}">Read More</a> {% endif %}</p>
+
+        {% if not loop.last -%}
+            <hr>
+        {%- endif %}
+
+    {%- endfor %}
+
+{% endblock %}

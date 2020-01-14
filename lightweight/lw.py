@@ -2,6 +2,7 @@
 import asyncio
 import inspect
 import os
+import re
 import sys
 from argparse import ArgumentParser
 from contextlib import contextmanager
@@ -9,9 +10,13 @@ from importlib.machinery import SourceFileLoader
 from importlib.util import module_from_spec, spec_from_loader
 from os import getcwd
 from pathlib import Path
-from typing import Any, Optional, Callable
+from random import randint, sample
+from typing import Any, Optional, Callable, List
+
+from slugify import slugify
 
 import lightweight
+from lightweight import Site, jinja, directory, lw_jinja, paths, Author
 from lightweight.errors import InvalidCommand
 from lightweight.server import DevServer, LiveReloadServer, RunGenerate
 
@@ -78,13 +83,12 @@ def start_server(executable_name: str, *, source: str, out: str, host: str, port
     out = absolute_out(out, source_path)
 
     generate = get_generator(executable_name, source=source, host=host, port=port, out=out)
+    generate()
 
     if enable_reload:
         server = LiveReloadServer(out, watch=source, regenerate=generate, ignored=[out])
     else:
         server = DevServer(out)
-
-    generate()
 
     print(
         f'Server for "{executable_name}" at "{source}" is starting at "http://{host}:{port}".\n'
@@ -105,8 +109,72 @@ def absolute_out(out: Optional[str], source_path: Path) -> str:
     return str(out_path.absolute())
 
 
-def quickstart(directory):
-    pass
+class Accent(object):
+    def __init__(self):
+        (self.r, self.g, self.b) = self.bright_rgb()
+        print((self.r, self.g, self.b))
+
+    @staticmethod
+    def bright_rgb():
+        return sample([randint(120, 255),
+                       randint(120, 255),
+                       randint(0, 50)], 3)
+
+
+def quickstart(location: str, url: str, title: str, authors: List[str]):
+    path = Path(location)
+    path.mkdir(parents=True, exist_ok=True)
+
+    abs_out = os.path.abspath(path)
+    title_slug = slugify_title(title)
+
+    template_location = Path(__file__).parent / 'project-template'
+
+    with directory(template_location), custom_jinja_tags():
+        site = Site(
+            url=url, title=title,
+            authors=[Author(name=name) for name in authors if len(name)]
+        )
+
+        [site.include(str(p), jinja(p)) for p in paths('*.html')]
+        site.include('site.py', jinja('site.py.jinja', title_slug=title_slug))
+        site.include('requirements.txt', jinja('requirements.txt', version=lightweight.__version__))
+        site.include('posts')
+        site.include('styles/hljs-ocean.css')
+        site.include('styles/global.scss', jinja('styles/global.scss', accent=Accent()))
+        site.include('js')
+        site.include('images')
+
+        site.generate(abs_out)
+
+    print(f'Lightweight project initialized in:')
+    print(abs_out)
+
+
+@contextmanager
+def custom_jinja_tags():
+    original_tags = (lw_jinja.block_start_string, lw_jinja.block_end_string,
+                     lw_jinja.variable_start_string, lw_jinja.variable_end_string,
+                     lw_jinja.comment_start_string, lw_jinja.comment_end_string)
+    lw_jinja.block_start_string = '{?'
+    lw_jinja.block_end_string = '?}'
+    lw_jinja.variable_start_string = '{!'
+    lw_jinja.variable_end_string = '!}'
+    lw_jinja.comment_start_string = '{//'
+    lw_jinja.comment_end_string = '//}'
+
+    yield
+
+    (lw_jinja.block_start_string, lw_jinja.block_end_string,
+     lw_jinja.variable_start_string, lw_jinja.variable_end_string,
+     lw_jinja.comment_start_string, lw_jinja.comment_end_string) = original_tags
+
+
+def slugify_title(title):
+    title_slug = slugify(title, separator='_')
+    title_slug = re.findall('[a-z][a-z0-9_]+$', title_slug)[0]  # in code nothing can start with digits
+    title_slug.replace('\'', '’')
+    return title_slug
 
 
 def argument_parser():
@@ -145,9 +213,15 @@ def add_server_cli(subparsers):
 
 
 def add_init_cli(subparsers):
-    qs_parser = subparsers.add_parser(name='init', description='Generate Lightweight quickstart application')
-    qs_parser.add_argument('location', type=str, help='the directory to generate application')
-    qs_parser.set_defaults(func=lambda args: quickstart(args.directory))
+    qs_parser = subparsers.add_parser(name='init', description='Generate Lightweight skeleton application')
+    qs_parser.add_argument('location', type=str, help='the directory to initialize site generator in')
+    qs_parser.add_argument('--url', type=str, help='the url of the generated site')
+    qs_parser.add_argument('--title', type=str, help='the title of of the generated site')
+    qs_parser.add_argument('--authors', type=str, default='', help='comma-separated list of names')
+    qs_parser.set_defaults(func=lambda args: quickstart(args.location,
+                                                        url=args.url,
+                                                        title=args.title,
+                                                        authors=args.authors.split(',')))
 
 
 def add_version_cli(subparsers):
