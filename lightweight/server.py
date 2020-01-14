@@ -149,7 +149,7 @@ class DevServer:
     async def respond(self, reader: StreamReader, writer: StreamWriter):
         first_line = await reader.readline()
         method, path, proto = first_line.decode().split()
-        print(f'{time.time():.3f} {writer} "{method} {path}"')
+        print(f'{time.time():.3f}: Requested {method} {path}')
         try:
             path, qs = path.split('?', 1) if '?' in path else (path, '')
             headers = await self._parse_headers(reader)
@@ -168,7 +168,7 @@ class DevServer:
             await writer.drain()
             writer.close()
             await writer.wait_closed()
-            print(f'{time.time():.3f} Finished processing request: {request}')
+            print(f'{time.time():.3f}: Responded {method} {path}')
 
     @staticmethod
     async def _parse_headers(reader: StreamReader):
