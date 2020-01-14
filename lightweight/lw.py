@@ -13,7 +13,7 @@ from pathlib import Path
 from random import randint, sample
 from typing import Any, Optional, Callable, List
 
-from slugify import slugify
+from slugify import slugify  # type: ignore
 
 import lightweight
 from lightweight import Site, jinja, directory, lw_jinja, paths, Author
@@ -65,30 +65,29 @@ def load_module(module_name: str, module_location: str) -> Any:
         loader = SourceFileLoader(module_name, module_file_path)
         spec = spec_from_loader(module_name, loader, is_package=False)
         module = module_from_spec(spec)
-        spec.loader.exec_module(module)
+        loader.exec_module(module)
     return module
 
 
 @contextmanager
 def sys_path_starting(with_: str):
     location = with_
-    os.sys.path.insert(0, location)
+    sys.path.insert(0, location)
     yield
-    os.sys.path.remove(location)
+    sys.path.remove(location)
 
 
 def start_server(executable_name: str, *, source: str, out: str, host: str, port: int, enable_reload: bool):
-    source_path = Path(source)
-    source = str(source_path.absolute())
-    out = absolute_out(out, source_path)
+    source = os.path.abspath(source)
+    out = absolute_out(out, source)
 
     generate = get_generator(executable_name, source=source, host=host, port=port, out=out)
     generate()
 
-    if enable_reload:
-        server = LiveReloadServer(out, watch=source, regenerate=generate, ignored=[out])
-    else:
+    if not enable_reload:
         server = DevServer(out)
+    else:
+        server = LiveReloadServer(out, watch=source, regenerate=generate, ignored=[out])
 
     print(
         f'Server for "{executable_name}" at "{source}" is starting at "http://{host}:{port}".\n'
@@ -104,9 +103,10 @@ def start_server(executable_name: str, *, source: str, out: str, host: str, port
         sys.exit()
 
 
-def absolute_out(out: Optional[str], source_path: Path) -> str:
-    out_path = source_path / 'out' if out is None else Path(out)
-    return str(out_path.absolute())
+def absolute_out(out: Optional[str], abs_source: str) -> str:
+    if out is None:
+        return str(Path(abs_source) / 'out')
+    return os.path.abspath(out)
 
 
 class Accent(object):

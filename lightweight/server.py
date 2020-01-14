@@ -11,7 +11,7 @@ from pathlib import Path
 from typing import Dict, Collection, Callable
 from uuid import uuid4
 
-from watchgod import awatch
+from watchgod import awatch  # type: ignore
 
 
 @dataclass(frozen=True)
@@ -148,10 +148,16 @@ class DevServer:
 
     async def respond(self, reader: StreamReader, writer: StreamWriter):
         first_line = await reader.readline()
+        method: str
+        path: str
+        proto: str
         method, path, proto = first_line.decode().split()
         print(f'{time.time():.3f}: Requested {method} {path}')
         try:
-            path, qs = path.split('?', 1) if '?' in path else (path, '')
+            if '?' in path:
+                path, qs = path.split('?', 1)
+            else:
+                qs = ''
             headers = await self._parse_headers(reader)
             request = HttpRequest(
                 method=method,
