@@ -11,7 +11,7 @@ from pathlib import Path
 from typing import Dict, Collection, Callable
 from uuid import uuid4
 
-from watchgod import awatch, Change
+from watchgod import awatch
 
 
 @dataclass(frozen=True)
@@ -236,13 +236,19 @@ class LiveReloadServer(DevServer):
     async def watch_source(self):
         async for changes in awatch(str(self.watch_location)):
             for change, location in changes:
-                self.process_change(change, location)
+                if len(self.ignored) and all(location.startswith(path) for path in self.ignored):
+                    continue
+                self.on_source_changed()
+                break
 
-    def process_change(self, change: Change, location: str):
-        if not any(location.startswith(path) for path in self.ignored):
-            print('Source change. Live reload triggered.')
-            self.live_reload_id = self._new_id()
+    def on_source_changed(self):
+        print('Source change. Live reload triggered.')
+        self.live_reload_id = self._new_id()
+        try:
             self.regenerate()
+        except Exception as e:
+            print(e.__traceback__)
+            print('Exception when generating the site: ', str(e))
 
     @staticmethod
     def _new_id():
