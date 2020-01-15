@@ -1,4 +1,37 @@
 #!/usr/bin/env python
+"""
+Lightweight CLI.
+
+@example
+Access CLI help via:
+```bash
+lw --help
+```
+or
+```
+python -m lightweight.lw --help
+```
+
+@example
+Initialize project using:
+```bash
+lw init example_project --url https://example.org
+```
+Additional help:
+```bash
+lw init --help
+```
+
+@example
+Start a server for the project
+```bash
+lw serve site:dev
+```
+Additional help:
+```bash
+lw serve --help
+```
+"""
 import asyncio
 import inspect
 import os
