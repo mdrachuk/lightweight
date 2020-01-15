@@ -1,4 +1,37 @@
 #!/usr/bin/env python
+"""
+Lightweight CLI.
+
+@example
+Access CLI help via:
+```bash
+lw --help
+```
+or
+```
+python -m lightweight.lw --help
+```
+
+@example
+Initialize project using:
+```bash
+lw init example_project --url https://example.org
+```
+Additional help:
+```bash
+lw init --help
+```
+
+@example
+Start a server for the project
+```bash
+lw serve site:dev
+```
+Additional help:
+```bash
+lw serve --help
+```
+"""
 import asyncio
 import inspect
 import os
@@ -123,11 +156,15 @@ class Accent(object):
                        randint(0, 50)], 3)
 
 
-def quickstart(location: str, url: str, title: str, authors: List[str]):
+def quickstart(location: str, url: str, title: Optional[str], authors: List[str]):
     path = Path(location)
     path.mkdir(parents=True, exist_ok=True)
 
     abs_out = os.path.abspath(path)
+    if not title:
+        title = Path(abs_out).name
+    if not title:
+        raise InvalidCommand('Missing project title')
     title_slug = slugify_title(title)
 
     template_location = Path(__file__).parent / 'project-template'
@@ -143,13 +180,13 @@ def quickstart(location: str, url: str, title: str, authors: List[str]):
         site.include('requirements.txt', jinja('requirements.txt', version=lightweight.__version__))
         site.include('posts')
         site.include('styles/hljs-ocean.css')
-        site.include('styles/global.scss', jinja('styles/global.scss', accent=Accent()))
+        site.include('styles/global.scss', jinja('styles/global.scss.jinja', accent=Accent()))
         site.include('js')
         site.include('images')
 
         site.generate(abs_out)
 
-    logger.info(f'Lightweight project initialized in:\n{abs_out}')
+    logger.info(f'Lightweight project initialized in: {abs_out}')
 
 
 @contextmanager
@@ -217,7 +254,7 @@ def add_server_cli(subparsers):
 def add_init_cli(subparsers):
     qs_parser = subparsers.add_parser(name='init', description='Generate Lightweight skeleton application')
     qs_parser.add_argument('location', type=str, help='the directory to initialize site generator in')
-    qs_parser.add_argument('--url', type=str, help='the url of the generated site')
+    qs_parser.add_argument('--url', type=str, help='the url of the generated site', required=True)
     qs_parser.add_argument('--title', type=str, help='the title of of the generated site')
     qs_parser.add_argument('--authors', type=str, default='', help='comma-separated list of names')
     qs_parser.set_defaults(func=lambda args: quickstart(args.location,
@@ -231,9 +268,9 @@ def add_version_cli(subparsers):
     version_parser.set_defaults(func=lambda args: print(lightweight.__version__))
 
 
-def main(args):
+def main():
     parser = argument_parser()
-    args = parser.parse_args(args)
+    args = parser.parse_args()
     if hasattr(args, 'func'):
         try:
             args.func(args)
@@ -245,4 +282,4 @@ def main(args):
 
 
 if __name__ == '__main__':
-    main(sys.argv[1:])
+    main()
