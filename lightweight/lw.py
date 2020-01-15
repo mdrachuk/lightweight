@@ -143,7 +143,7 @@ def quickstart(location: str, url: str, title: str, authors: List[str]):
         site.include('requirements.txt', jinja('requirements.txt', version=lightweight.__version__))
         site.include('posts')
         site.include('styles/hljs-ocean.css')
-        site.include('styles/global.scss', jinja('styles/global.scss', accent=Accent()))
+        site.include('styles/global.scss', jinja('styles/global.scss.jinja', accent=Accent()))
         site.include('js')
         site.include('images')
 
