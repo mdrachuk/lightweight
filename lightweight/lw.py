@@ -123,11 +123,15 @@ class Accent(object):
                        randint(0, 50)], 3)
 
 
-def quickstart(location: str, url: str, title: str, authors: List[str]):
+def quickstart(location: str, url: str, title: Optional[str], authors: List[str]):
     path = Path(location)
     path.mkdir(parents=True, exist_ok=True)
 
     abs_out = os.path.abspath(path)
+    if not title:
+        title = Path(abs_out).name
+    if not title:
+        raise InvalidCommand('Missing project title')
     title_slug = slugify_title(title)
 
     template_location = Path(__file__).parent / 'project-template'
