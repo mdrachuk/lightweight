@@ -16,7 +16,7 @@ from typing import Any, Optional, Callable, List
 from slugify import slugify  # type: ignore
 
 import lightweight
-from lightweight import Site, jinja, directory, lw_jinja, paths, Author
+from lightweight import Site, jinja, directory, jinja_env, paths, Author
 from lightweight.errors import InvalidCommand
 from lightweight.server import DevServer, LiveReloadServer, RunGenerate
 
@@ -153,21 +153,21 @@ def quickstart(location: str, url: str, title: str, authors: List[str]):
 
 @contextmanager
 def custom_jinja_tags():
-    original_tags = (lw_jinja.block_start_string, lw_jinja.block_end_string,
-                     lw_jinja.variable_start_string, lw_jinja.variable_end_string,
-                     lw_jinja.comment_start_string, lw_jinja.comment_end_string)
-    lw_jinja.block_start_string = '{?'
-    lw_jinja.block_end_string = '?}'
-    lw_jinja.variable_start_string = '{!'
-    lw_jinja.variable_end_string = '!}'
-    lw_jinja.comment_start_string = '{//'
-    lw_jinja.comment_end_string = '//}'
+    original_tags = (jinja_env.block_start_string, jinja_env.block_end_string,
+                     jinja_env.variable_start_string, jinja_env.variable_end_string,
+                     jinja_env.comment_start_string, jinja_env.comment_end_string)
+    jinja_env.block_start_string = '{?'
+    jinja_env.block_end_string = '?}'
+    jinja_env.variable_start_string = '{!'
+    jinja_env.variable_end_string = '!}'
+    jinja_env.comment_start_string = '{//'
+    jinja_env.comment_end_string = '//}'
 
     yield
 
-    (lw_jinja.block_start_string, lw_jinja.block_end_string,
-     lw_jinja.variable_start_string, lw_jinja.variable_end_string,
-     lw_jinja.comment_start_string, lw_jinja.comment_end_string) = original_tags
+    (jinja_env.block_start_string, jinja_env.block_end_string,
+     jinja_env.variable_start_string, jinja_env.variable_end_string,
+     jinja_env.comment_start_string, jinja_env.comment_end_string) = original_tags
 
 
 def slugify_title(title):
