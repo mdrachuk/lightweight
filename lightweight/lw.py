@@ -231,9 +231,9 @@ def add_version_cli(subparsers):
     version_parser.set_defaults(func=lambda args: print(lightweight.__version__))
 
 
-def main(args):
+def main():
     parser = argument_parser()
-    args = parser.parse_args(args)
+    args = parser.parse_args()
     if hasattr(args, 'func'):
         try:
             args.func(args)
@@ -245,4 +245,4 @@ def main(args):
 
 
 if __name__ == '__main__':
-    main(sys.argv[1:])
+    main()
