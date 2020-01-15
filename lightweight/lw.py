@@ -92,10 +92,10 @@ def start_server(executable_name: str, *, source: str, out: str, host: str, port
     else:
         server = LiveReloadServer(out, watch=source, regenerate=generate, ignored=[out])
 
-    logger.info(
-        f'Server for "{executable_name}" at "{source}" is starting at "http://{host}:{port}".\n'
-        f'Out directory: {out}'
-    )
+    logger.info(f'Runner: {executable_name}')
+    logger.info(f'Sources: {source}')
+    logger.info(f'Out: {out}')
+    logger.info(f'Starting server at: "http://{host}:{port}"')
     loop = asyncio.get_event_loop()
     server.serve(host=host, port=port, loop=loop)
     try:
