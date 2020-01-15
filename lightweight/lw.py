@@ -8,6 +8,7 @@ from argparse import ArgumentParser
 from contextlib import contextmanager
 from importlib.machinery import SourceFileLoader
 from importlib.util import module_from_spec, spec_from_loader
+from logging import getLogger
 from os import getcwd
 from pathlib import Path
 from random import randint, sample
@@ -19,6 +20,8 @@ import lightweight
 from lightweight import Site, jinja, directory, jinja_env, paths, Author
 from lightweight.errors import InvalidCommand
 from lightweight.server import DevServer, LiveReloadServer, RunGenerate
+
+logger = getLogger('lightweight')
 
 
 def get_generator(executable_name: str, *, source: str, out: str, host: str, port: int) -> RunGenerate:
@@ -89,7 +92,7 @@ def start_server(executable_name: str, *, source: str, out: str, host: str, port
     else:
         server = LiveReloadServer(out, watch=source, regenerate=generate, ignored=[out])
 
-    print(
+    logger.info(
         f'Server for "{executable_name}" at "{source}" is starting at "http://{host}:{port}".\n'
         f'Out directory: {out}'
     )
@@ -98,7 +101,7 @@ def start_server(executable_name: str, *, source: str, out: str, host: str, port
     try:
         loop.run_forever()
     except (KeyboardInterrupt, SystemExit):
-        print('Stopping the server.')
+        logger.info('Stopping the server.')
         loop.stop()
         sys.exit()
 
@@ -112,7 +115,6 @@ def absolute_out(out: Optional[str], abs_source: str) -> str:
 class Accent(object):
     def __init__(self):
         (self.r, self.g, self.b) = self.bright_rgb()
-        print((self.r, self.g, self.b))
 
     @staticmethod
     def bright_rgb():
@@ -147,8 +149,7 @@ def quickstart(location: str, url: str, title: str, authors: List[str]):
 
         site.generate(abs_out)
 
-    print(f'Lightweight project initialized in:')
-    print(abs_out)
+    logger.info(f'Lightweight project initialized in:\n{abs_out}')
 
 
 @contextmanager
@@ -237,7 +238,7 @@ def main(args):
         try:
             args.func(args)
         except InvalidCommand as error:
-            print(f'{type(error).__name__}: {str(error)}', file=sys.stderr)
+            logger.error(f'{type(error).__name__}: {str(error)}')
             exit(-1)
     else:
         parser.parse_args(['--help'])

@@ -3,15 +3,18 @@
 from __future__ import annotations
 
 import os
-import time
 from asyncio import StreamReader, StreamWriter, start_server
 from dataclasses import dataclass
+from datetime import datetime
 from enum import Enum
+from logging import getLogger
 from pathlib import Path
 from typing import Dict, Collection, Callable
 from uuid import uuid4
 
 from watchgod import awatch  # type: ignore
+
+logger = getLogger('lightweight')
 
 
 @dataclass(frozen=True)
@@ -152,7 +155,7 @@ class DevServer:
         path: str
         proto: str
         method, path, proto = first_line.decode().split()
-        print(f'{time.time():.3f}: Requested {method} {path}')
+        logger.info(f'{now_repr()}: {method} {path} Requested')
         try:
             if '?' in path:
                 path, qs = path.split('?', 1)
@@ -174,7 +177,7 @@ class DevServer:
             await writer.drain()
             writer.close()
             await writer.wait_closed()
-            print(f'{time.time():.3f}: Responded {method} {path}')
+            logger.info(f'{now_repr()}: {method} {path} Done')
 
     @staticmethod
     async def _parse_headers(reader: StreamReader):
@@ -248,13 +251,12 @@ class LiveReloadServer(DevServer):
                 break
 
     def on_source_changed(self):
-        print('Source change. Live reload triggered.')
+        logger.info('Source change. Live reload triggered.')
         self.live_reload_id = self._new_id()
         try:
             self.regenerate()
         except Exception as e:
-            print(e.__traceback__)
-            print('Exception when generating the site: ', str(e))
+            logger.exception('Exception when generating the site: ', exc_info=e)
 
     @staticmethod
     def _new_id():
@@ -298,3 +300,7 @@ const liveReload = function f() {
 liveReload.start();
 </script>
 """
+
+
+def now_repr():
+    return datetime.now().strftime("%Y-%m-%d %H:%M:%S")
