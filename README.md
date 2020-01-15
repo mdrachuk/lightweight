@@ -20,7 +20,7 @@ Code over configuration.
 - [x] RSS/Atom feeds (basic implementation with ability to pass only plaintext to feeds)
 - [x] Dev server
 - [x] Site nesting
-- [ ] CLI
+- [x] CLI
 
 ## Installation
 Available from [PyPI][pypi]:
