@@ -19,9 +19,9 @@ class DynamicCwd(PathLike):
 # environment the environment is set to load templates relative to current working directory.
 #
 cwd_loader = FileSystemLoader([cast(str, DynamicCwd())], followlinks=True)
-lw_jinja = Environment(loader=cwd_loader, cache_size=0, lstrip_blocks=True, trim_blocks=True)
+jinja_env = Environment(loader=cwd_loader, cache_size=0, lstrip_blocks=True, trim_blocks=True)
 
 
 def template(location: Union[str, Path]) -> Template:
     """A shorthand for loading a Jinja2 template from the current working directory."""
-    return lw_jinja.get_template(str(location))
+    return jinja_env.get_template(str(location))

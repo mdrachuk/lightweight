@@ -8,6 +8,7 @@ from argparse import ArgumentParser
 from contextlib import contextmanager
 from importlib.machinery import SourceFileLoader
 from importlib.util import module_from_spec, spec_from_loader
+from logging import getLogger
 from os import getcwd
 from pathlib import Path
 from random import randint, sample
@@ -16,9 +17,11 @@ from typing import Any, Optional, Callable, List
 from slugify import slugify  # type: ignore
 
 import lightweight
-from lightweight import Site, jinja, directory, lw_jinja, paths, Author
+from lightweight import Site, jinja, directory, jinja_env, paths, Author
 from lightweight.errors import InvalidCommand
 from lightweight.server import DevServer, LiveReloadServer, RunGenerate
+
+logger = getLogger('lightweight')
 
 
 def get_generator(executable_name: str, *, source: str, out: str, host: str, port: int) -> RunGenerate:
@@ -89,16 +92,16 @@ def start_server(executable_name: str, *, source: str, out: str, host: str, port
     else:
         server = LiveReloadServer(out, watch=source, regenerate=generate, ignored=[out])
 
-    print(
-        f'Server for "{executable_name}" at "{source}" is starting at "http://{host}:{port}".\n'
-        f'Out directory: {out}'
-    )
+    logger.info(f'Runner: {executable_name}')
+    logger.info(f'Sources: {source}')
+    logger.info(f'Out: {out}')
+    logger.info(f'Starting server at: "http://{host}:{port}"')
     loop = asyncio.get_event_loop()
     server.serve(host=host, port=port, loop=loop)
     try:
         loop.run_forever()
     except (KeyboardInterrupt, SystemExit):
-        print('Stopping the server.')
+        logger.info('Stopping the server.')
         loop.stop()
         sys.exit()
 
@@ -112,7 +115,6 @@ def absolute_out(out: Optional[str], abs_source: str) -> str:
 class Accent(object):
     def __init__(self):
         (self.r, self.g, self.b) = self.bright_rgb()
-        print((self.r, self.g, self.b))
 
     @staticmethod
     def bright_rgb():
@@ -147,27 +149,26 @@ def quickstart(location: str, url: str, title: str, authors: List[str]):
 
         site.generate(abs_out)
 
-    print(f'Lightweight project initialized in:')
-    print(abs_out)
+    logger.info(f'Lightweight project initialized in:\n{abs_out}')
 
 
 @contextmanager
 def custom_jinja_tags():
-    original_tags = (lw_jinja.block_start_string, lw_jinja.block_end_string,
-                     lw_jinja.variable_start_string, lw_jinja.variable_end_string,
-                     lw_jinja.comment_start_string, lw_jinja.comment_end_string)
-    lw_jinja.block_start_string = '{?'
-    lw_jinja.block_end_string = '?}'
-    lw_jinja.variable_start_string = '{!'
-    lw_jinja.variable_end_string = '!}'
-    lw_jinja.comment_start_string = '{//'
-    lw_jinja.comment_end_string = '//}'
+    original_tags = (jinja_env.block_start_string, jinja_env.block_end_string,
+                     jinja_env.variable_start_string, jinja_env.variable_end_string,
+                     jinja_env.comment_start_string, jinja_env.comment_end_string)
+    jinja_env.block_start_string = '{?'
+    jinja_env.block_end_string = '?}'
+    jinja_env.variable_start_string = '{!'
+    jinja_env.variable_end_string = '!}'
+    jinja_env.comment_start_string = '{//'
+    jinja_env.comment_end_string = '//}'
 
     yield
 
-    (lw_jinja.block_start_string, lw_jinja.block_end_string,
-     lw_jinja.variable_start_string, lw_jinja.variable_end_string,
-     lw_jinja.comment_start_string, lw_jinja.comment_end_string) = original_tags
+    (jinja_env.block_start_string, jinja_env.block_end_string,
+     jinja_env.variable_start_string, jinja_env.variable_end_string,
+     jinja_env.comment_start_string, jinja_env.comment_end_string) = original_tags
 
 
 def slugify_title(title):
@@ -178,7 +179,8 @@ def slugify_title(title):
 
 
 def argument_parser():
-    parser = ArgumentParser(description='Lightweight CLI')
+    parser = ArgumentParser(description='Lightweight -- "code over configuration" static site generator. \n'
+                                        'https://drach.uk/lightweight')
 
     subparsers = parser.add_subparsers()
 
@@ -229,18 +231,18 @@ def add_version_cli(subparsers):
     version_parser.set_defaults(func=lambda args: print(lightweight.__version__))
 
 
-def main():
+def main(args):
     parser = argument_parser()
-    args = parser.parse_args()
+    args = parser.parse_args(args)
     if hasattr(args, 'func'):
         try:
             args.func(args)
         except InvalidCommand as error:
-            print(f'{type(error).__name__}: {str(error)}', file=sys.stderr)
+            logger.error(f'{type(error).__name__}: {str(error)}')
             exit(-1)
     else:
         parser.parse_args(['--help'])
 
 
 if __name__ == '__main__':
-    main()
+    main(sys.argv[1:])

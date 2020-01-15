@@ -15,12 +15,12 @@ Code over configuration.
 ## Features
 - [x] Clean and easily extensible API 
 - [x] Jinja2 templates
-- [x] Markdown rendering
+- [x] Markdown rendering with YAML frontmatter
 - [x] Sass/SCSS rendering
 - [x] RSS/Atom feeds (basic implementation with ability to pass only plaintext to feeds)
 - [x] Dev server
 - [x] Site nesting
-- [ ] CLI
+- [x] CLI
 
 ## Installation
 Available from [PyPI][pypi]:
@@ -64,6 +64,31 @@ def example(url):
 if __name__ == '__main__':
     # Create a site and generate by writing all of it’s content. 
     example(url='https://example.org/').generate()
+```
+
+## Create a new project
+
+Initialize a new project using `init` command:
+```bash
+lw init <location>
+```
+
+It accepts multiple optional arguments:
+```
+lw init -h
+usage: lw.py init [-h] [--url URL] [--title TITLE] [--authors AUTHORS]
+                  location
+
+Generate Lightweight skeleton application
+
+positional arguments:
+  location           the directory to initialize site generator in
+
+optional arguments:
+  -h, --help         show this help message and exit
+  --url URL          the url of the generated site
+  --title TITLE      the title of of the generated site
+  --authors AUTHORS  comma-separated list of names
 ```
 
 ## Dev Server
