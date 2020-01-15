@@ -1,9 +1,8 @@
 from __future__ import annotations
 
 from dataclasses import dataclass
-from distutils.dir_util import copy_tree
 from pathlib import Path
-from shutil import copy as shcopy
+from shutil import copy as shcopy, copytree
 from typing import TYPE_CHECKING, Union
 
 from .content import Content
@@ -19,7 +18,7 @@ class DirectoryCopy(Content):
 
     def write(self, path: GenPath, ctx: GenContext):
         path.parent.mkdir()
-        copy_tree(str(self.source), str(path.absolute()))
+        copytree(str(self.source), str(path.absolute()))
 
 
 @dataclass(frozen=True)

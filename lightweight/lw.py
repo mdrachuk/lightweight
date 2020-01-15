@@ -1,41 +1,246 @@
 #!/usr/bin/env python
+import asyncio
+import inspect
+import os
+import re
+import sys
 from argparse import ArgumentParser
+from contextlib import contextmanager
+from importlib.machinery import SourceFileLoader
+from importlib.util import module_from_spec, spec_from_loader
+from os import getcwd
+from pathlib import Path
+from random import randint, sample
+from typing import Any, Optional, Callable, List
 
-from lightweight.server import DevSever, start_watchdog
+from slugify import slugify  # type: ignore
+
+import lightweight
+from lightweight import Site, jinja, directory, lw_jinja, paths, Author
+from lightweight.errors import InvalidCommand
+from lightweight.server import DevServer, LiveReloadServer, RunGenerate
 
 
-def start_server(directory: str, *, host: str, port: int, enable_reload: bool):
-    id_path = start_watchdog(directory) if enable_reload else None
-    server = DevSever(directory, host=host, port=port, watch_id=id_path)
-    print(f'Server for "{directory}" starting at "{host}:{port}"')
-    server.serve_forever()
+def get_generator(executable_name: str, *, source: str, out: str, host: str, port: int) -> RunGenerate:
+    func = get_executable(source, executable_name)
+
+    def generate():
+        site = func(host, port)
+        if not hasattr(site, 'generate') or not positional_args_count(site.generate, equals=1):
+            raise InvalidCommand(f'"{executable_name}" did not return an instance of Site '
+                                 f'with a "site.generate(out)" method.')
+        return site.generate(out)
+
+    return generate
 
 
-def quickstart(directory):
-    pass
+def get_executable(module_location, path):
+    module_name, func_name = path.rsplit(':', maxsplit=1)
+    module = load_module(module_name, module_location)
+    try:
+        func = getattr(module, func_name)
+    except AttributeError as e:
+        raise InvalidCommand(f'Module "{module.__name__}" ({module.__file__}) is missing method "{func_name}".') from e
+    if not callable(func):
+        raise InvalidCommand(f'"{module.__name__}:{func_name}" member is not callable.')
+    if not positional_args_count(func, equals=2):
+        raise InvalidCommand(f'"{module.__name__}:{func_name}" cannot be called as "{func_name}(host, port)".')
+    return func
 
 
-parser = ArgumentParser(description='Lightweight CLI')
+def positional_args_count(func: Callable, *, equals: int):
+    """
+    @example
+    if not positional_args_count(func, equals=2):
+        ...
+    """
+    count = equals
+    params = inspect.signature(func).parameters
+    return len(params) >= count and all(p.default != p.empty for p in list(params.values())[count:])
 
-subparsers = parser.add_subparsers()
 
-server_parser = subparsers.add_parser(name='server', description='Lightweight development server for static files')
-server_parser.add_argument('directory', type=str, help='the directory to serve files from')
-server_parser.add_argument('--host', type=str, default='0.0.0.0')
-server_parser.add_argument('--port', type=int, default=8080)
-server_parser.add_argument('--no-live-reload', action='store_true', default=False, help='disable live reloading')
-server_parser.set_defaults(func=lambda args: start_server(args.directory,
-                                                          host=args.host,
-                                                          port=args.port,
-                                                          enable_reload=not args.no_live_reload))
+def load_module(module_name: str, module_location: str) -> Any:
+    module_file_path = os.path.join(f'{module_location}', f'{module_name}.py')
+    with sys_path_starting(with_=module_location):
+        loader = SourceFileLoader(module_name, module_file_path)
+        spec = spec_from_loader(module_name, loader, is_package=False)
+        module = module_from_spec(spec)
+        loader.exec_module(module)
+    return module
 
-qs_parser = subparsers.add_parser(name='quickstart', description='Generate Lightweight quickstart application')
-qs_parser.add_argument('directory', type=str, help='the directory to generate application')
-qs_parser.set_defaults(func=lambda args: quickstart(args.directory))
 
-if __name__ == '__main__':
+@contextmanager
+def sys_path_starting(with_: str):
+    location = with_
+    sys.path.insert(0, location)
+    yield
+    sys.path.remove(location)
+
+
+def start_server(executable_name: str, *, source: str, out: str, host: str, port: int, enable_reload: bool):
+    source = os.path.abspath(source)
+    out = absolute_out(out, source)
+
+    generate = get_generator(executable_name, source=source, host=host, port=port, out=out)
+    generate()
+
+    if not enable_reload:
+        server = DevServer(out)
+    else:
+        server = LiveReloadServer(out, watch=source, regenerate=generate, ignored=[out])
+
+    print(
+        f'Server for "{executable_name}" at "{source}" is starting at "http://{host}:{port}".\n'
+        f'Out directory: {out}'
+    )
+    loop = asyncio.get_event_loop()
+    server.serve(host=host, port=port, loop=loop)
+    try:
+        loop.run_forever()
+    except (KeyboardInterrupt, SystemExit):
+        print('Stopping the server.')
+        loop.stop()
+        sys.exit()
+
+
+def absolute_out(out: Optional[str], abs_source: str) -> str:
+    if out is None:
+        return str(Path(abs_source) / 'out')
+    return os.path.abspath(out)
+
+
+class Accent(object):
+    def __init__(self):
+        (self.r, self.g, self.b) = self.bright_rgb()
+        print((self.r, self.g, self.b))
+
+    @staticmethod
+    def bright_rgb():
+        return sample([randint(120, 255),
+                       randint(120, 255),
+                       randint(0, 50)], 3)
+
+
+def quickstart(location: str, url: str, title: str, authors: List[str]):
+    path = Path(location)
+    path.mkdir(parents=True, exist_ok=True)
+
+    abs_out = os.path.abspath(path)
+    title_slug = slugify_title(title)
+
+    template_location = Path(__file__).parent / 'project-template'
+
+    with directory(template_location), custom_jinja_tags():
+        site = Site(
+            url=url, title=title,
+            authors=[Author(name=name) for name in authors if len(name)]
+        )
+
+        [site.include(str(p), jinja(p)) for p in paths('*.html')]
+        site.include('site.py', jinja('site.py.jinja', title_slug=title_slug))
+        site.include('requirements.txt', jinja('requirements.txt', version=lightweight.__version__))
+        site.include('posts')
+        site.include('styles/hljs-ocean.css')
+        site.include('styles/global.scss', jinja('styles/global.scss', accent=Accent()))
+        site.include('js')
+        site.include('images')
+
+        site.generate(abs_out)
+
+    print(f'Lightweight project initialized in:')
+    print(abs_out)
+
+
+@contextmanager
+def custom_jinja_tags():
+    original_tags = (lw_jinja.block_start_string, lw_jinja.block_end_string,
+                     lw_jinja.variable_start_string, lw_jinja.variable_end_string,
+                     lw_jinja.comment_start_string, lw_jinja.comment_end_string)
+    lw_jinja.block_start_string = '{?'
+    lw_jinja.block_end_string = '?}'
+    lw_jinja.variable_start_string = '{!'
+    lw_jinja.variable_end_string = '!}'
+    lw_jinja.comment_start_string = '{//'
+    lw_jinja.comment_end_string = '//}'
+
+    yield
+
+    (lw_jinja.block_start_string, lw_jinja.block_end_string,
+     lw_jinja.variable_start_string, lw_jinja.variable_end_string,
+     lw_jinja.comment_start_string, lw_jinja.comment_end_string) = original_tags
+
+
+def slugify_title(title):
+    title_slug = slugify(title, separator='_')
+    title_slug = re.findall('[a-z][a-z0-9_]+$', title_slug)[0]  # in code nothing can start with digits
+    title_slug.replace('\'', '’')
+    return title_slug
+
+
+def argument_parser():
+    parser = ArgumentParser(description='Lightweight CLI')
+
+    subparsers = parser.add_subparsers()
+
+    add_server_cli(subparsers)
+    add_init_cli(subparsers)
+    add_version_cli(subparsers)
+
+    return parser
+
+
+def add_server_cli(subparsers):
+    server_parser = subparsers.add_parser(name='serve', description='Lightweight development server for static files')
+    server_parser.add_argument('executable', type=str,
+                               help='Function accepting a host and a port and returning a Site instance '
+                                    'specified as "<module>:<function>" '
+                                    '(e.g. "site:dev" to call "dev(host, port)" method of "site.py")')
+    server_parser.add_argument('--source', type=str, default=getcwd(),
+                               help='project location: parent directory of a "generator". Defaults to cwd.')
+    server_parser.add_argument('--out', type=str, default=None, help='output directory for generation results.'
+                                                                     'Defaults to project directory')
+    server_parser.add_argument('--host', type=str, default='localhost', help='defaults to "localhost"')
+    server_parser.add_argument('--port', type=int, default=8080, help='defaults to "8080"')
+    server_parser.add_argument('--no-live-reload', action='store_true', default=False,
+                               help='disable live reloading '
+                                    '(enabled by default calling the executable on every project file change)')
+    server_parser.set_defaults(func=lambda args: start_server(args.executable,
+                                                              source=args.source,
+                                                              out=args.out,
+                                                              host=args.host,
+                                                              port=args.port,
+                                                              enable_reload=not args.no_live_reload))
+
+
+def add_init_cli(subparsers):
+    qs_parser = subparsers.add_parser(name='init', description='Generate Lightweight skeleton application')
+    qs_parser.add_argument('location', type=str, help='the directory to initialize site generator in')
+    qs_parser.add_argument('--url', type=str, help='the url of the generated site')
+    qs_parser.add_argument('--title', type=str, help='the title of of the generated site')
+    qs_parser.add_argument('--authors', type=str, default='', help='comma-separated list of names')
+    qs_parser.set_defaults(func=lambda args: quickstart(args.location,
+                                                        url=args.url,
+                                                        title=args.title,
+                                                        authors=args.authors.split(',')))
+
+
+def add_version_cli(subparsers):
+    version_parser = subparsers.add_parser(name='version')
+    version_parser.set_defaults(func=lambda args: print(lightweight.__version__))
+
+
+def main():
+    parser = argument_parser()
     args = parser.parse_args()
     if hasattr(args, 'func'):
-        args.func(args)
+        try:
+            args.func(args)
+        except InvalidCommand as error:
+            print(f'{type(error).__name__}: {str(error)}', file=sys.stderr)
+            exit(-1)
     else:
         parser.parse_args(['--help'])
+
+
+if __name__ == '__main__':
+    main()

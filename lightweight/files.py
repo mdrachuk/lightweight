@@ -22,7 +22,7 @@ def paths(pattern: Union[str, Path]) -> List[Path]:
 
 
 @contextmanager
-def directory(location: str):
+def directory(location: Union[str, Path]):
     """Execute the following statements with provided location as "cwd" (current working directory).
 
     @example
@@ -35,6 +35,6 @@ def directory(location: str):
     ```
     """
     cwd = os.getcwd()
-    os.chdir(location)
+    os.chdir(str(location))
     yield
     os.chdir(cwd)

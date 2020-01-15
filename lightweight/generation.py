@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 from dataclasses import dataclass, replace
+from datetime import datetime
 from pathlib import Path, PurePath
 from typing import TYPE_CHECKING, Union, Tuple, TextIO, BinaryIO, Callable
 
@@ -39,10 +40,12 @@ class GenContext:
     site: Site
     out: Path
     tasks: Tuple[GenTask, ...]
+    generated: datetime
 
     def __init__(self, out: Path, site: Site):
         self.out = out
         self.site = site
+        self.generated = datetime.utcnow()
 
     def path(self, p: Union[Path, str]) -> GenPath:
         """Create a new [GenPath] in this generation context from a regular path."""
