@@ -66,6 +66,31 @@ if __name__ == '__main__':
     example(url='https://example.org/').generate()
 ```
 
+## Create a new project
+
+Initialize a new project using `init` command:
+```bash
+lw init <location>
+```
+
+It accepts multiple optional arguments:
+```
+lw init -h
+usage: lw.py init [-h] [--url URL] [--title TITLE] [--authors AUTHORS]
+                  location
+
+Generate Lightweight skeleton application
+
+positional arguments:
+  location           the directory to initialize site generator in
+
+optional arguments:
+  -h, --help         show this help message and exit
+  --url URL          the url of the generated site
+  --title TITLE      the title of of the generated site
+  --authors AUTHORS  comma-separated list of names
+```
+
 ## Dev Server
 
 Lightweight includes a simple static web server with live reload serving at `localhost:8080`:
