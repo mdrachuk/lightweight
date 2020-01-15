@@ -186,7 +186,7 @@ def quickstart(location: str, url: str, title: Optional[str], authors: List[str]
 
         site.generate(abs_out)
 
-    logger.info(f'Lightweight project initialized in:\n{abs_out}')
+    logger.info(f'Lightweight project initialized in: {abs_out}')
 
 
 @contextmanager
