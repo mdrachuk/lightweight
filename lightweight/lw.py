@@ -217,7 +217,7 @@ def add_server_cli(subparsers):
 def add_init_cli(subparsers):
     qs_parser = subparsers.add_parser(name='init', description='Generate Lightweight skeleton application')
     qs_parser.add_argument('location', type=str, help='the directory to initialize site generator in')
-    qs_parser.add_argument('--url', type=str, help='the url of the generated site')
+    qs_parser.add_argument('--url', type=str, help='the url of the generated site', required=True)
     qs_parser.add_argument('--title', type=str, help='the title of of the generated site')
     qs_parser.add_argument('--authors', type=str, default='', help='comma-separated list of names')
     qs_parser.set_defaults(func=lambda args: quickstart(args.location,
