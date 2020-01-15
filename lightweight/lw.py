@@ -178,7 +178,8 @@ def slugify_title(title):
 
 
 def argument_parser():
-    parser = ArgumentParser(description='Lightweight CLI')
+    parser = ArgumentParser(description='Lightweight -- "code over configuration" static site generator. \n'
+                                        'https://drach.uk/lightweight')
 
     subparsers = parser.add_subparsers()
 
