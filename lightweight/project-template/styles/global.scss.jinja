@@ -52,6 +52,11 @@ body {
         color: $lightweight-accent;
       }
     }
+
+    &.fragment {  // style for href="#<fragment>" links
+      text-decoration-style: dashed;
+      text-decoration-width: 1.5px;
+    }
   }
 
   hr {
@@ -121,13 +126,30 @@ body {
     font-size: 1rem;
   }
 
-  pre code {
-    @media screen and (max-width: $lean-width-plus) {
-      max-width: 92vw;
-    }
-  }
+  pre {
 
-  .bash:before {
-    content: '$ ';
+    code {
+      @media screen and (max-width: $lean-width-plus) {
+        max-width: 92vw;
+      }
+
+      &.bash {
+        .hljs-built_in {
+          color: inherit;
+        }
+
+        &:before {
+          content: '$ ';
+          color: rgba(192, 197, 206, 0.6);
+        }
+      }
+    }
+
+    &.multiline-bash {
+      code:not(:last-of-type) {
+        margin-bottom: -1.2em;
+        padding-bottom: 0;
+      }
+    }
   }
 }
