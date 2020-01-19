@@ -45,7 +45,7 @@ class MarkdownPage(Content):
             content=self,
             markdown=self.render(ctx),
             **self.front_matter,
-            **self._evaluated_params(ctx),
+            **self._evaluated_props(ctx),
         ))
 
     def render(self, ctx: GenContext):
@@ -79,7 +79,7 @@ class MarkdownPage(Content):
         preview_html = preview_split[0] if len(preview_split) == 2 else None
         return preview_html
 
-    def _evaluated_params(self, ctx) -> Dict[str, Any]:
+    def _evaluated_props(self, ctx) -> Dict[str, Any]:
         return {key: eval_if_lazy(value, ctx) for key, value in self.props.items()}
 
 
