@@ -9,8 +9,9 @@ class AbsolutePathIncluded(Exception):
 
 
 class IncludedDuplicate(Exception):
-    def __init__(self):
-        super().__init__('Site cannot include duplicates.')
+    def __init__(self, at: str):
+        super().__init__(f'Site cannot include duplicates. '
+                         f'Content at "{at}" already present.')
 
 
 class InvalidCommand(Exception):
