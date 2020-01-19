@@ -2,13 +2,12 @@ from os import PathLike, getcwd
 from pathlib import Path
 from typing import Union, cast
 
-from jinja2 import Environment, FileSystemLoader, Template
+from jinja2 import Environment, FileSystemLoader, Template, StrictUndefined
 
 
 class DynamicCwd(PathLike):
-    """This is a path, that upon use always points to the current directory."""
+    """A path which always points to the current directory."""
 
-    # TODO:mdrachuk:24.12.2019: implement str interface (mostly, hash should probably raise an error, etc)
     def __fspath__(self):
         return getcwd()
 
@@ -19,7 +18,13 @@ class DynamicCwd(PathLike):
 # environment the environment is set to load templates relative to current working directory.
 #
 cwd_loader = FileSystemLoader([cast(str, DynamicCwd())], followlinks=True)
-jinja_env = Environment(loader=cwd_loader, cache_size=0, lstrip_blocks=True, trim_blocks=True)
+jinja_env = Environment(
+    loader=cwd_loader,
+    cache_size=0,
+    lstrip_blocks=True,
+    trim_blocks=True,
+    undefined=StrictUndefined,
+)
 
 
 def template(location: Union[str, Path]) -> Template:
