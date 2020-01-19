@@ -1,0 +1,9 @@
+/* {// */ // replacing the $accent when rendering
+$accent: rgb(250, 160, 0);
+//} */ $accent: rgb({! accent.r !}, {! accent.g !}, {! accent.b !});
+$black: #000000;
+$black-down: #3f3f3f;
+
+$lean-width: 700px;
+$lean-width-plus: 740px;
+$stick-header-width: 940px;

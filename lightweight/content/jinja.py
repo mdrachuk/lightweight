@@ -30,11 +30,12 @@ class JinjaPage(Content):
             site=ctx.site,
             ctx=ctx,
             content=self,
-            **self._evaluated_params(ctx)
+            **self._evaluated_props(ctx)
         )
 
-    def _evaluated_params(self, ctx) -> Dict[str, Any]:
-        return {key: eval_if_lazy(value, ctx) for key, value in self.props.items()}
+    def _evaluated_props(self, ctx) -> Dict[str, Any]:
+        props = {key: eval_if_lazy(value, ctx) for key, value in self.props.items()}
+        return props
 
 
 def jinja(template_path: Union[str, Path], **props) -> JinjaPage:

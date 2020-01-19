@@ -13,14 +13,16 @@ Code over configuration.
 
 
 ## Features
-- [x] Clean and easily extensible API 
 - [x] Jinja2 templates
 - [x] Markdown rendering with YAML frontmatter
 - [x] Sass/SCSS rendering
 - [x] RSS/Atom feeds (basic implementation with ability to pass only plaintext to feeds)
-- [x] Dev server
 - [x] Site nesting
-- [x] CLI
+- [x] Dev server
+- [x] Template project
+- [x] Clean extensible API 
+- [x] Fast Enough
+- [x] Fails Fast
 
 ## Installation
 Available from [PyPI][pypi]:

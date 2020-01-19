@@ -149,21 +149,21 @@ class Site(Content):
         if content is None:
             contents = {str(path): copy(path) for path in paths(location)}
             if not len(contents):
-                raise FileNotFoundError()
+                raise FileNotFoundError(f'There were no files at paths: {location}')
             [self._include(path, content_, cwd) for path, content_ in contents.items()]
         elif isinstance(content, Content):
             self._include(location, content, cwd)
         elif isinstance(content, str):
             source = Path(content)
             if not source.exists():
-                raise FileNotFoundError()
+                raise FileNotFoundError(f'File does not exist: {content}')
             self._include(location, copy(source), cwd)
         else:
-            raise Exception(ValueError('Content, str, or None types are accepted as include parameter'))
+            raise ValueError('Content, str, or None types are accepted as include parameter')
 
     def _include(self, location: str, content: Content, cwd: str):
         if location in self:
-            raise IncludedDuplicate()
+            raise IncludedDuplicate(at=location)
         self.content.append(
             IncludedContent(
                 location=location,
