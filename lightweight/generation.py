@@ -5,6 +5,8 @@ from datetime import datetime
 from pathlib import Path, PurePath
 from typing import TYPE_CHECKING, Union, Tuple, TextIO, BinaryIO, Callable
 
+import lightweight
+
 if TYPE_CHECKING:
     from lightweight import Site, Content
 
@@ -40,12 +42,14 @@ class GenContext:
     site: Site
     out: Path
     tasks: Tuple[GenTask, ...]
-    generated: datetime
+    generated: datetime  # UTC datetime of generation
+    version: str
 
     def __init__(self, out: Path, site: Site):
         self.out = out
         self.site = site
         self.generated = datetime.utcnow()
+        self.version = lightweight.__version__
 
     def path(self, p: Union[Path, str]) -> GenPath:
         """Create a new [GenPath] in this generation context from a regular path."""
