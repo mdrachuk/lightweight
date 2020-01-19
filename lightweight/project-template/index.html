@@ -1,71 +1,81 @@
-{% extends "_template.html" %}
+{% extends "templates/base.html" %}
 
 {% block main %}
-    <p>Static website generator without magic.</p>
+    <p>Welcome to <a class="lw" href="https://drach.uk/lightweight">Lightweight</a>:
+        a static website generator without magic.</p>
+
+    <p>You’re running version <b>{{ ctx.version }}</b>.</p>
 
     <h2>Code over configuration</h2>
 
-    <p>Most frameworks for static site generation are declarative.
-        They require a lot of time to get started and then they may not be flexible enough.</p>
+    <p>Since this is the core idea behind the framework,
+        start by checking out the <code>site.py</code> file. </p>
 
-    <p>Lightweight is different in this manner.
-        It’s core API is handful, but from there you’re free to go in any direction you want.</p>
+    <p>This module contains a few examples of using library.</p>
 
+    <p>It’s located right in the root of the generated project directory.</p>
 
-    <div class="double-container">
-        <div>
-            <h2>Features</h2>
+    <h3>Next steps</h3>
 
-            <ul>
-                <li><a href="https://www.python.org">Python</a> Declarations</li>
-                <li><a href="https://jinja.palletsprojects.com/">Jinja2</a> Templates</li>
-                <li><a href="https://daringfireball.net/projects/markdown/">Markdown</a> Rendering</li>
-                <li>RSS/Atom Feed</li>
-                <li><a href="https://sass-lang.com">SCSS</a> Superpowers</li>
-            </ul>
-        </div>
+    <p>Having a project setup and a local dev server running we can play with some content:</p>
 
-        <div>
-            <h2>Installation</h2>
+    <h4>Include a new HTML page</h4>
 
-            <p>Get it from <a href="https://pypi.org/project/lightweight/">PyPI</a>:</p>
+    <p>Including a regular HTML to the site is easy:</p>
+    <ol>
+        <li>Create an HTML file under the project directory.
+            We will assume it’s name to be <code>about.html</code>.
+        </li>
 
-            <pre><code class="bash">pip install lightweight</code></pre>
-        </div>
+        <li>Add a following line to <code>site.py</code> right next to other includes:
+            <pre><code class="python">site.include('about.html')</code></pre>
+        </li>
 
-    </div>
+        <li>Done! Check out the page at the location matching the file name,
+            e.g. <a href="/about">/about</a> for <code>about.html</code></li>
+    </ol>
 
-    <h2>Code Example</h2>
+    <p>If your file is not located under the root of the project directory, then use the relative path.
+        For example file <code>&lt;project&gt;/docs/examples/space-invasion.html</code> is included via:
+    <pre><code class="python">site.include('docs/examples/space-invasion.html')</code></pre>
+    and will be accessible under <a href="/docs/examples/space-invasion">/docs/examples/space-invasion</a>.
 
-    <pre><code class="python">from lightweight import Site, markdown, paths, render, template, feeds, sass
+    <h4>Add a new page rendered by Jinja</h4>
 
+    <p><a href="https://jinja.palletsprojects.com/en/2.10.x/">Jinja</a> is a powerful template engine for Python.
+        You can see how its used in the <code>index.html</code>.</p>
+    <p>To render a Jinja template as part of the site use the <code>lightweight.jinja</code> method:</p>
 
-def blog_posts():
-    post_template = template('blog-post.html')
-    # Use globs to select files.
-    return (markdown(path, post_template) for path in paths('posts/**.md'))
-
-
-site = Site(url='https://example.com')
-
-# Render a Jinja2 template.
+    <pre><code class="python">from lightweight import jinja
+...
 site.include('index.html', jinja('index.html'))
+...</code></pre>
 
-# Render list of Markdown files.
-[site.include(f'posts/{post.source_path.stem}.html', post) for post in blog_posts()]
+    <p>This piece of code creates content from rendering the provided <code>index.html</code> Jinja template
+        and places it under the same to the output directory.</p>
 
-# Render SCSS.
-site.include('static/css/style.css', sass('static/scss/lightweight.scss'))
+    <p>You can also pass arguments to Jinja templates.
+        This is done with keyword arguments provided to <code>jinja</code>.
+        Try controlling the spoon: </p>
+    {% if spoon is not defined or (spoon is defined and spoon is not none) %}
+        <img src="{{ site / 'img/matrix/spoon.jpg' }}"
+             alt="Matrix boy with a straight spoon."
+             title="Do not try and bend the spoon. That's impossible. Instead... only try to realize the truth.">
+    {% else %}
+        <img src="{{ site / 'img/matrix/no-spoon.jpg' }}" alt="Spoon bent" title="There is no spoon.">
+    {% endif %}
 
-# Include a copy of a directory.
-site.include('static/js')
-site.include('static/img')
 
-# Execute all included content.
-site.render()</code></pre>
+    <h4>Add some style</h4>
 
-    <h2>Getting started</h2>
+    <p></p>
+    <pre><code class="sass"></code></pre>
 
-    <p>TBD</p>
+
+    <h4>Create Content of your own</h4>
+
+    <p></p>
+    <pre><code class="python"></code></pre>
+
 
 {% endblock %}

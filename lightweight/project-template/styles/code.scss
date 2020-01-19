@@ -1,0 +1,29 @@
+@import "attributes";
+@import "hljs-ocean";
+
+pre {
+
+  code {
+    @media screen and (max-width: $lean-width-plus) {
+      max-width: 92vw;
+    }
+
+    &.bash {
+      .hljs-built_in {
+        color: inherit;
+      }
+
+      &:before {
+        content: '$ ';
+        color: rgba(192, 197, 206, 0.6);
+      }
+    }
+  }
+
+  &.multiline-bash {
+    code:not(:last-of-type) {
+      margin-bottom: -1.2em;
+      padding-bottom: 0;
+    }
+  }
+}

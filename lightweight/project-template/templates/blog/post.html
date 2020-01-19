@@ -1,10 +1,10 @@
-{% extends "_template.html" %}
+{% extends "templates/base.html" %}
 
 {% block main %}
 
     <article>
         <h1>{{ content.title }}</h1>
-        {% if not content.front_matter['hide-toc'] %}
+        {% if content.front_matter['hide-toc'] is not undefined and content.front_matter['hide-toc'] %}
             <nav id="table-of-contents">
                 {{ list_toc(markdown.toc) }}
             </nav>

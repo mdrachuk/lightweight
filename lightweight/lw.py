@@ -52,36 +52,41 @@ from slugify import slugify  # type: ignore
 import lightweight
 from lightweight import Site, jinja, directory, jinja_env, paths, Author
 from lightweight.errors import InvalidCommand
-from lightweight.server import DevServer, LiveReloadServer, RunGenerate
+from lightweight.server import DevServer, LiveReloadServer
 
 logger = getLogger('lightweight')
 
 
-def get_generator(executable_name: str, *, source: str, out: str, host: str, port: int) -> RunGenerate:
-    func = get_executable(source, executable_name)
+class Generator:
 
-    def generate():
-        site = func(host, port)
+    def __init__(self, executable_name: str, *, source: str, out: str, host: str, port: int):
+        self.executable_name = executable_name
+        self.source = source
+        self.out = out
+        self.host = host
+        self.port = port
+
+    def generate(self):
+        func = self.load_executable()
+        site = func(self.host, self.port)
         if not hasattr(site, 'generate') or not positional_args_count(site.generate, equals=1):
-            raise InvalidCommand(f'"{executable_name}" did not return an instance of Site '
+            raise InvalidCommand(f'"{self.executable_name}" did not return an instance of Site '
                                  f'with a "site.generate(out)" method.')
-        return site.generate(out)
+        return site.generate(self.out)
 
-    return generate
-
-
-def get_executable(module_location, path):
-    module_name, func_name = path.rsplit(':', maxsplit=1)
-    module = load_module(module_name, module_location)
-    try:
-        func = getattr(module, func_name)
-    except AttributeError as e:
-        raise InvalidCommand(f'Module "{module.__name__}" ({module.__file__}) is missing method "{func_name}".') from e
-    if not callable(func):
-        raise InvalidCommand(f'"{module.__name__}:{func_name}" member is not callable.')
-    if not positional_args_count(func, equals=2):
-        raise InvalidCommand(f'"{module.__name__}:{func_name}" cannot be called as "{func_name}(host, port)".')
-    return func
+    def load_executable(self):
+        module_name, func_name = self.executable_name.rsplit(':', maxsplit=1)
+        module = load_module(module_name, self.source)
+        try:
+            func = getattr(module, func_name)
+        except AttributeError as e:
+            raise InvalidCommand(
+                f'Module "{module.__name__}" ({module.__file__}) is missing method "{func_name}".') from e
+        if not callable(func):
+            raise InvalidCommand(f'"{module.__name__}:{func_name}" member is not callable.')
+        if not positional_args_count(func, equals=2):
+            raise InvalidCommand(f'"{module.__name__}:{func_name}" cannot be called as "{func_name}(host, port)".')
+        return func
 
 
 def positional_args_count(func: Callable, *, equals: int):
@@ -117,13 +122,13 @@ def start_server(executable_name: str, *, source: str, out: str, host: str, port
     source = os.path.abspath(source)
     out = absolute_out(out, source)
 
-    generate = get_generator(executable_name, source=source, host=host, port=port, out=out)
-    generate()
+    generator = Generator(executable_name, source=source, host=host, port=port, out=out)
+    generator.generate()
 
     if not enable_reload:
         server = DevServer(out)
     else:
-        server = LiveReloadServer(out, watch=source, regenerate=generate, ignored=[out])
+        server = LiveReloadServer(out, watch=source, regenerate=generator.generate, ignored=[out])
 
     logger.info(f'Runner: {executable_name}')
     logger.info(f'Sources: {source}')
@@ -175,14 +180,15 @@ def quickstart(location: str, url: str, title: Optional[str], authors: List[str]
             authors=[Author(name=name) for name in authors if len(name)]
         )
 
+        [site.include(str(p), jinja(p)) for p in paths('templates/**/*.html')]
         [site.include(str(p), jinja(p)) for p in paths('*.html')]
         site.include('site.py', jinja('site.py.jinja', title_slug=title_slug))
         site.include('requirements.txt', jinja('requirements.txt', version=lightweight.__version__))
-        site.include('posts')
-        site.include('styles/hljs-ocean.css')
-        site.include('styles/global.scss', jinja('styles/global.scss.jinja', accent=Accent()))
+        site.include('blog')
+        [site.include(str(p), jinja(p)) for p in paths('styles/**/*css') if p.name != 'attributes.scss']
+        site.include('styles/attributes.scss', jinja('styles/attributes.scss', accent=Accent()))
         site.include('js')
-        site.include('images')
+        site.include('img')
 
         site.generate(abs_out)
 

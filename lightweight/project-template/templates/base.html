@@ -1,0 +1,67 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no"/>
+
+    <link type="text/css" rel="stylesheet" href="{{ site / 'css/global.css' }}" media="screen,projection">
+
+    <link rel="alternate" type="application/rss+xml" title="{! site.title !} | Blog"
+          href="{{ site / 'blog.rss.xml' }}"/>
+    <link rel="alternate" type="application/atom+xml" title="{! site.title !} | Blog"
+          href="{{ site / 'blog.atom.xml' }}"/>
+
+    <link rel="apple-touch-icon" sizes="57x57" href={{ site / 'img/icons/apple-icon-57x57.png' }}>
+    <link rel="apple-touch-icon" sizes="60x60" href={{ site / 'img/icons/apple-icon-60x60.png' }}>
+    <link rel="apple-touch-icon" sizes="72x72" href={{ site / 'img/icons/apple-icon-72x72.png' }}>
+    <link rel="apple-touch-icon" sizes="76x76" href={{ site / 'img/icons/apple-icon-76x76.png' }}>
+    <link rel="apple-touch-icon" sizes="114x114" href={{ site / 'img/icons/apple-icon-114x114.png' }}>
+    <link rel="apple-touch-icon" sizes="120x120" href={{ site / 'img/icons/apple-icon-120x120.png' }}>
+    <link rel="apple-touch-icon" sizes="144x144" href={{ site / 'img/icons/apple-icon-144x144.png' }}>
+    <link rel="apple-touch-icon" sizes="152x152" href={{ site / 'img/icons/apple-icon-152x152.png' }}>
+    <link rel="apple-touch-icon" sizes="180x180" href={{ site / 'img/icons/apple-icon-180x180.png' }}>
+    <link rel="icon" type="image/png" sizes="192x192" href={{ site / 'img/icons/android-icon-192x192.png' }}>
+    <link rel="icon" type="image/png" sizes="32x32" href={{ site / 'img/icons/favicon-32x32.png' }}>
+    <link rel="icon" type="image/png" sizes="96x96" href={{ site / 'img/icons/favicon-96x96.png' }}>
+    <link rel="icon" type="image/png" sizes="16x16" href={{ site / 'img/icons/favicon-16x16.png' }}>
+    <meta name="msapplication-TileImage" content="{{ site / 'img/icons/ms-icon-144x144.png' }}">
+    <title>{% block title %} {! site.title !} {% endblock %}</title>
+</head>
+<body>
+
+<div id="header-container">
+    <header>
+        <a href={{ site / '' }}><h1>{! site.title !}</h1></a>
+        <nav>
+            <a href={{ site / 'labs' }}>Labs</a>
+            <a href={{ site / 'blog' }}>Blog</a>
+        </nav>
+    </header>
+</div>
+
+<main class="{% block main_class %}{% endblock %}">{% block main %} {% endblock %}</main>
+
+
+<footer>
+    <p>
+        © {! ctx.generated.year !} {! site.authors | map(attribute='name') | join(' &amp; ') !}
+        |
+        made with <a href="https://drach.uk/lightweight" class="lw">Lightweight</a>
+    </p>
+</footer>
+
+
+<!-- Highlight code on the page with hljs  -->
+<script async charset="UTF-8" src="{{ site / 'js/highlight.pack.js' }}" onload="hljs.initHighlightingOnLoad()"></script>
+
+<script type="text/javascript">
+    // iOS is being silly adding the menus on top and bottom to view height.
+    const iOS = !!navigator.platform && /iPad|iPhone|iPod/.test(navigator.platform);
+    if (iOS) {
+        document.getElementsByTagName('body')[0].classList.add('ios')
+    }
+</script>
+{% block script %} {% endblock %}
+
+</body>
+</html>

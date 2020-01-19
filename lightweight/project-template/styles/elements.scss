@@ -1,0 +1,32 @@
+@import "attributes.scss";
+
+p {
+  line-height: 1.5rem;
+}
+
+a {
+  color: $black;
+  text-decoration-color: $accent;
+
+  &:hover, &:hover * {
+    color: $black-down;
+  }
+
+  &:active, &:active * {
+    color: $accent;
+  }
+
+  &.fragment { // style for href="#<fragment>" links
+    text-decoration-style: dashed;
+    text-decoration-width: 1.5px;
+  }
+}
+
+hr {
+  margin: 2em 0;
+  border: 1px solid rgb(234, 234, 234);
+}
+
+img {
+  max-width: 100%;
+}
