@@ -35,11 +35,11 @@ class MarkdownPage(Content):
     front_matter: Dict[str, Any]
     props: Dict[str, Any]
 
-    async def write(self, path: GenPath, ctx: GenContext):
+    def write(self, path: GenPath, ctx: GenContext):
         """Writes a rendered Jinja template with rendered Markdown, parameters from front-matter and code
         to the file provided path."""
         # TODO:mdrachuk:06.01.2020: warn if site, ctx, source are in props or front matter!
-        await path.a_create(self.template.render(
+        path.create(self.template.render(
             site=ctx.site,
             ctx=ctx,
             content=self,
