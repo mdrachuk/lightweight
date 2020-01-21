@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import asyncio
 import os
+from abc import abstractmethod, ABC
 from asyncio import gather
 from collections import defaultdict
 from dataclasses import dataclass, replace
@@ -10,7 +11,7 @@ from itertools import chain
 from os import getcwd
 from pathlib import Path
 from shutil import rmtree
-from typing import overload, Union, Optional, Collection, List, Set, Dict, cast
+from typing import overload, Union, Optional, Collection, List, Set, Dict
 from urllib.parse import urlparse, urljoin
 
 from lightweight.content.content import Content
@@ -48,7 +49,7 @@ class Site:
     ```
     """
     url: str
-    content: ContentCollection
+    content: Includes
     title: Optional[str]
     icon_url: Optional[str]
     logo_url: Optional[str]
@@ -62,7 +63,7 @@ class Site:
             self,
             url: str,
             *,
-            content: ContentCollection = None,
+            content: Includes = None,
             title: Optional[str] = None,
             icon_url: Optional[str] = None,
             logo_url: Optional[str] = None,
@@ -79,7 +80,7 @@ class Site:
         if not url.endswith('/'):
             raise ValueError(f'Site URL ({url}) must end with a forward slash (/).')
         self.url = url
-        self.content = ContentCollection() if not content else content
+        self.content = Includes() if not content else content
         self.title = title
         self.icon_url = icon_url
         self.logo_url = logo_url
@@ -97,7 +98,7 @@ class Site:
     def copy(
             self,
             url: Union[str, Empty] = empty,
-            content: Union[ContentCollection, Empty] = empty,
+            content: Union[Includes, Empty] = empty,
             title: Union[Optional[str], Empty] = empty,
             icon_url: Union[Optional[str], Empty] = empty,
             description: Union[Optional[str], Empty] = empty,
@@ -180,16 +181,16 @@ class Site:
             )
         )
 
-    def _include_site(self, location: str, content: Content, cwd: str):
+    def _include_site(self, location: str, site: Site, cwd: str):
         self._include(
             IncludedSite(
                 location=location,
-                content=content,
+                site=site,
                 cwd=cwd
             )
         )
 
-    def _include(self, c: IncludedContent):
+    def _include(self, c: Included):
         if c.location in self.content:
             raise IncludedDuplicate(at=c.location)
         self.content.add(c)
@@ -213,7 +214,8 @@ class Site:
         all_tasks = list()  # type: List[GenTask]
         for ic in self.content:
             _tasks = ic.make_tasks(ctx)
-            [tasks[task.cwd].append(task) for task in _tasks]
+            for task in _tasks:
+                tasks[task.cwd].append(task)
             all_tasks.extend(_tasks)
         ctx.tasks = tuple(all_tasks)  # injecting tasks, for other content to have access to site structure
 
@@ -271,17 +273,17 @@ def clip_path_parts(number: int, path: Path) -> str:
     return os.path.join(*path.parts[number:])
 
 
-class ContentCollection:
-    ics: List[IncludedContent]
-    by_cwd: Dict[str, List[IncludedContent]]
-    by_location: Dict[str, IncludedContent]
+class Includes:
+    ics: List[Included]
+    by_cwd: Dict[str, List[Included]]
+    by_location: Dict[str, Included]
 
     def __init__(self):
         self.ics = []
         self.by_cwd = defaultdict(list)
         self.by_location = {}
 
-    def add(self, ic: IncludedContent):
+    def add(self, ic: Included):
         self.ics.append(ic)
         self.by_cwd[ic.cwd].append(ic)
         self.by_location[ic.location] = ic
@@ -295,9 +297,9 @@ class ContentCollection:
     def __getitem__(self, location: str):
         return self.by_location[location]
 
-    def at_path(self, target: Path) -> ContentCollection:
+    def at_path(self, target: Path) -> Includes:
         target = Path(target)
-        cc = ContentCollection()
+        cc = Includes()
         for ic in self.ics:
             if all(actual == expected for actual, expected in zip(ic.path.parts, target.parts)):
                 new_loc = clip_path_parts(len(target.parts), ic.path)
@@ -306,9 +308,22 @@ class ContentCollection:
         return cc
 
 
+class Included(ABC):
+    location: str
+    cwd: str
+
+    @property
+    def path(self):
+        return Path(self.location)
+
+    @abstractmethod
+    def make_tasks(self, ctx: GenContext) -> List[GenTask]:
+        """"""
+
+
 @dataclass(frozen=True)
-class IncludedContent:
-    """The [content][Content] included by [Site].
+class IncludedContent(Included):
+    """The [content][Content] included by a [Site].
 
     Contains the site’s location and `cwd` (current working directory) of the content.
 
@@ -330,20 +345,26 @@ class IncludedContent:
 
 
 @dataclass(frozen=True)
-class IncludedSite(IncludedContent):
-    """The [content][Content] included by [Site].
+class IncludedSite(Included):
+    """Another site included by a [Site].
 
-    Contains the site’s location and `cwd` (current working directory) of the content.
+    Contains the relative location and `cwd` (current working directory) of the content.
 
     Location is a string with an output path relative to generation out directory.
     It does not include a leading forward slash.
 
     `cwd` is important for properly generating subsites.
     """
+    location: str
+    site: Site
+    cwd: str
+
+    @property
+    def path(self):
+        return Path(self.location)
 
     def make_tasks(self, ctx: GenContext) -> List[GenTask]:
-        content = cast(Site, self.content)
-        list_of_lists = [ic.make_tasks(ctx) for ic in content.content.ics]
+        list_of_lists = [ic.make_tasks(ctx) for ic in self.site.content.ics]
         tasks = list(chain.from_iterable(list_of_lists))
         return [replace(task, path=ctx.path(self.path / task.path.relative_path)) for task in tasks]
 
