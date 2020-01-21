@@ -8,7 +8,6 @@ from sass import compile  # type: ignore # missing annotations
 
 from lightweight.files import paths
 from .content import Content
-from ..generation import schedule
 
 if TYPE_CHECKING:
     from lightweight import GenPath, GenContext
@@ -20,15 +19,15 @@ class Sass(Content):
     path: Path
     sourcemap: bool
 
-    async def write(self, path: GenPath, ctx: GenContext):
+    def write(self, path: GenPath, ctx: GenContext):
         if self.path.is_dir():
             css_at_target = construct_relative_css_path(self.path, target=path.absolute(), ctx=ctx)
             for p in paths(f'{self.path}/**/*.sass'):
-                await _write(p, css_at_target(p), include_sourcemap=self.sourcemap)
+                _write(p, css_at_target(p), include_sourcemap=self.sourcemap)
             for p in paths(f'{self.path}/**/*.scss'):
-                await _write(p, css_at_target(p), include_sourcemap=self.sourcemap)
+                _write(p, css_at_target(p), include_sourcemap=self.sourcemap)
         else:
-            await _write(self.path, path, include_sourcemap=self.sourcemap)
+            _write(self.path, path, include_sourcemap=self.sourcemap)
 
 
 def construct_relative_css_path(source: Path, *, target: Path, ctx: GenContext) -> Callable[[Path], GenPath]:
@@ -41,7 +40,7 @@ def construct_relative_css_path(source: Path, *, target: Path, ctx: GenContext) 
     return remap
 
 
-async def _write(source: Path, target: GenPath, *, include_sourcemap: bool):
+def _write(source: Path, target: GenPath, *, include_sourcemap: bool):
     sourcemap_path = target.with_name(target.name + '.map')
     result, sourcemap = compile(
         filename=str(source),
@@ -50,10 +49,10 @@ async def _write(source: Path, target: GenPath, *, include_sourcemap: bool):
         source_map_contents=True,
         output_style='compact',
     )
-    await target.parent.a_mkdir()
-    await target.a_create(result)
+    target.parent.mkdir()
+    target.create(result)
     if include_sourcemap:
-        await sourcemap_path.a_create(sourcemap)
+        sourcemap_path.create(sourcemap)
 
 
 def sass(location: str, *, sourcemap: bool = True) -> Sass:

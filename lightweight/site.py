@@ -1,7 +1,8 @@
 from __future__ import annotations
 
+import asyncio
 import os
-from asyncio import get_event_loop, gather, iscoroutine
+from asyncio import gather
 from collections import defaultdict
 from dataclasses import dataclass, replace
 from datetime import datetime
@@ -16,7 +17,7 @@ from lightweight.content.copies import copy
 from lightweight.empty import Empty, empty
 from lightweight.errors import AbsolutePathIncluded, IncludedDuplicate
 from lightweight.files import paths, directory
-from lightweight.generation import GenContext, GenPath, GenTask
+from lightweight.generation import GenContext, GenPath, GenTask, schedule
 
 
 class Site(Content):
@@ -203,12 +204,13 @@ class Site(Content):
             all_tasks.append(task)
         ctx.tasks = tuple(all_tasks)  # injecting tasks, for other content to have access to site structure
 
-        loop = get_event_loop()
+        loop = asyncio.new_event_loop()
+        asyncio.set_event_loop(loop)
         for cwd, _tasks in tasks.items():
             with directory(cwd):
-                writes = [task.content.write(task.path, ctx) for task in _tasks]
-                async_writes = [write for write in writes if iscoroutine(write)]
-                loop.run_until_complete(gather(*async_writes, loop=loop))
+                writes = [schedule(task.content.write, task.path, ctx) for task in _tasks]
+                loop.run_until_complete(gather(*writes, loop=loop))
+        loop.close()
 
     def __repr__(self):
         return f'<{type(self).__name__} title={self.title} url={self.url} at 0x{id(self):02x}>'
