@@ -13,7 +13,9 @@ apr_20 = datetime(2020, 4, 20, 16, 20, tzinfo=PDT)
 
 
 def md_posts(location):
-    return (markdown(path, template('templates/md/plain.html')) for path in paths(location))
+    t = template('templates/md/plain.html')
+    for path in paths(location):
+        yield markdown(path, t)
 
 
 def test_create_atom(tmp_path: Path):

@@ -1,7 +1,9 @@
 from __future__ import annotations
 
+from asyncio import get_event_loop
 from dataclasses import dataclass, replace
 from datetime import datetime
+from functools import partial
 from pathlib import Path, PurePath
 from typing import TYPE_CHECKING, Union, Tuple, TextIO, BinaryIO, Callable
 
@@ -11,6 +13,10 @@ if TYPE_CHECKING:
     from lightweight import Site, Content
 
 UrlFactory = Callable[[str], str]  # A url factory a full URL with a provided relative location.
+
+
+async def schedule(func, *args, **kwargs):
+    return await get_event_loop().run_in_executor(None, partial(func, *args, **kwargs))
 
 
 @dataclass(frozen=True)
@@ -161,17 +167,24 @@ class GenPath:
         """An alias of [GenPath.real_path]."""
         return self.real_path
 
+    async def aexists(self) -> bool:
+        """Checks if file exists asynchronously"""
+        return await schedule(self.real_path.exists)
+
     def exists(self) -> bool:
         """Checks if file exists."""
-        return self.real_path.exists()
+        return get_event_loop().run_until_complete(self.aexists())
 
-    def mkdir(self, mode=0o777, parents=True, exist_ok=True):
+    async def a_mkdir(self, mode=0o777, parents=True, exist_ok=True):
         """Create directory at path.
 
         Differs from the defaults in other Python mkdir signatures:
         creates whole parent hierarchy of directories if they do not exist.
         """
-        return self.real_path.mkdir(mode=mode, parents=parents, exist_ok=exist_ok)
+        return await schedule(self.real_path.mkdir, mode=mode, parents=parents, exist_ok=exist_ok)
+
+    def mkdir(self, mode=0o777, parents=True, exist_ok=True):
+        return get_event_loop().run_until_complete(self.a_mkdir(mode, parents, exist_ok))
 
     def __truediv__(self, other: Union[GenPath, PurePath, str]):
         """A child generation path can be created from an existing one by using division operator.
@@ -199,17 +212,24 @@ class GenPath:
         """Create a new [GenPath] which differs from the current only by file name."""
         return replace(self, relative_path=self.relative_path.with_name(name))
 
-    def open(self, mode='r', buffering=-1, encoding=None, errors=None, newline=None) -> Union[TextIO, BinaryIO]:
+    async def a_open(self, mode='r', buffering=-1, encoding=None, errors=None, newline=None) -> Union[TextIO, BinaryIO]:
         """Open the file. Same as [Path.open(...)][Path.open)]"""
-        return self.real_path.open(mode=mode, buffering=buffering, encoding=encoding, errors=errors, newline=newline)
+        return await schedule(self.real_path.open,
+                              mode=mode, buffering=buffering, encoding=encoding, errors=errors, newline=newline)
+
+    def open(self, mode='r', buffering=-1, encoding=None, errors=None, newline=None) -> Union[TextIO, BinaryIO]:
+        return get_event_loop().run_until_complete(self.a_open(mode, buffering, encoding, errors, newline))
 
     def with_suffix(self, suffix: str) -> GenPath:
         """Create a new [GenPath] with a different file suffix (extension)."""
         return replace(self, relative_path=self.relative_path.with_suffix(suffix))
 
-    def create(self, contents: Union[str, bytes]) -> None:
+    async def a_create(self, contents: Union[str, bytes]) -> None:
         """Create a file with provided contents. Contents can be `str` or `bytes`."""
-        self.parent.mkdir()
+        await self.parent.a_mkdir()
         binary_mode = isinstance(contents, bytes)
-        with self.open('wb' if binary_mode else 'w') as f:
-            f.write(contents)  # type: ignore
+        with await self.a_open('wb' if binary_mode else 'w') as f:
+            await schedule(f.write, contents)
+
+    def create(self, contents: Union[str, bytes]) -> None:
+        get_event_loop().run_until_complete(self.a_create(contents))

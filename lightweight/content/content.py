@@ -11,5 +11,5 @@ class Content(ABC):
     """An abstract content that can be included by a Site."""
 
     @abstractmethod
-    def write(self, path: GenPath, ctx: GenContext):
+    async def write(self, path: GenPath, ctx: GenContext):
         """Write the content to the file at path."""
