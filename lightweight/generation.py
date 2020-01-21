@@ -221,4 +221,4 @@ class GenPath:
         self.parent.mkdir()
         binary_mode = isinstance(contents, bytes)
         with self.open('wb' if binary_mode else 'w') as f:
-            f.write(contents)
+            f.write(contents)  # type: ignore
