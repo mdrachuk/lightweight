@@ -2,14 +2,16 @@ from __future__ import annotations
 
 import asyncio
 import os
+from abc import abstractmethod, ABC
 from asyncio import gather
 from collections import defaultdict
 from dataclasses import dataclass, replace
 from datetime import datetime
+from itertools import chain
 from os import getcwd
 from pathlib import Path
 from shutil import rmtree
-from typing import overload, Union, Optional, Collection, Iterator, List, Set, Dict
+from typing import overload, Union, Optional, Collection, List, Set, Dict
 from urllib.parse import urlparse, urljoin
 
 from lightweight.content.content import Content
@@ -17,10 +19,10 @@ from lightweight.content.copies import copy
 from lightweight.empty import Empty, empty
 from lightweight.errors import AbsolutePathIncluded, IncludedDuplicate
 from lightweight.files import paths, directory
-from lightweight.generation import GenContext, GenPath, GenTask, schedule
+from lightweight.generation import GenContext, GenTask, schedule
 
 
-class Site(Content):
+class Site:
     """A static site for generation, which is basically a collection of [Content].
 
     Site is one of the few mutable Lightweight components. It is available to content during [write][Content.write],
@@ -47,7 +49,7 @@ class Site(Content):
     ```
     """
     url: str
-    content: List[IncludedContent]
+    content: Includes
     title: Optional[str]
     icon_url: Optional[str]
     logo_url: Optional[str]
@@ -61,7 +63,7 @@ class Site(Content):
             self,
             url: str,
             *,
-            content: Collection[IncludedContent] = None,
+            content: Includes = None,
             title: Optional[str] = None,
             icon_url: Optional[str] = None,
             logo_url: Optional[str] = None,
@@ -78,7 +80,7 @@ class Site(Content):
         if not url.endswith('/'):
             raise ValueError(f'Site URL ({url}) must end with a forward slash (/).')
         self.url = url
-        self.content = [] if not content else list(content)
+        self.content = Includes() if not content else content
         self.title = title
         self.icon_url = icon_url
         self.logo_url = logo_url
@@ -96,7 +98,7 @@ class Site(Content):
     def copy(
             self,
             url: Union[str, Empty] = empty,
-            content: Union[Collection[IncludedContent], Empty] = empty,
+            content: Union[Includes, Empty] = empty,
             title: Union[Optional[str], Empty] = empty,
             icon_url: Union[Optional[str], Empty] = empty,
             description: Union[Optional[str], Empty] = empty,
@@ -132,10 +134,14 @@ class Site(Content):
         """Include the content at the provided location."""
 
     @overload
+    def include(self, location: str, content: Site):
+        """Include the content at the provided location."""
+
+    @overload
     def include(self, location: str, content: str):
         """Copy files from content to location."""
 
-    def include(self, location: str, content: Union[Content, str, None] = None):
+    def include(self, location: str, content: Union[Content, Site, str, None] = None):
         """Included the content at the location.
 
         Note the content write is executed only upon calling [`Site.generate()`][Site.generate].
@@ -153,27 +159,41 @@ class Site(Content):
             contents = {str(path): copy(path) for path in paths(location)}
             if not len(contents):
                 raise FileNotFoundError(f'There were no files at paths: {location}')
-            [self._include(path, content_, cwd) for path, content_ in contents.items()]
+            [self._include_content(path, content_, cwd) for path, content_ in contents.items()]
         elif isinstance(content, Content):
-            self._include(location, content, cwd)
+            self._include_content(location, content, cwd)
+        elif isinstance(content, Site):
+            self._include_site(location, content, cwd)
         elif isinstance(content, str):
             source = Path(content)
             if not source.exists():
                 raise FileNotFoundError(f'File does not exist: {content}')
-            self._include(location, copy(source), cwd)
+            self._include_content(location, copy(source), cwd)
         else:
             raise ValueError('Content, str, or None types are accepted as include parameter')
 
-    def _include(self, location: str, content: Content, cwd: str):
-        if location in self:
-            raise IncludedDuplicate(at=location)
-        self.content.append(
+    def _include_content(self, location: str, content: Content, cwd: str):
+        self._include(
             IncludedContent(
                 location=location,
                 content=content,
                 cwd=cwd
             )
         )
+
+    def _include_site(self, location: str, site: Site, cwd: str):
+        self._include(
+            IncludedSite(
+                location=location,
+                site=site,
+                cwd=cwd
+            )
+        )
+
+    def _include(self, c: Included):
+        if c.location in self.content:
+            raise IncludedDuplicate(at=c.location)
+        self.content.add(c)
 
     def generate(self, out: Union[str, Path] = 'out'):
         """Generate the site in directory provided as out.
@@ -188,20 +208,15 @@ class Site(Content):
         out.mkdir(parents=True, exist_ok=True)
         self._generate(out)
 
-    def write(self, path: GenPath, ctx: GenContext):
-        """Write the current site at path.
-
-        Executed when this site is part of the other site."""
-        self._generate((ctx.out / path.relative_path).absolute())
-
     def _generate(self, out: Path):
         ctx = GenContext(out=out, site=self)
         tasks = defaultdict(list)  # type: Dict[str, List[GenTask]]
         all_tasks = list()  # type: List[GenTask]
         for ic in self.content:
-            task = GenTask(ctx.path(ic.location), ic.content, ic.cwd)
-            tasks[ic.cwd].append(task)
-            all_tasks.append(task)
+            _tasks = ic.make_tasks(ctx)
+            for task in _tasks:
+                tasks[task.cwd].append(task)
+            all_tasks.extend(_tasks)
         ctx.tasks = tuple(all_tasks)  # injecting tasks, for other content to have access to site structure
 
         loop = asyncio.new_event_loop()
@@ -248,34 +263,67 @@ class Site(Content):
         assert <static> not in posts
         ```
         """
-        content = self.content_at_path(Path(location))
+        content = self.content.at_path(Path(location))
         if not content:
             raise KeyError(f'There is no content at path "{location}"')
         return self.copy(content=content, url=self / location + '/')
-
-    def __iter__(self) -> Iterator[IncludedContent]:
-        """Iterate over the site’s included content."""
-        return iter(self.content)
-
-    def content_at_path(self, target: Path) -> Collection[IncludedContent]:
-        target = Path(target)
-        return [
-            replace(ic, location=clip_path_parts(len(target.parts), ic.path))
-            for ic in self.content
-            if all(actual == expected for actual, expected in zip(ic.path.parts, target.parts))
-        ]
-
-    def __contains__(self, location: str) -> bool:
-        return location in map(lambda c: c.location, self.content)
 
 
 def clip_path_parts(number: int, path: Path) -> str:
     return os.path.join(*path.parts[number:])
 
 
+class Includes:
+    ics: List[Included]
+    by_cwd: Dict[str, List[Included]]
+    by_location: Dict[str, Included]
+
+    def __init__(self):
+        self.ics = []
+        self.by_cwd = defaultdict(list)
+        self.by_location = {}
+
+    def add(self, ic: Included):
+        self.ics.append(ic)
+        self.by_cwd[ic.cwd].append(ic)
+        self.by_location[ic.location] = ic
+
+    def __contains__(self, location: str) -> bool:
+        return location in self.by_location
+
+    def __iter__(self):
+        return iter(self.ics)
+
+    def __getitem__(self, location: str):
+        return self.by_location[location]
+
+    def at_path(self, target: Path) -> Includes:
+        target = Path(target)
+        cc = Includes()
+        for ic in self.ics:
+            if all(actual == expected for actual, expected in zip(ic.path.parts, target.parts)):
+                new_loc = clip_path_parts(len(target.parts), ic.path)
+                new_ic = replace(ic, location=new_loc)
+                cc.add(new_ic)
+        return cc
+
+
+class Included(ABC):
+    location: str
+    cwd: str
+
+    @property
+    def path(self):
+        return Path(self.location)
+
+    @abstractmethod
+    def make_tasks(self, ctx: GenContext) -> List[GenTask]:
+        """"""
+
+
 @dataclass(frozen=True)
-class IncludedContent:
-    """The [content][Content] included by [Site].
+class IncludedContent(Included):
+    """The [content][Content] included by a [Site].
 
     Contains the site’s location and `cwd` (current working directory) of the content.
 
@@ -291,6 +339,34 @@ class IncludedContent:
     @property
     def path(self):
         return Path(self.location)
+
+    def make_tasks(self, ctx: GenContext) -> List[GenTask]:
+        return [GenTask(ctx.path(self.location), self.content, self.cwd)]
+
+
+@dataclass(frozen=True)
+class IncludedSite(Included):
+    """Another site included by a [Site].
+
+    Contains the relative location and `cwd` (current working directory) of the content.
+
+    Location is a string with an output path relative to generation out directory.
+    It does not include a leading forward slash.
+
+    `cwd` is important for properly generating subsites.
+    """
+    location: str
+    site: Site
+    cwd: str
+
+    @property
+    def path(self):
+        return Path(self.location)
+
+    def make_tasks(self, ctx: GenContext) -> List[GenTask]:
+        list_of_lists = [ic.make_tasks(ctx) for ic in self.site.content.ics]
+        tasks = list(chain.from_iterable(list_of_lists))
+        return [replace(task, path=ctx.path(self.path / task.path.relative_path)) for task in tasks]
 
 
 @dataclass(frozen=True)
