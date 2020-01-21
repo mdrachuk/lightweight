@@ -1,4 +1,3 @@
-import asyncio
 import os
 from contextlib import contextmanager
 from glob import glob
@@ -37,9 +36,5 @@ def directory(location: Union[str, Path]):
     """
     cwd = os.getcwd()
     os.chdir(str(location))
-    prev_loop = asyncio.get_event_loop()
-    loop = asyncio.new_event_loop()
-    asyncio.set_event_loop(loop)
     yield
     os.chdir(cwd)
-    asyncio.set_event_loop(prev_loop)
