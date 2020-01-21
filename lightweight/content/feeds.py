@@ -53,9 +53,9 @@ class RssFeed(Content):
 
         return gen
 
-    def write(self, path: GenPath, ctx: GenContext):
+    async def write(self, path: GenPath, ctx: GenContext):
         target = self.compile()
-        path.create(target)
+        await path.a_create(target)
 
 
 @dataclass(frozen=True)
@@ -97,9 +97,9 @@ class AtomFeed(Content):
         [gen.add_entry(entry._as_fg()) for entry in self.entries]
         return gen
 
-    def write(self, path: GenPath, ctx: GenContext):
+    async def write(self, path: GenPath, ctx: GenContext):
         target = self.compile()
-        path.create(target)
+        await path.a_create(target)
 
 
 @dataclass(frozen=True)

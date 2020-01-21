@@ -35,11 +35,11 @@ class MarkdownPage(Content):
     front_matter: Dict[str, Any]
     props: Dict[str, Any]
 
-    def write(self, path: GenPath, ctx: GenContext):
+    async def write(self, path: GenPath, ctx: GenContext):
         """Writes a rendered Jinja template with rendered Markdown, parameters from front-matter and code
         to the file provided path."""
         # TODO:mdrachuk:06.01.2020: warn if site, ctx, source are in props or front matter!
-        path.create(self.template.render(
+        await path.a_create(self.template.render(
             site=ctx.site,
             ctx=ctx,
             content=self,
@@ -83,7 +83,7 @@ class MarkdownPage(Content):
         return {key: eval_if_lazy(value, ctx) for key, value in self.props.items()}
 
 
-def markdown(md_path: Union[str, Path], template: Template, *, renderer=LwRenderer, **kwargs) -> MarkdownPage:
+def markdown(md_path: Union[str, Path], template: Union[Template], *, renderer=LwRenderer, **kwargs) -> MarkdownPage:
     """Create a markdown page that can be included by a Site.
     Markdown page is compiled from a markdown file at path (*.md) and a [Jinja Template][lightweight.template.template].
 
@@ -92,8 +92,7 @@ def markdown(md_path: Union[str, Path], template: Template, *, renderer=LwRender
     by using the [from_ctx(func) decorator][lightweight.content.jinja.from_ctx].
     """
     path = Path(md_path)
-    with path.open() as f:
-        source = f.read()
+    source = path.read_text(encoding='utf-8')
     fm = frontmatter.loads(source)
     title = fm.get('title', None)
     summary = fm.get('summary', None)

@@ -21,8 +21,8 @@ class JinjaPage(Content):
     source_path: Path
     props: Dict[str, Any]
 
-    def write(self, path: GenPath, ctx: GenContext):
-        path.create(self.render(ctx))
+    async def write(self, path: GenPath, ctx: GenContext):
+        await path.a_create(self.render(ctx))
 
     def render(self, ctx):
         # TODO:mdrachuk:06.01.2020: warn if site, ctx, source are in props!

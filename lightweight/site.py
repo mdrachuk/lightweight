@@ -1,12 +1,14 @@
 from __future__ import annotations
 
 import os
+from asyncio import get_event_loop, gather, iscoroutine
+from collections import defaultdict
 from dataclasses import dataclass, replace
 from datetime import datetime
 from os import getcwd
 from pathlib import Path
 from shutil import rmtree
-from typing import overload, Union, Optional, Collection, Iterator, List, Set
+from typing import overload, Union, Optional, Collection, Iterator, List, Set, Dict
 from urllib.parse import urlparse, urljoin
 
 from lightweight.content.content import Content
@@ -193,11 +195,20 @@ class Site(Content):
 
     def _generate(self, out: Path):
         ctx = GenContext(out=out, site=self)
-        tasks = [GenTask(ctx.path(c.path), c.content, c.cwd) for c in ctx.site.content]
-        ctx.tasks = tuple(tasks)  # injecting tasks, for other content to have access to site structure
-        for task in tasks:
-            with directory(task.cwd):
-                task.content.write(task.path, ctx)
+        tasks = defaultdict(list)  # type: Dict[str, List[GenTask]]
+        all_tasks = list()  # type: List[GenTask]
+        for ic in self.content:
+            task = GenTask(ctx.path(ic.location), ic.content, ic.cwd)
+            tasks[ic.cwd].append(task)
+            all_tasks.append(task)
+        ctx.tasks = tuple(all_tasks)  # injecting tasks, for other content to have access to site structure
+
+        loop = get_event_loop()
+        for cwd, _tasks in tasks.items():
+            with directory(cwd):
+                writes = [task.content.write(task.path, ctx) for task in _tasks]
+                async_writes = [write for write in writes if iscoroutine(write)]
+                loop.run_until_complete(gather(*async_writes, loop=loop))
 
     def __repr__(self):
         return f'<{type(self).__name__} title={self.title} url={self.url} at 0x{id(self):02x}>'
