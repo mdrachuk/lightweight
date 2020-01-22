@@ -55,7 +55,7 @@ site.include('index.html', jinja('index.html'))
         and places it under the same to the output directory.</p>
 
     <p>You can also pass arguments to Jinja templates.
-        This is done with keyword arguments provided to <code>jinja</code>.
+        This is done with keyword arguments provided to <code>jinja(...)</code>.
         Try controlling the spoon: </p>
     {% if spoon is defined and spoon is none %}
         <img src="{{ site / 'img/matrix/no-spoon.jpg' }}"
@@ -64,7 +64,7 @@ site.include('index.html', jinja('index.html'))
     {% else %}
         <img src="{{ site / 'img/matrix/spoon.jpg' }}"
              alt="Matrix boy with an unbent spoon."
-             title="Do not try and bend the spoon. That's impossible. Instead... only try to realize the truth.">
+             title="Do not try and bend the spoon. That's impossible. Instead… only try to realize the truth.">
     {% endif %}
 
     <p>The code with the image looks like this:</p>
@@ -78,7 +78,7 @@ site.include('index.html', jinja('index.html'))
 {% else %}
     &lt;img src="{{ site / 'img/matrix/spoon.jpg' }}"
          alt="Matrix boy with an unbent spoon."
-         title="Do not try and bend the spoon. That's impossible. Instead... only try to realize the truth."&gt;
+         title="Do not try and bend the spoon. That's impossible. Instead… only try to realize the truth."&gt;
 {% endif %}
     {%- endraw -%}
     </code></pre>
