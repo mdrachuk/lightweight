@@ -99,8 +99,3 @@ def test_gen_path_location(tmp_path: Path):
     assert style.location == 'style.css'
     assert page.location == 'page'
     assert index.location == ''
-
-
-def test_jinja_env_does_not_allow_undefined():
-    with pytest.raises(UndefinedError):
-        jinja_env.from_string('{{something}}').render()

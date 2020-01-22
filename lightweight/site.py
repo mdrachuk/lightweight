@@ -9,6 +9,7 @@ from dataclasses import dataclass, replace
 from datetime import datetime
 from itertools import chain
 from os import getcwd
+from os.path import abspath
 from pathlib import Path
 from shutil import rmtree
 from typing import overload, Union, Optional, Collection, List, Set, Dict
@@ -202,7 +203,7 @@ class Site:
 
         If the out directory already exists – it will be deleted with all of it contents.
         """
-        out = Path(out)
+        out = Path(abspath(out))
         if out.exists():
             rmtree(out)
         out.mkdir(parents=True, exist_ok=True)
