@@ -141,7 +141,7 @@ def start_server(executable_name: str, *, source: str, out: str, host: str, port
     try:
         loop.run_forever()
     except (KeyboardInterrupt, SystemExit):
-        print()
+        print()  # new line after ^C
         logger.info('Stopping the server.')
         server.shutdown()
         pending = Task.all_tasks(loop=loop)
