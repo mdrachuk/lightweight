@@ -25,7 +25,7 @@ lw init --help
 @example
 Start a server for the project
 ```bash
-lw serve site:dev
+lw serve run:dev
 ```
 Additional help:
 ```bash
@@ -39,6 +39,7 @@ import re
 import sys
 from argparse import ArgumentParser
 from contextlib import contextmanager
+from dataclasses import dataclass
 from importlib.machinery import SourceFileLoader
 from importlib.util import module_from_spec, spec_from_loader
 from logging import getLogger
@@ -150,15 +151,23 @@ def absolute_out(out: Optional[str], abs_source: str) -> str:
     return os.path.abspath(out)
 
 
-class Accent(object):
-    def __init__(self):
-        (self.r, self.g, self.b) = self.bright_rgb()
+@dataclass(frozen=True)
+class Color(object):
+    """A color from red, green and blue."""
+    r: int
+    g: int
+    b: int
 
-    @staticmethod
-    def bright_rgb():
-        return sample([randint(120, 255),
-                       randint(120, 255),
-                       randint(0, 50)], 3)
+    @classmethod
+    def bright(cls):
+        """Create a new bright color."""
+        values = [randint(120, 255), randint(120, 255), randint(0, 50)]
+        rgb = sample(values, 3)
+        return cls(*rgb)
+
+    def css(self) -> str:
+        "A string representation of color which can be used in CSS."
+        return f'rgb({self.r}, {self.g}, {self.b})'
 
 
 def quickstart(location: str, url: str, title: Optional[str], authors: List[str]):
@@ -180,13 +189,13 @@ def quickstart(location: str, url: str, title: Optional[str], authors: List[str]
             authors=[Author(name=name) for name in authors if len(name)]
         )
 
-        [site.include(str(p), jinja(p)) for p in paths('templates/**/*.html')]
+        [site.include(str(p), jinja(p)) for p in paths('_templates_/**/*.html')]
         [site.include(str(p), jinja(p)) for p in paths('*.html')]
-        site.include('site.py', jinja('site.py.jinja', title_slug=title_slug))
-        site.include('requirements.txt', jinja('requirements.txt', version=lightweight.__version__))
-        site.include('blog')
+        site.include('run.py', jinja('run.py.j2', title_slug=title_slug))
+        site.include('requirements.txt', jinja('requirements.txt.j2', version=lightweight.__version__))
+        site.include('posts')
         [site.include(str(p), jinja(p)) for p in paths('styles/**/*css') if p.name != 'attributes.scss']
-        site.include('styles/attributes.scss', jinja('styles/attributes.scss', accent=Accent()))
+        site.include('styles/attributes.scss', jinja('styles/attributes.scss', accent=Color.bright()))
         site.include('js')
         site.include('img')
 
@@ -239,7 +248,7 @@ def add_server_cli(subparsers):
     server_parser.add_argument('executable', type=str,
                                help='Function accepting a host and a port and returning a Site instance '
                                     'specified as "<module>:<function>" '
-                                    '(e.g. "site:dev" to call "dev(host, port)" method of "site.py")')
+                                    '(e.g. "run:dev" to call "dev(host, port)" method of "run.py")')
     server_parser.add_argument('--source', type=str, default=getcwd(),
                                help='project location: parent directory of a "generator". Defaults to cwd.')
     server_parser.add_argument('--out', type=str, default=None, help='output directory for generation results.'

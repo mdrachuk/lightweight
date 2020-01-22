@@ -1,6 +1,7 @@
-/* {// */ // replacing the $accent when rendering
+/* {// We do not append .j2 to this file’s name for IDE to resolve attributes. */
+// When rendering as Jinja template the $accent is replaced.
 $accent: rgb(250, 160, 0);
-//} */ $accent: rgb({! accent.r !}, {! accent.g !}, {! accent.b !});
+//}💝 */ $accent: {! accent.css() !};
 $black: #000000;
 $black-down: #3f3f3f;
 
