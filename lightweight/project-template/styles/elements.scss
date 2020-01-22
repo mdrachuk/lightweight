@@ -30,3 +30,17 @@ hr {
 img {
   max-width: 100%;
 }
+
+
+details {
+  background-color: $accent-light;
+  padding: 1em;
+
+  summary {
+    cursor: pointer;
+  }
+
+  &[open] summary {
+    margin-bottom: 1em;
+  }
+}

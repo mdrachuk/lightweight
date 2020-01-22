@@ -170,8 +170,10 @@ class Color(object):
         rgb = sample(values, 3)
         return cls(*rgb)
 
-    def css(self) -> str:
+    def css(self, alpha=None) -> str:
         "A string representation of color which can be used in CSS."
+        if alpha is not None:
+            return f'rgba({self.r}, {self.g}, {self.b}, {alpha})'
         return f'rgb({self.r}, {self.g}, {self.b})'
 
 

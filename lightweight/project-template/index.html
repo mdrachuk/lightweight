@@ -54,10 +54,11 @@ site.include('index.html', jinja('index.html'))
     <p>This piece of code creates content from rendering the provided <code>index.html</code> Jinja template
         and places it under the same to the output directory.</p>
 
-    <details open="{{ 'true' if spoon is defined else 'false' }}">
-        <summary>You can also pass arguments to Jinja templates.</summary>
-        <p>This is done with keyword arguments provided to <code>jinja(...)</code>.
-            Try controlling the spoon: </p>
+    <p>You can also pass arguments to Jinja templates.
+        This is done via keyword arguments of <code>jinja(src, **kwargs)</code>.</p>
+
+    <details {%- if spoon is defined %} open{% endif %}>
+        <summary>For example, try controlling the spoon.</summary>
         {% if spoon is defined and spoon is none %}
             <img src="{{ site / 'img/matrix/no-spoon.jpg' }}"
                  alt="A bent spoon"
@@ -71,6 +72,7 @@ site.include('index.html', jinja('index.html'))
         <p>The code with the image looks like this:</p>
 
         <pre><code class="html">
+{#- @formatter:off -#}
     {%- raw -%}
 {% if spoon is defined and spoon is none %}
     &lt;img src="{{ site / 'img/matrix/no-spoon.jpg' }}"
@@ -82,6 +84,7 @@ site.include('index.html', jinja('index.html'))
          title="Do not try and bend the spoon. That's impossible. Instead… only try to realize the truth."&gt;
 {% endif %}
     {%- endraw -%}
+{#- @formatter:on -#}
         </code></pre>
 
         <p>We do not pass the <code>spoon</code> to the template, so it is undefined.
