@@ -38,6 +38,7 @@ import os
 import re
 import sys
 from argparse import ArgumentParser
+from asyncio import gather, Task
 from contextlib import contextmanager
 from dataclasses import dataclass
 from importlib.machinery import SourceFileLoader
@@ -135,12 +136,16 @@ def start_server(executable_name: str, *, source: str, out: str, host: str, port
     logger.info(f'Sources: {source}')
     logger.info(f'Out: {out}')
     logger.info(f'Starting server at: "http://{host}:{port}"')
-    loop = asyncio.get_event_loop()
+    loop = asyncio.new_event_loop()
     server.serve(host=host, port=port, loop=loop)
     try:
         loop.run_forever()
     except (KeyboardInterrupt, SystemExit):
+        print()
         logger.info('Stopping the server.')
+        server.shutdown()
+        pending = Task.all_tasks(loop=loop)
+        loop.run_until_complete(gather(*pending, loop=loop))
         loop.stop()
         sys.exit()
 
