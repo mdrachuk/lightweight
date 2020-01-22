@@ -91,7 +91,7 @@ class Generator:
         return func
 
 
-def positional_args_count(func: Callable, *, equals: int):
+def positional_args_count(func: Callable, *, equals: int) -> bool:
     """
     @example
     if not positional_args_count(func, equals=2):
