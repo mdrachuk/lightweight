@@ -262,7 +262,7 @@ class LiveReloadServer(DevServer):
                     self.on_source_changed()
 
     def _is_ignored_location(self, location) -> bool:
-        return len(self.ignored) and all(location.startswith(path) for path in self.ignored)
+        return len(self.ignored) != 0 and all(location.startswith(path) for path in self.ignored)
 
     def on_source_changed(self):
         logger.info('Source change. Live reload triggered.')

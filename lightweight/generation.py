@@ -6,7 +6,7 @@ from dataclasses import dataclass, replace
 from datetime import datetime
 from functools import partial
 from pathlib import Path, PurePath
-from typing import TYPE_CHECKING, Union, Tuple, TextIO, BinaryIO, Callable, TypeVar
+from typing import TYPE_CHECKING, Union, Tuple, Callable, TypeVar, IO, Any
 
 import lightweight
 
@@ -208,7 +208,7 @@ class GenPath:
         """Create a new [GenPath] which differs from the current only by file name."""
         return replace(self, relative_path=self.relative_path.with_name(name))
 
-    def open(self, mode='r', buffering=-1, encoding=None, errors=None, newline=None) -> Union[TextIO, BinaryIO]:
+    def open(self, mode='r', buffering=-1, encoding=None, errors=None, newline=None) -> IO[Any]:
         """Open the file. Same as [Path.open(...)][Path.open)]"""
         return self.real_path.open(mode=mode, buffering=buffering, encoding=encoding, errors=errors, newline=newline)
 

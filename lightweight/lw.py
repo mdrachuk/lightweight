@@ -51,8 +51,7 @@ from typing import Any, Optional, Callable, List
 
 from slugify import slugify  # type: ignore
 
-import lightweight
-from lightweight import Site, jinja, directory, jinja_env, paths, Author
+from lightweight import Site, jinja, directory, jinja_env, paths, Author, __version__
 from lightweight.errors import InvalidCommand
 from lightweight.server import DevServer, LiveReloadServer
 
@@ -199,7 +198,7 @@ def quickstart(location: str, url: str, title: Optional[str], authors: List[str]
         [site.include(str(p), jinja(p)) for p in paths('_templates_/**/*.html')]
         [site.include(str(p), jinja(p)) for p in paths('*.html')]
         site.include('run.py', jinja('run.py.j2', title_slug=title_slug))
-        site.include('requirements.txt', jinja('requirements.txt.j2', version=lightweight.__version__))
+        site.include('requirements.txt', jinja('requirements.txt.j2', version=__version__))
         site.include('posts')
         [site.include(str(p), jinja(p)) for p in paths('styles/**/*css') if p.name != 'attributes.scss']
         site.include('styles/attributes.scss', jinja('styles/attributes.scss', accent=Color.bright()))
@@ -287,7 +286,7 @@ def add_init_cli(subparsers):
 
 def add_version_cli(subparsers):
     version_parser = subparsers.add_parser(name='version')
-    version_parser.set_defaults(func=lambda args: print(lightweight.__version__))
+    version_parser.set_defaults(func=lambda args: print(__version__))
 
 
 def main():
