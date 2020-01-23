@@ -6,19 +6,19 @@ from dataclasses import dataclass, replace
 from datetime import datetime
 from functools import partial
 from pathlib import Path, PurePath
-from typing import TYPE_CHECKING, Union, Tuple, TextIO, BinaryIO, Callable
+from typing import TYPE_CHECKING, Union, Tuple, Callable, TypeVar, IO, Any
 
 import lightweight
 
 if TYPE_CHECKING:
     from lightweight import Site, Content
 
+V = TypeVar('V')
 UrlFactory = Callable[[str], str]  # A url factory a full URL with a provided relative location.
-
 default_executor = ThreadPoolExecutor()
 
 
-async def schedule(func, *args, **kwargs):
+async def schedule(func: Callable[..., V], *args, **kwargs) -> V:
     return await get_event_loop().run_in_executor(default_executor, partial(func, *args, **kwargs))
 
 
@@ -100,12 +100,12 @@ class GenPath:
     url_factory: UrlFactory
 
     @property
-    def real_path(self):
+    def real_path(self) -> Path:
         """An absolute path of the file in the generation out directory."""
         return (self.out / self.relative_path).absolute()
 
     @property
-    def name(self):
+    def name(self) -> str:
         """The name of the file at path."""
         return self.relative_path.name
 
@@ -182,7 +182,7 @@ class GenPath:
         """
         return self.real_path.mkdir(mode=mode, parents=parents, exist_ok=exist_ok)
 
-    def __truediv__(self, other: Union[GenPath, PurePath, str]):
+    def __truediv__(self, other: Union[GenPath, PurePath, str]) -> GenPath:
         """A child generation path can be created from an existing one by using division operator.
 
         @example
@@ -201,14 +201,14 @@ class GenPath:
             raise ValueError(f'Cannot make a path with {other}')
         return replace(self, relative_path=self.relative_path / other_path)
 
-    def __str__(self):
+    def __str__(self) -> str:
         return str(self.relative_path)
 
     def with_name(self, name: str) -> GenPath:
         """Create a new [GenPath] which differs from the current only by file name."""
         return replace(self, relative_path=self.relative_path.with_name(name))
 
-    def open(self, mode='r', buffering=-1, encoding=None, errors=None, newline=None) -> Union[TextIO, BinaryIO]:
+    def open(self, mode='r', buffering=-1, encoding=None, errors=None, newline=None) -> IO[Any]:
         """Open the file. Same as [Path.open(...)][Path.open)]"""
         return self.real_path.open(mode=mode, buffering=buffering, encoding=encoding, errors=errors, newline=newline)
 

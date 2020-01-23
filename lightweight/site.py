@@ -15,12 +15,12 @@ from shutil import rmtree
 from typing import overload, Union, Optional, Collection, List, Set, Dict
 from urllib.parse import urlparse, urljoin
 
-from lightweight.content.content import Content
-from lightweight.content.copies import copy
-from lightweight.empty import Empty, empty
-from lightweight.errors import AbsolutePathIncluded, IncludedDuplicate
-from lightweight.files import paths, directory
-from lightweight.generation import GenContext, GenTask, schedule
+from .content.content import Content
+from .content.copies import copy
+from .empty import Empty, empty
+from .errors import AbsolutePathIncluded, IncludedDuplicate
+from .files import paths, directory
+from .generation import GenContext, GenTask, schedule
 
 
 class Site:

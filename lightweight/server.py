@@ -3,12 +3,13 @@
 from __future__ import annotations
 
 import os
-from asyncio import StreamReader, StreamWriter, start_server
+from asyncio import StreamReader, StreamWriter, start_server, Task, Event
 from dataclasses import dataclass
 from datetime import datetime
 from enum import Enum
 from logging import getLogger
 from pathlib import Path
+from threading import Thread
 from typing import Dict, Collection, Callable
 from uuid import uuid4
 
@@ -75,6 +76,7 @@ class DevServer:
         loop.stop()
     ```
     """
+    _server_task: Task
 
     def __init__(self, location: str):
         self.working_dir = Path(os.path.abspath(location))
@@ -90,7 +92,11 @@ class DevServer:
         loop.run_forever()
         ```
         """
-        loop.create_task(start_server(self.respond, host, port))
+        self._server_task = loop.create_task(start_server(self.respond, host, port))
+
+    def shutdown(self):
+        """"""
+        self._server_task.cancel()
 
     def handle(self, writer: StreamWriter, request: HttpRequest):
         """Handle the request and write the response."""
@@ -203,6 +209,8 @@ RunGenerate = Callable[[], None]
 
 
 class LiveReloadServer(DevServer):
+    stopped: Event
+
     def __init__(
             self,
             location: str,
@@ -219,7 +227,12 @@ class LiveReloadServer(DevServer):
 
     def serve(self, host, port, loop):
         super().serve(host, port, loop)
+        self.stopped = Event()
         loop.create_task(self.watch_source())
+
+    def shutdown(self):
+        super().shutdown()
+        self.stopped.set()
 
     def handle(self, writer: StreamWriter, request: HttpRequest):
         if request.location == '/__live_reload_id__':
@@ -243,18 +256,22 @@ class LiveReloadServer(DevServer):
         writer.write(u(self.live_reload_id))
 
     async def watch_source(self):
-        async for changes in awatch(str(self.watch_location)):
+        async for changes in awatch(str(self.watch_location), stop_event=self.stopped):
             for change, location in changes:
-                if len(self.ignored) and all(location.startswith(path) for path in self.ignored):
-                    continue
-                self.on_source_changed()
-                break
+                if not self._is_ignored_location(location):
+                    self.on_source_changed()
+
+    def _is_ignored_location(self, location) -> bool:
+        return len(self.ignored) != 0 and all(location.startswith(path) for path in self.ignored)
 
     def on_source_changed(self):
         logger.info('Source change. Live reload triggered.')
         self.live_reload_id = self._new_id()
         try:
-            self.regenerate()
+            # Running in thread to isolate asyncio loops.
+            t = Thread(target=self.regenerate)
+            t.start()
+            t.join()
         except Exception as e:
             logger.exception('Exception when generating the site: ', exc_info=e)
 

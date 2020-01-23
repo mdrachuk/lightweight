@@ -25,7 +25,7 @@ lw init --help
 @example
 Start a server for the project
 ```bash
-lw serve site:dev
+lw serve run:dev
 ```
 Additional help:
 ```bash
@@ -38,7 +38,9 @@ import os
 import re
 import sys
 from argparse import ArgumentParser
+from asyncio import gather, Task
 from contextlib import contextmanager
+from dataclasses import dataclass
 from importlib.machinery import SourceFileLoader
 from importlib.util import module_from_spec, spec_from_loader
 from logging import getLogger
@@ -49,8 +51,7 @@ from typing import Any, Optional, Callable, List
 
 from slugify import slugify  # type: ignore
 
-import lightweight
-from lightweight import Site, jinja, directory, jinja_env, paths, Author
+from lightweight import Site, jinja, directory, jinja_env, paths, Author, __version__
 from lightweight.errors import InvalidCommand
 from lightweight.server import DevServer, LiveReloadServer
 
@@ -89,7 +90,7 @@ class Generator:
         return func
 
 
-def positional_args_count(func: Callable, *, equals: int):
+def positional_args_count(func: Callable, *, equals: int) -> bool:
     """
     @example
     if not positional_args_count(func, equals=2):
@@ -134,12 +135,16 @@ def start_server(executable_name: str, *, source: str, out: str, host: str, port
     logger.info(f'Sources: {source}')
     logger.info(f'Out: {out}')
     logger.info(f'Starting server at: "http://{host}:{port}"')
-    loop = asyncio.get_event_loop()
+    loop = asyncio.new_event_loop()
     server.serve(host=host, port=port, loop=loop)
     try:
         loop.run_forever()
     except (KeyboardInterrupt, SystemExit):
+        print()  # new line after ^C
         logger.info('Stopping the server.')
+        server.shutdown()
+        pending = Task.all_tasks(loop=loop)
+        loop.run_until_complete(gather(*pending, loop=loop))
         loop.stop()
         sys.exit()
 
@@ -150,15 +155,25 @@ def absolute_out(out: Optional[str], abs_source: str) -> str:
     return os.path.abspath(out)
 
 
-class Accent(object):
-    def __init__(self):
-        (self.r, self.g, self.b) = self.bright_rgb()
+@dataclass(frozen=True)
+class Color(object):
+    """A color from red, green and blue."""
+    r: int
+    g: int
+    b: int
 
-    @staticmethod
-    def bright_rgb():
-        return sample([randint(120, 255),
-                       randint(120, 255),
-                       randint(0, 50)], 3)
+    @classmethod
+    def bright(cls):
+        """Create a new bright color."""
+        values = [randint(120, 255), randint(120, 255), randint(0, 50)]
+        rgb = sample(values, 3)
+        return cls(*rgb)
+
+    def css(self, alpha=None) -> str:
+        "A string representation of color which can be used in CSS."
+        if alpha is not None:
+            return f'rgba({self.r}, {self.g}, {self.b}, {alpha})'
+        return f'rgb({self.r}, {self.g}, {self.b})'
 
 
 def quickstart(location: str, url: str, title: Optional[str], authors: List[str]):
@@ -180,13 +195,13 @@ def quickstart(location: str, url: str, title: Optional[str], authors: List[str]
             authors=[Author(name=name) for name in authors if len(name)]
         )
 
-        [site.include(str(p), jinja(p)) for p in paths('templates/**/*.html')]
+        [site.include(str(p), jinja(p)) for p in paths('_templates_/**/*.html')]
         [site.include(str(p), jinja(p)) for p in paths('*.html')]
-        site.include('site.py', jinja('site.py.jinja', title_slug=title_slug))
-        site.include('requirements.txt', jinja('requirements.txt', version=lightweight.__version__))
-        site.include('blog')
+        site.include('run.py', jinja('run.py.j2', title_slug=title_slug))
+        site.include('requirements.txt', jinja('requirements.txt.j2', version=__version__))
+        site.include('posts')
         [site.include(str(p), jinja(p)) for p in paths('styles/**/*css') if p.name != 'attributes.scss']
-        site.include('styles/attributes.scss', jinja('styles/attributes.scss', accent=Accent()))
+        site.include('styles/attributes.scss', jinja('styles/attributes.scss', accent=Color.bright()))
         site.include('js')
         site.include('img')
 
@@ -239,7 +254,7 @@ def add_server_cli(subparsers):
     server_parser.add_argument('executable', type=str,
                                help='Function accepting a host and a port and returning a Site instance '
                                     'specified as "<module>:<function>" '
-                                    '(e.g. "site:dev" to call "dev(host, port)" method of "site.py")')
+                                    '(e.g. "run:dev" to call "dev(host, port)" method of "run.py")')
     server_parser.add_argument('--source', type=str, default=getcwd(),
                                help='project location: parent directory of a "generator". Defaults to cwd.')
     server_parser.add_argument('--out', type=str, default=None, help='output directory for generation results.'
@@ -271,7 +286,7 @@ def add_init_cli(subparsers):
 
 def add_version_cli(subparsers):
     version_parser = subparsers.add_parser(name='version')
-    version_parser.set_defaults(func=lambda args: print(lightweight.__version__))
+    version_parser.set_defaults(func=lambda args: print(__version__))
 
 
 def main():

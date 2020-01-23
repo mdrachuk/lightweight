@@ -22,22 +22,22 @@ from datetime import datetime
 
 
 def blog_posts(source: str):
-    post_template = template('posts/_template.html')
+    post_template = template('_templates_/blog/post.html')
     return (markdown(path, post_template) for path in paths(source))
 
 
 site = Site(url='http://example.org', title='The Example')
 
 # Render an index page from Jinja2 template.
-site.include('index.html', jinja('pages/index.html', generated=datetime.now()))
+site.include('index.html', jinja('index.html', generated=datetime.now()))
 
 # Render markdown blog posts.
-[site.include(f'posts/{post.path.stem}.html', post) for post in blog_posts('posts/**.md')]
-site.include('posts.html', jinja('pages/posts.html'))
+[site.include(f'blog/{post.source_path.stem}.html', post) for post in blog_posts('posts/**.md')]
+site.include('blog.html', jinja('blog.html'))
 
 # Syndicate RSS and Atom feeds.
-site.include('posts.atom.xml', atom(site['posts']))
-site.include('posts.rss.xml', rss(site['posts']))
+site.include('blog.atom.xml', atom(site['blog']))
+site.include('blog.rss.xml', rss(site['blog']))
 
 # Render SASS to CSS.
 site.include('lightweight.css', sass('styles/lightweight.scss'))
@@ -46,7 +46,7 @@ site.include('lightweight.css', sass('styles/lightweight.scss'))
 site.include('js')
 site.include('images')
 
-site.render(out='generated/')
+site.generate(out='generated/')
 ``` 
 
 Let’s take it apart.

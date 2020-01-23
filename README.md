@@ -36,7 +36,7 @@ from lightweight import Site, markdown, paths, jinja, template, rss, atom, sass
 
 
 def blog_posts(source):
-    post_template = template('posts/_template.html')
+    post_template = template('_templates_/blog/post.html')
     # Use globs to select files. # source = 'posts/**.md'
     return (markdown(path, post_template) for path in paths(source))
 
@@ -44,18 +44,18 @@ def example(url):
     site = Site(url)
     
     # Render an index page from Jinja2 template.
-    site.include('index.html', jinja('pages/index.html'))
+    site.include('index.html', jinja('index.html'))
     
     # Render markdown blog posts.
-    [site.include(f'posts/{post.source_path.stem}.html', post) for post in blog_posts('posts/**.md')]
-    site.include('posts.html', jinja('pages/posts.html'))
+    [site.include(f'blog/{post.source_path.stem}.html', post) for post in blog_posts('posts/**.md')]
+    site.include('blog.html', jinja('posts.html'))
     
     # Syndicate RSS and Atom feeds.
-    site.include('posts.atom.xml', atom(site['posts']))
-    site.include('posts.rss.xml', rss(site['posts']))
+    site.include('blog.atom.xml', atom(site['blog']))
+    site.include('blog.rss.xml', rss(site['blog']))
     
     # Render SASS to CSS.
-    site.include('css/style.css', sass('styles/style.scss'))
+    site.include('css/global.css', sass('styles/main.scss'))
     
     # Include a copy of a directory.
     site.include('img')
@@ -97,24 +97,24 @@ optional arguments:
 
 Lightweight includes a simple static web server with live reload serving at `localhost:8080`:
 ```bash
-lw serve site:dev
+lw serve run:dev
 ```
 Here `site` is a Python module 
 
 Host and port can be set via:
 ```bash
-lw serve site:dev --host 0.0.0.0 --port 80
+lw serve run:dev --host 0.0.0.0 --port 80
 ```
 
 The directory to resolve the module is provided as `--source`. It defaults to cwd.
 The source directory is watched for live reload. 
 ```bash
-lw serve site:dev --source ~/Projects/example
+lw serve run:dev --source ~/Projects/example
 ```
 
 The live reload can be disabled with `--no-live-reload` flag:
 ```bash
-lw serve site:dev --no-live-reload
+lw serve run:dev --no-live-reload
 ```
 Otherwise every served HTML file will be injected with a javascript that polls `/__live_reload_id__`.
 The script reloads the page when value at that location changes.
