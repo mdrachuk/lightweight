@@ -47,4 +47,4 @@ logging.basicConfig()
 logger = logging.getLogger('lightweight')
 logger.setLevel(logging.INFO)
 
-__version__ = '1.0.0.dev44'
+__version__ = '1.0.0.dev45'
