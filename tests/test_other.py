@@ -4,7 +4,7 @@ import pytest
 from jinja2.utils import LRUCache
 
 from lightweight import Site, Author, GenPath
-from lightweight.errors import AbsolutePathIncluded
+from lightweight.errors import AbsolutePathIncluded, IncludedDuplicate
 from lightweight.template import LruCachePerCwd
 
 
@@ -72,6 +72,13 @@ def test_site_authors_combination():
                             Author('a', 'a@example.org'),
                             Author('b', 'b@example.org'),
                             Author('c', 'c@example.org')}
+
+
+def test_site_include_duplicate():
+    site = Site(url='https://example.org/')
+    site.include('page', 'resources/test.html')
+    with pytest.raises(IncludedDuplicate):
+        site.include('page', 'site/index.html')
 
 
 def test_gen_path_url(tmp_path: Path):
