@@ -315,6 +315,7 @@ class Includes:
         return cc
 
 
+@dataclass(frozen=True)
 class Included(ABC):
     location: str
     cwd: str
