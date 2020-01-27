@@ -38,7 +38,7 @@ import os
 import re
 import sys
 from argparse import ArgumentParser
-from asyncio import gather, Task
+from asyncio import gather
 from contextlib import contextmanager
 from dataclasses import dataclass
 from importlib.machinery import SourceFileLoader
@@ -143,7 +143,7 @@ def start_server(executable_name: str, *, source: str, out: str, host: str, port
         print()  # new line after ^C
         logger.info('Stopping the server.')
         server.shutdown()
-        pending = Task.all_tasks(loop=loop)
+        pending = asyncio.all_tasks(loop=loop)
         loop.run_until_complete(gather(*pending, loop=loop))
         loop.stop()
         sys.exit()
