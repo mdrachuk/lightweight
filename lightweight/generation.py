@@ -171,7 +171,7 @@ class GenPath:
         return self.real_path
 
     def exists(self) -> bool:
-        """Checks if file exists asynchronously"""
+        """Checks if file exists"""
         return self.real_path.exists()
 
     def mkdir(self, mode=0o777, parents=True, exist_ok=True):
