@@ -22,7 +22,7 @@ class DynamicCwd(PathLike):
 cwd_loader = FileSystemLoader([cast(str, DynamicCwd())], followlinks=True)
 jinja_env = Environment(
     loader=cwd_loader,
-    cache_size=0,
+    cache_size=0,  # does not affect anything, cache set below
     lstrip_blocks=True,
     trim_blocks=True,
     undefined=StrictUndefined,
