@@ -75,6 +75,7 @@ class Site:
             language: Optional[str] = None,
             copyright: Optional[str] = None,
             updated: Optional[datetime] = None,
+            **kwargs
     ):
         url_parts = urlparse(url)
         assert url_parts.scheme, 'Missing scheme in Site URL.'
@@ -95,6 +96,10 @@ class Site:
         self.language = language
         self.copyright = copyright
         self.updated = updated
+        self.__post_init__(**kwargs)
+
+    def __post_init__(self, **kwargs):
+        """"""
 
     def copy(
             self,
@@ -210,7 +215,7 @@ class Site:
         self._generate(out)
 
     def _generate(self, out: Path):
-        ctx = GenContext(out=out, site=self)
+        ctx = self.create_ctx(out)
         tasks = defaultdict(list)  # type: Dict[str, List[GenTask]]
         all_tasks = list()  # type: List[GenTask]
         for ic in self.content:
@@ -228,10 +233,14 @@ class Site:
                 loop.run_until_complete(gather(*writes, loop=loop))
         loop.close()
 
+    def create_ctx(self, out: Path) -> GenContext:
+        """Override for custom context types."""
+        return GenContext(out=out, site=self)
+
     def __repr__(self):
         return f'<{type(self).__name__} title={self.title} url={self.url} at 0x{id(self):02x}>'
 
-    def __truediv__(self, location: str):
+    def __truediv__(self, location: str) -> str:
         """Create a URL for the location at site.
 
         @example
@@ -294,9 +303,6 @@ class Includes:
 
     def __iter__(self):
         return iter(self.ics)
-
-    def __getitem__(self, location: str):
-        return self.by_location[location]
 
     def at_path(self, target: Path) -> Includes:
         target = Path(target)

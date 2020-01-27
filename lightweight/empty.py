@@ -1,3 +1,6 @@
+__all__ = ['empty']
+
+
 class _SingletonMeta(type):
     _instance = None
 
@@ -16,6 +19,12 @@ class Empty(metaclass=_SingletonMeta):
 
     def __eq__(self, other):
         return isinstance(other, Empty)
+
+    def __repr__(self):
+        return '<lightweight.empty>'
+
+    def __str__(self):
+        return repr(self)
 
 
 empty = Empty()
