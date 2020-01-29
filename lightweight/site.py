@@ -315,7 +315,7 @@ class Includes:
         return cc
 
 
-@dataclass(frozen=True)
+# @dataclass(frozen=True) -- ABC cannot be a dataclass
 class Included(ABC):
     location: str
     cwd: str
