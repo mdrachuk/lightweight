@@ -1,11 +1,11 @@
 import asyncio
-from asyncio import gather, Task
+from asyncio import gather
 from pathlib import Path
-from urllib.parse import urlsplit
 
 import pytest
 
 from lightweight.server import LIVE_RELOAD_JS, DevServer, LiveReloadServer
+from tests.server_utils import get
 
 
 class TestTheServer:
@@ -119,7 +119,7 @@ class TestTheServer:
         assert '403' in await get(f'http://127.0.0.1:{port}/../..')
 
     @pytest.mark.asyncio
-    async def test_500(self, event_loop: asyncio.AbstractEventLoop, unused_tcp_port):
+    async def test_500(self, event_loop, unused_tcp_port):
         the_exception = Exception()
 
         class BadServer(DevServer):
@@ -147,16 +147,3 @@ def test_file_not_found():
 def test_file_not_a_directory():
     with pytest.raises(NotADirectoryError):
         DevServer('resources/test.html')
-
-
-async def get(url_str: str) -> str:
-    await asyncio.sleep(0.01)
-    url = urlsplit(url_str)
-    reader, writer = await asyncio.open_connection(url.hostname, url.port)
-
-    writer.write((f"GET {url.path or '/'} HTTP/1.0\r\n"
-                  f"Host: {url.hostname}\r\n"
-                  f"\r\n").encode('utf8'))
-    response = await reader.read()
-    writer.close()
-    return response.decode('utf8')

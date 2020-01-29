@@ -119,7 +119,7 @@ def sys_path_starting(with_: str):
     sys.path.remove(location)
 
 
-def start_server(executable_name: str, *, source: str, out: str, host: str, port: int, enable_reload: bool):
+def start_server(executable_name: str, *, source: str, out: str, host: str, port: int, enable_reload: bool, loop=None):
     source = os.path.abspath(source)
     out = absolute_out(out, source)
 
@@ -135,7 +135,8 @@ def start_server(executable_name: str, *, source: str, out: str, host: str, port
     logger.info(f'Sources: {source}')
     logger.info(f'Out: {out}')
     logger.info(f'Starting server at: "http://{host}:{port}"')
-    loop = asyncio.new_event_loop()
+
+    loop = loop or asyncio.new_event_loop()
     server.serve(host=host, port=port, loop=loop)
     try:
         loop.run_forever()
@@ -183,8 +184,6 @@ def quickstart(location: str, url: str, title: Optional[str], authors: List[str]
     abs_out = os.path.abspath(path)
     if not title:
         title = Path(abs_out).name
-    if not title:
-        raise InvalidCommand('Missing project title')
     title_slug = slugify_title(title)
 
     template_location = Path(__file__).parent / 'project-template'
@@ -289,9 +288,13 @@ def add_version_cli(subparsers):
     version_parser.set_defaults(func=lambda args: print(__version__))
 
 
+def parse_args():
+    args = argument_parser().parse_args()
+    return args
+
+
 def main():
-    parser = argument_parser()
-    args = parser.parse_args()
+    args = parse_args()
     if hasattr(args, 'func'):
         try:
             args.func(args)
@@ -299,7 +302,7 @@ def main():
             logger.error(f'{type(error).__name__}: {str(error)}')
             exit(-1)
     else:
-        parser.parse_args(['--help'])
+        argument_parser().parse_args(['--help'])
 
 
 if __name__ == '__main__':
