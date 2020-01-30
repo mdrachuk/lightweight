@@ -3,7 +3,7 @@
 from __future__ import annotations
 
 import os
-from asyncio import StreamReader, StreamWriter, start_server, Task, Event
+from asyncio import StreamReader, StreamWriter, start_server, Task, Event, BaseEventLoop, sleep
 from dataclasses import dataclass
 from datetime import datetime
 from enum import Enum
@@ -82,17 +82,17 @@ class DevServer:
         self.working_dir = Path(os.path.abspath(location))
         check_directory(self.working_dir)
 
-    def serve(self, host, port, loop):
+    def serve(self, host, port, loop: BaseEventLoop):
         """Creates an asyncio coroutine, that serves requests on the provided host and port.
 
         @example
         ```python
         loop = asyncio.get_event_loop()
-        loop.create_task(server.serve('localhost', 8080))
+        server.serve('localhost', 8080, loop=loop)
         loop.run_forever()
         ```
         """
-        self._server_task = loop.create_task(start_server(self.respond, host, port))
+        self._server_task = loop.create_task(start_server(self.respond, host, port, loop=loop))
 
     def shutdown(self):
         """"""
@@ -176,12 +176,13 @@ class DevServer:
                 reader=reader,
             )
             self.handle(writer, request)
-        except Exception:
+        except Exception as e:
             self.http_error(writer, '500')
-            raise
+            logger.error(f'{now_repr()}: {method} {path}', exc_info=e)
         finally:
             await writer.drain()
             writer.close()
+            await sleep(0.01)
             await writer.wait_closed()
             logger.info(f'{now_repr()}: {method} {path} Done')
 

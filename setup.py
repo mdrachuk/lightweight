@@ -12,7 +12,7 @@ setup(
     name='lightweight',
     version=lightweight.__version__,
     packages=find_packages(exclude=('tests*',)),
-    package_data={'lightweight': ['py.typed']},
+    package_data={'lightweight': ['py.typed', 'project-template/**/*']},
     entry_points={
         'console_scripts': [
             'lw = lightweight.lw:main',
@@ -34,8 +34,8 @@ setup(
         'Issues': 'https://github.com/mdrachuk/lightweight/issues',
     },
     install_requires=[
-        'Jinja2~=2.10.1',
-        'feedgen~=0.8.0',
+        'Jinja2~=2.11',
+        'feedgen~=0.9.0',
         'libsass~=0.19.2',
         'python-frontmatter~=0.4.5',
         'python-slugify~=3.0.3',

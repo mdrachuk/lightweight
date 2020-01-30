@@ -37,7 +37,7 @@ class GenTask:
     Content [`write(...)`][Content.write] operates from this directory.
     """
     path: GenPath
-    content: Content
+    content: 'Content'
     cwd: str  # current working directory
 
 
@@ -48,13 +48,13 @@ class GenContext:
     The context is created by [Site] upon starting generation
     and provided to the [`Content.write(path, ctx)`][Content.write] method as a second parameter.
     """
-    site: Site
+    site: 'Site'
     out: Path
     tasks: Tuple[GenTask, ...]
     generated: datetime  # UTC datetime of generation
     version: str
 
-    def __init__(self, out: Path, site: Site):
+    def __init__(self, out: Path, site: 'Site'):
         self.out = out
         self.site = site
         self.generated = datetime.utcnow()
@@ -171,7 +171,7 @@ class GenPath:
         return self.real_path
 
     def exists(self) -> bool:
-        """Checks if file exists asynchronously"""
+        """Checks if file exists"""
         return self.real_path.exists()
 
     def mkdir(self, mode=0o777, parents=True, exist_ok=True):

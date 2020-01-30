@@ -23,7 +23,7 @@ class RssFeed(Content):
     title: str
     description: str
     updated: Optional[datetime]
-    authors: Tuple[Author, ...]
+    authors: Tuple['Author', ...]
     language: Optional[str]
     copyright: Optional[str]
 
@@ -53,7 +53,7 @@ class RssFeed(Content):
 
         return gen
 
-    def write(self, path: GenPath, ctx: GenContext):
+    def write(self, path: 'GenPath', ctx: 'GenContext'):
         target = self.compile()
         path.create(target)
 
@@ -67,7 +67,7 @@ class AtomFeed(Content):
     title: str
     description: str
     updated: Optional[datetime]
-    authors: Tuple[Author, ...]
+    authors: Tuple['Author', ...]
     language: Optional[str]
     copyright: Optional[str]
 
@@ -97,7 +97,7 @@ class AtomFeed(Content):
         [gen.add_entry(entry._as_fg()) for entry in self.entries]
         return gen
 
-    def write(self, path: GenPath, ctx: GenContext):
+    def write(self, path: 'GenPath', ctx: 'GenContext'):
         target = self.compile()
         path.create(target)
 
@@ -108,7 +108,7 @@ class RssEntry:
     url: str
     title: str
     description: Optional[str]
-    authors: Tuple[Author, ...]
+    authors: Tuple['Author', ...]
     created: datetime
     updated: datetime
 
@@ -139,7 +139,7 @@ class AtomEntry:
     title: str
     summary: Optional[str]
     content: Optional[str]
-    authors: Tuple[Author, ...]
+    authors: Tuple['Author', ...]
     created: datetime
     updated: datetime
 
@@ -171,24 +171,24 @@ T = TypeVar('T')
 class EntryFactory(ABC, Generic[T]):
 
     @abstractmethod
-    def rss(self, location: str, content: T, site: Site) -> RssEntry:
+    def rss(self, location: str, content: T, site: 'Site') -> RssEntry:
         """"""
 
     @abstractmethod
-    def atom(self, location: str, content: T, site: Site) -> AtomEntry:
+    def atom(self, location: str, content: T, site: 'Site') -> AtomEntry:
         """"""
 
     @abstractmethod
-    def accepts(self, location: str, content: Content) -> bool:
+    def accepts(self, location: str, content: 'Content') -> bool:
         """"""
 
 
 class MarkdownEntries(EntryFactory):
 
-    def accepts(self, location: str, content: Content):
+    def accepts(self, location: str, content: 'Content'):
         return isinstance(content, MarkdownPage)
 
-    def rss(self, location: str, content: MarkdownPage, site: Site) -> RssEntry:
+    def rss(self, location: str, content: MarkdownPage, site: 'Site') -> RssEntry:
         title = content.title or location
         description = content.summary or ''
         created = content.created or datetime.now(tz=timezone.utc)
@@ -203,7 +203,7 @@ class MarkdownEntries(EntryFactory):
             updated=updated,
         )
 
-    def atom(self, location: str, content: MarkdownPage, site: Site) -> AtomEntry:
+    def atom(self, location: str, content: MarkdownPage, site: 'Site') -> AtomEntry:
         title = content.title or location
         summary = content.summary or ''
         created = content.created or datetime.now(tz=timezone.utc)
@@ -226,7 +226,7 @@ class FeedGenerator:
     def __init__(self):
         self._factories = []
 
-    def _factory(self, location: str, content: Content):
+    def _factory(self, location: str, content: 'Content'):
         for factory in self._factories:
             if factory.accepts(location, content):
                 return factory
@@ -238,7 +238,7 @@ class FeedGenerator:
 
 
 class RssGenerator(FeedGenerator):
-    def __call__(self, source: Site):
+    def __call__(self, source: 'Site'):
         """Create an RSS feed."""
         authors = tuple(source.authors)
         entries = [
@@ -264,7 +264,7 @@ class RssGenerator(FeedGenerator):
 
 
 class AtomGenerator(FeedGenerator):
-    def __call__(self, source: Site):
+    def __call__(self, source: 'Site'):
         """Create an Atom feed."""
         entries = [
             self._factory(ic.location, ic.content)

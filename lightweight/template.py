@@ -1,28 +1,58 @@
 from collections import defaultdict
-from os import PathLike, getcwd
+from os import getcwd, path, walk
 from pathlib import Path
-from typing import Union, cast, Dict
+from typing import Union, Dict
 
-from jinja2 import Environment, FileSystemLoader, Template, StrictUndefined
-from jinja2.utils import LRUCache
-
-
-class DynamicCwd(PathLike):
-    """A path which always points to the current directory."""
-
-    def __fspath__(self):
-        return getcwd()
+from jinja2 import Environment, Template, StrictUndefined, BaseLoader, TemplateNotFound
+from jinja2.loaders import split_template_path
+from jinja2.utils import LRUCache, open_if_exists
 
 
-#
-# This bit may look a bit dodgy.
-# The thing is, for an ability to have isolated subsites, but still use the simple approach with a global Jinja
-# environment the environment is set to load templates relative to current working directory.
-#
-cwd_loader = FileSystemLoader([cast(str, DynamicCwd())], followlinks=True)
+class CwdLoader(BaseLoader):
+
+    def get_source(self, environment, template):
+        pieces = split_template_path(template)
+        searchpath = getcwd()
+        filename = path.join(searchpath, *pieces)
+        f = open_if_exists(filename)
+        if f is None:
+            raise TemplateNotFound(template)
+        try:
+            contents = f.read().decode('utf-8')
+        finally:
+            f.close()
+
+        mtime = path.getmtime(filename)
+
+        def uptodate():
+            try:
+                return path.getmtime(filename) == mtime
+            except OSError:
+                return False
+
+        return contents, filename, uptodate
+
+    def list_templates(self):
+        found = set()
+        searchpath = getcwd()
+        walk_dir = walk(searchpath, followlinks=False)
+        for dirpath, _, filenames in walk_dir:
+            for filename in filenames:
+                template = (
+                    path.join(dirpath, filename)[len(searchpath):]
+                        .strip(path.sep)
+                        .replace(path.sep, "/")
+                )
+                if template[:2] == "./":
+                    template = template[2:]
+                if template not in found:
+                    found.add(template)
+        return sorted(found)
+
+
 jinja_env = Environment(
-    loader=cwd_loader,
-    cache_size=0,
+    loader=CwdLoader(),
+    cache_size=0,  # does not affect anything, cache set below
     lstrip_blocks=True,
     trim_blocks=True,
     undefined=StrictUndefined,

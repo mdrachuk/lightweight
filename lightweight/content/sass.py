@@ -19,7 +19,7 @@ class Sass(Content):
     path: Path
     sourcemap: bool
 
-    def write(self, path: GenPath, ctx: GenContext):
+    def write(self, path: 'GenPath', ctx: 'GenContext'):
         if self.path.is_dir():
             css_at_target = construct_relative_css_path(self.path, target=path.absolute(), ctx=ctx)
             for p in paths(f'{self.path}/**/*.sass'):
@@ -30,17 +30,17 @@ class Sass(Content):
             _write(self.path, path, include_sourcemap=self.sourcemap)
 
 
-def construct_relative_css_path(source: Path, *, target: Path, ctx: GenContext) -> Callable[[Path], GenPath]:
+def construct_relative_css_path(source: Path, *, target: Path, ctx: 'GenContext') -> Callable[[Path], 'GenPath']:
     start = len(source.parts)
 
-    def remap(path: Path) -> GenPath:
+    def remap(path: Path) -> 'GenPath':
         relative_parts = path.parts[start:]
         return ctx.path(Path(*target.parts, *relative_parts)).with_suffix('.css')
 
     return remap
 
 
-def _write(source: Path, target: GenPath, *, include_sourcemap: bool):
+def _write(source: Path, target: 'GenPath', *, include_sourcemap: bool):
     sourcemap_path = target.with_name(target.name + '.map')
     result, sourcemap = compile(
         filename=str(source),

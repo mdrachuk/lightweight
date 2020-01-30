@@ -35,7 +35,7 @@ class MarkdownPage(Content):
     front_matter: Dict[str, Any]
     props: Dict[str, Any]
 
-    def write(self, path: GenPath, ctx: GenContext):
+    def write(self, path: 'GenPath', ctx: 'GenContext'):
         """Writes a rendered Jinja template with rendered Markdown, parameters from front-matter and code
         to the file provided path."""
         # TODO:mdrachuk:06.01.2020: warn if site, ctx, source are in props or front matter!
@@ -48,7 +48,7 @@ class MarkdownPage(Content):
             **self._evaluated_props(ctx),
         ))
 
-    def render(self, ctx: GenContext):
+    def render(self, ctx: 'GenContext'):
         """Render Markdown to html, extracting the ToC."""
         link_mapping = self.map_links(ctx)
         renderer = self.renderer(link_mapping)
@@ -62,7 +62,7 @@ class MarkdownPage(Content):
         )
 
     @staticmethod
-    def map_links(ctx: GenContext):
+    def map_links(ctx: 'GenContext'):
         """Map links allowing in Markdown to reference other Markdown pages by their ".md" files
         and using relative paths for other files."""
         link_mapping = {str(task.path): task.path.url for task in ctx.tasks}
