@@ -34,7 +34,7 @@ setup(
         'Issues': 'https://github.com/mdrachuk/lightweight/issues',
     },
     install_requires=[
-        'Jinja2~=2.10.1',
+        'Jinja2~=2.11',
         'feedgen~=0.9.0',
         'libsass~=0.19.2',
         'python-frontmatter~=0.4.5',
