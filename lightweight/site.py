@@ -229,7 +229,7 @@ class Site:
         asyncio.set_event_loop(loop)
         for cwd, _tasks in tasks.items():
             with directory(cwd):
-                writes = [schedule(task.content.write, task.path, ctx) for task in _tasks]
+                writes = [schedule(task.content.write, task.path, task.ctx) for task in _tasks]
                 loop.run_until_complete(gather(*writes, loop=loop))
         loop.close()
 
@@ -349,7 +349,7 @@ class IncludedContent(Included):
         return Path(self.location)
 
     def make_tasks(self, ctx: GenContext) -> List[GenTask]:
-        return [GenTask(ctx.path(self.location), self.content, self.cwd)]
+        return [GenTask(ctx.path(self.location), ctx, self.content, self.cwd)]
 
 
 @dataclass(frozen=True)
@@ -372,9 +372,11 @@ class IncludedSite(Included):
         return Path(self.location)
 
     def make_tasks(self, ctx: GenContext) -> List[GenTask]:
-        list_of_lists = [ic.make_tasks(ctx) for ic in self.site.content.ics]
+        site_ctx = self.site.create_ctx(ctx.out / self.location)
+        list_of_lists = [ic.make_tasks(site_ctx) for ic in self.site.content.ics]
         tasks = list(chain.from_iterable(list_of_lists))
-        return [replace(task, path=ctx.path(self.path / task.path.relative_path)) for task in tasks]
+        site_ctx.tasks = tuple(tasks)
+        return tasks
 
 
 @dataclass(frozen=True)
