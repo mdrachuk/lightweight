@@ -21,7 +21,7 @@ class JinjaPage(Content):
     source_path: Path
     props: Dict[str, Any]
 
-    def write(self, path: 'GenPath', ctx: 'GenContext'):
+    def write(self, path: GenPath, ctx: GenContext):
         path.create(self.render(ctx))
 
     def render(self, ctx):
@@ -54,14 +54,14 @@ def jinja(template_path: Union[str, Path], **props) -> JinjaPage:
 class LazyContextParameter:
     """A decorator for Jinja template parameters lazily evaluated from [context][GenContext] during render. """
 
-    def __init__(self, func: Callable[['GenContext'], Any]):
+    def __init__(self, func: Callable[[GenContext], Any]):
         self.func = func
 
-    def eval(self, ctx: 'GenContext') -> Any:
+    def eval(self, ctx: GenContext) -> Any:
         return self.func(ctx)  # type: ignore
 
 
-def from_ctx(func: Callable[['GenContext'], Any]):
+def from_ctx(func: Callable[[GenContext], Any]):
     """Mark a function with a decorator for its result to be evaluated lazily from context at the point of render
      and used as a Jinja template parameter.
 
@@ -82,7 +82,7 @@ def from_ctx(func: Callable[['GenContext'], Any]):
     return LazyContextParameter(func)
 
 
-def eval_if_lazy(o: Any, ctx: 'GenContext') -> Any:
+def eval_if_lazy(o: Any, ctx: GenContext) -> Any:
     """If passed a [lazy parameter][LazyContextParameter] the result of its evaluation.
     Otherwise, returns the provided value."""
     if isinstance(o, LazyContextParameter):
