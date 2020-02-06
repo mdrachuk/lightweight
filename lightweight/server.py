@@ -226,7 +226,7 @@ class LiveReloadServer(DevServer):
 
     def serve(self, host, port, loop):
         super().serve(host, port, loop)
-        self.stopped = Event()
+        self.stopped = Event(loop=loop)
         loop.create_task(self.watch_source())
 
     def shutdown(self):
