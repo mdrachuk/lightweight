@@ -1,5 +1,6 @@
 import asyncio
 from asyncio import gather
+from multiprocessing import Event
 from pathlib import Path
 
 import pytest
@@ -61,10 +62,10 @@ class TestTheServer:
     @pytest.mark.asyncio
     async def test_live_reload_regenerate(self, event_loop, unused_tcp_port):
         class MockRegenerate:
-            called = False
+            called = Event()
 
             def __call__(self):
-                self.called = True
+                self.called.set()
 
         regenerate = MockRegenerate()
         self.server = LiveReloadServer(self.directory, watch=self.directory, regenerate=regenerate, ignored=[])
@@ -75,7 +76,7 @@ class TestTheServer:
         with (self.dir_path / 'new-file').open('w') as f:
             f.write('Test file changes')
         await asyncio.sleep(0.5)  # wait for file change to get picked up
-        assert regenerate.called
+        assert regenerate.called.is_set()
 
     @pytest.mark.asyncio
     async def test_live_reload_ignore(self, event_loop, unused_tcp_port):
