@@ -1,6 +1,5 @@
 """Lightweight is a "Code over configuration" static site generator.
 
-@example
 ```python
 from lightweight import Site, markdown, paths, jinja, template, rss, atom, sass
 

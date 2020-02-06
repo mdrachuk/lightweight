@@ -2,7 +2,6 @@
 """
 Lightweight CLI.
 
-@example
 Access CLI help via:
 ```bash
 lw --help
@@ -12,7 +11,6 @@ or
 python -m lightweight.lw --help
 ```
 
-@example
 Initialize project using:
 ```bash
 lw init example_project --url https://example.org
@@ -22,8 +20,7 @@ Additional help:
 lw init --help
 ```
 
-@example
-Start a server for the project
+Start a server for the project:
 ```bash
 lw serve run:dev
 ```
@@ -92,7 +89,6 @@ class Generator:
 
 def positional_args_count(func: Callable, *, equals: int) -> bool:
     """
-    @example
     if not positional_args_count(func, equals=2):
         ...
     """

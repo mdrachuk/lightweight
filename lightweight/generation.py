@@ -68,7 +68,7 @@ class GenContext:
 
 @dataclass(frozen=True)
 class GenPath:
-    """A path for [writing content][Content.write)].
+    """A path for [writing content][Content.write].
     It contains both, the relative path (as specified by `site.include(relative_path, content)`)
     and the real path (an absolute path which in site’s `out`).
 
@@ -77,7 +77,6 @@ class GenPath:
 
     Also, proper URL can be obtained from [generation path][GenPath]
 
-    @example
     ```
     site = Site('https://example.org/')
     resources = GenPath(Path('resources'), out='/tmp/out', url_factory=lambda location: site/location)
@@ -131,7 +130,6 @@ class GenPath:
 
         URL is created by a URL factory. By default this would
 
-        @example
         ```
         site = Site('https://example.org/')
         url_factory = lambda location: site/location
@@ -186,7 +184,6 @@ class GenPath:
     def __truediv__(self, other: Union[GenPath, PurePath, str]) -> GenPath:
         """A child generation path can be created from an existing one by using division operator.
 
-        @example
         ```python
         parent = GenPath(Path('something/', 'tmp/out, ...))
         child = parent / 'child'

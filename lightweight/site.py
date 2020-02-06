@@ -31,7 +31,6 @@ class Site:
 
     The only required parameter is the URL of the site. Other parameters may be useful for different content types.
 
-    @example
     The following code output to the `out` directory the following content:
     - two rendered Jinja 2 HTML templates;
     - CSS rendered from SCSS;
@@ -243,11 +242,12 @@ class Site:
     def __truediv__(self, location: str) -> str:
         """Create a URL for the location at site.
 
-        @example
+        ```python
         site = Site('https://example.org/')
 
         url = site / 'resource/images/photo-1.jpeg'
         print(url) # https://example.org/resource/images/photo-1.jpeg
+        ```
         """
 
         return urljoin(self.url, location)
@@ -255,7 +255,6 @@ class Site:
     def __getitem__(self, location: str) -> Site:
         """Get a site with a subset of the this sites content, which is included at the provided path.
 
-        @example
         ```python
         site = Site(url='https://example.org/', ...) # site is a collection of content
 

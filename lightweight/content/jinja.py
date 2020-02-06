@@ -65,7 +65,6 @@ def from_ctx(func: Callable[[GenContext], Any]):
     """Mark a function with a decorator for its result to be evaluated lazily from context at the point of render
      and used as a Jinja template parameter.
 
-    @example
     ```python
     from lightweight import jinja, from_ctx
 

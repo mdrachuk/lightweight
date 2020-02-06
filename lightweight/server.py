@@ -65,7 +65,6 @@ def u(string: str) -> bytes:
 class DevServer:
     """A server serving static files from the provided directory.
 
-    @example
     ```python
     server = DevServer('app/static')
     loop = asyncio.get_event_loop()
@@ -85,7 +84,6 @@ class DevServer:
     def serve(self, host, port, loop: BaseEventLoop):
         """Creates an asyncio coroutine, that serves requests on the provided host and port.
 
-        @example
         ```python
         loop = asyncio.get_event_loop()
         server.serve('localhost', 8080, loop=loop)

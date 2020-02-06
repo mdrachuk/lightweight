@@ -58,7 +58,6 @@ def _write(source: Path, target: GenPath, *, include_sourcemap: bool):
 def sass(location: str, *, sourcemap: bool = True) -> Sass:
     """Run Sass/SCSS compiler on files at location. Can be a file name or a directory.
 
-    @example
     Sourcemaps are written under "<location>.map".
 
     ```python
