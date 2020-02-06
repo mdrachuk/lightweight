@@ -1,25 +1,16 @@
 from __future__ import annotations
 
-from asyncio import get_event_loop
-from concurrent.futures.thread import ThreadPoolExecutor
 from dataclasses import dataclass, replace
 from datetime import datetime
-from functools import partial
 from pathlib import Path, PurePath
-from typing import TYPE_CHECKING, Union, Tuple, Callable, TypeVar, IO, Any
+from typing import TYPE_CHECKING, Union, Tuple, Callable, IO, Any
 
 import lightweight
 
 if TYPE_CHECKING:
     from lightweight import Site, Content
 
-V = TypeVar('V')
 UrlFactory = Callable[[str], str]  # A url factory a full URL with a provided relative location.
-default_executor = ThreadPoolExecutor()
-
-
-async def schedule(func: Callable[..., V], *args, **kwargs) -> V:
-    return await get_event_loop().run_in_executor(default_executor, partial(func, *args, **kwargs))
 
 
 @dataclass(frozen=True)

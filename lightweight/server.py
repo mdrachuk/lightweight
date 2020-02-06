@@ -3,13 +3,12 @@
 from __future__ import annotations
 
 import os
-from asyncio import StreamReader, StreamWriter, start_server, Task, Event, BaseEventLoop, sleep
+from asyncio import StreamReader, StreamWriter, start_server, Event, BaseEventLoop, sleep, get_running_loop
 from dataclasses import dataclass
 from datetime import datetime
 from enum import Enum
 from logging import getLogger
 from pathlib import Path
-from threading import Thread
 from typing import Dict, Collection, Callable
 from uuid import uuid4
 
@@ -75,9 +74,10 @@ class DevServer:
         loop.stop()
     ```
     """
-    _server_task: Task
 
     def __init__(self, location: str):
+        self._server = None
+        self._server_task = None
         self.working_dir = Path(os.path.abspath(location))
         check_directory(self.working_dir)
 
@@ -90,11 +90,21 @@ class DevServer:
         loop.run_forever()
         ```
         """
-        self._server_task = loop.create_task(start_server(self.respond, host, port, loop=loop))
 
-    def shutdown(self):
+        async def _serve():
+            self._server = await start_server(self.respond, host, port, loop=loop, start_serving=False)
+            return await self._server.serve_forever()
+
+        self._server_task = loop.create_task(_serve())
+
+    def shutdown(self, loop):
         """"""
+
+        async def await_shutdown():
+            await self._server.wait_closed()
+
         self._server_task.cancel()
+        loop.run_until_complete(await_shutdown())
 
     def handle(self, writer: StreamWriter, request: HttpRequest):
         """Handle the request and write the response."""
@@ -229,8 +239,8 @@ class LiveReloadServer(DevServer):
         self.stopped = Event(loop=loop)
         loop.create_task(self.watch_source())
 
-    def shutdown(self):
-        super().shutdown()
+    def shutdown(self, loop):
+        super().shutdown(loop)
         self.stopped.set()
 
     def handle(self, writer: StreamWriter, request: HttpRequest):
@@ -267,10 +277,7 @@ class LiveReloadServer(DevServer):
         logger.info('Source change. Live reload triggered.')
         self.live_reload_id = self._new_id()
         try:
-            # Running in thread to isolate asyncio loops.
-            t = Thread(target=self.regenerate)
-            t.start()
-            t.join()
+            self.regenerate()
         except Exception as e:
             logger.exception('Exception when generating the site: ', exc_info=e)
 

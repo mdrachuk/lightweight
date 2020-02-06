@@ -47,19 +47,19 @@ class TestTheCli:
         assert (project / 'requirements.txt').exists()
         # TODO:mdrachuk:27.01.2020: check that output is the same
 
-    def test_serve(self, unused_tcp_port, out):
+    def test_serve(self, unused_tcp_port, out, event_loop):
         run_cli('lw init my-project --url https://example.org/')
         sys.argv = shlex.split(f'lw serve run:dev --source my-project --port {unused_tcp_port} --no-live-reload')
         args = parse_args()
-        loop = asyncio.new_event_loop()
-        t = ServeThread(partial(start_server,
-                                args.executable,
-                                source=args.source,
-                                out=args.out,
-                                host=args.host,
-                                port=args.port,
-                                enable_reload=not args.no_live_reload,
-                                loop=loop))
+        loop = event_loop
+        t = Thread(target=partial(start_server,
+                                  args.executable,
+                                  source=args.source,
+                                  out=args.out,
+                                  host=args.host,
+                                  port=args.port,
+                                  enable_reload=not args.no_live_reload,
+                                  loop=loop))
         t.start()
         asyncio.run(asyncio.sleep(0.2))
         response = asyncio.run(get(f'http://localhost:{unused_tcp_port}'))
@@ -70,21 +70,24 @@ class TestTheCli:
         assert 'liveReload.start();' not in response
         assert '</html>' in response
 
-        t.interrupt(loop)
+        interrupt(loop)
+        t.join()
 
-    def test_serve_live_reload(self, unused_tcp_port, out):
+    def test_serve_live_reload(self, unused_tcp_port, out, event_loop):
         run_cli('lw init my-project --url https://example.org/')
         sys.argv = shlex.split(f'lw serve run:dev --source my-project --port {unused_tcp_port}')
         args = parse_args()
-        loop = asyncio.new_event_loop()
-        t = ServeThread(partial(start_server,
-                                args.executable,
-                                source=args.source,
-                                out=args.out,
-                                host=args.host,
-                                port=args.port,
-                                enable_reload=not args.no_live_reload,
-                                loop=loop))
+
+        loop = event_loop
+
+        t = Thread(target=partial(start_server,
+                                  args.executable,
+                                  source=args.source,
+                                  out=args.out,
+                                  host=args.host,
+                                  port=args.port,
+                                  enable_reload=not args.no_live_reload,
+                                  loop=loop))
         t.start()
         asyncio.run(asyncio.sleep(0.2))
         response = asyncio.run(get(f'http://localhost:{unused_tcp_port}'))
@@ -92,7 +95,8 @@ class TestTheCli:
         assert 'HTTP/1.0 200' in response
         assert 'liveReload.start();' in response
 
-        t.interrupt(loop)
+        interrupt(loop)
+        t.join()
 
     def test_serve_invalid_signature(self, caplog):
         with pytest.raises(SystemExit):
@@ -173,13 +177,8 @@ def run_cli(cmd: str):
             raise e
 
 
-class ServeThread(Thread):
-    def __init__(self, target):
-        super().__init__(target=target)
+def interrupt(loop):
+    async def _interrupt():
+        raise KeyboardInterrupt()
 
-    def interrupt(self, loop):
-        async def exit():
-            raise KeyboardInterrupt()
-
-        loop.create_task(exit())
-        self.join()
+    loop.create_task(_interrupt())

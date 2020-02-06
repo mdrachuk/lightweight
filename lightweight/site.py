@@ -5,8 +5,10 @@ import os
 from abc import abstractmethod, ABC
 from asyncio import gather
 from collections import defaultdict
+from concurrent.futures.thread import ThreadPoolExecutor
 from dataclasses import dataclass, replace
 from datetime import datetime
+from functools import partial
 from itertools import chain
 from os import getcwd
 from os.path import abspath
@@ -20,7 +22,7 @@ from .content.copies import copy
 from .empty import Empty, empty
 from .errors import AbsolutePathIncluded, IncludedDuplicate
 from .files import paths, directory
-from .generation import GenContext, GenTask, schedule
+from .generation import GenContext, GenTask
 
 
 class Site:
@@ -226,6 +228,11 @@ class Site:
 
         loop = asyncio.new_event_loop()
         asyncio.set_event_loop(loop)
+        executor = ThreadPoolExecutor()
+
+        async def schedule(func, *args, **kwargs):
+            return await loop.run_in_executor(executor, partial(func, *args, **kwargs))
+
         for cwd, _tasks in tasks.items():
             with directory(cwd):
                 writes = [schedule(task.content.write, task.path, task.ctx) for task in _tasks]

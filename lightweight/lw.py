@@ -31,9 +31,11 @@ lw serve --help
 """
 import asyncio
 import inspect
+import multiprocessing as mp
 import os
 import re
 import sys
+import traceback
 from argparse import ArgumentParser
 from asyncio import gather
 from contextlib import contextmanager
@@ -55,6 +57,45 @@ from lightweight.server import DevServer, LiveReloadServer
 logger = getLogger('lightweight')
 
 
+class Process(mp.Process):
+    """https://stackoverflow.com/a/33599967/8677389"""
+
+    def __init__(self, *args, **kwargs):
+        mp.Process.__init__(self, *args, **kwargs)
+        self._pconn, self._cconn = mp.Pipe()
+        self._exception = None
+        self._traceback = None
+
+    def run(self):
+        try:
+            mp.Process.run(self)
+            self._cconn.send(None)
+        except Exception as e:
+            tb = traceback.format_exc()
+            self._cconn.send((e, tb))
+            # raise e  # You can still rise this exception if you need to
+
+    @property
+    def exception(self):
+        self._recv_exc()
+        return self._exception
+
+    def _recv_exc(self):
+        if self._pconn.poll():
+            recv = self._pconn.recv()
+            if recv is not None:
+                self._exception, self._traceback = recv
+
+    @property
+    def traceback(self):
+        self._recv_exc()
+        return self._traceback
+
+
+class FailedGeneration(Exception):
+    pass
+
+
 class Generator:
 
     def __init__(self, executable_name: str, *, source: str, out: str, host: str, port: int):
@@ -63,14 +104,25 @@ class Generator:
         self.out = out
         self.host = host
         self.port = port
+        self._loaded = False
 
     def generate(self):
-        func = self.load_executable()
-        site = func(self.host, self.port)
-        if not hasattr(site, 'generate') or not positional_args_count(site.generate, equals=1):
-            raise InvalidCommand(f'"{self.executable_name}" did not return an instance of Site '
-                                 f'with a "site.generate(out)" method.')
-        return site.generate(self.out)
+        def worker():
+            func = self.load_executable()
+            site = func(self.host, self.port)
+            if not hasattr(site, 'generate') or not positional_args_count(site.generate, equals=1):
+                raise InvalidCommand(f'"{self.executable_name}" did not return an instance of Site '
+                                     f'with a "site.generate(out)" method.')
+            site.generate(self.out)
+
+        p = Process(target=worker)
+        p.start()
+        p.join()
+        if p.exception:
+            if isinstance(p.exception, InvalidCommand):
+                raise p.exception
+            else:
+                raise FailedGeneration() from p.exception
 
     def load_executable(self):
         module_name, func_name = self.executable_name.rsplit(':', maxsplit=1)
@@ -139,11 +191,11 @@ def start_server(executable_name: str, *, source: str, out: str, host: str, port
     except (KeyboardInterrupt, SystemExit):
         print()  # new line after ^C
         logger.info('Stopping the server.')
-        server.shutdown()
+        server.shutdown(loop)
         pending = asyncio.all_tasks(loop=loop)
         loop.run_until_complete(gather(*pending, loop=loop))
         loop.stop()
-        sys.exit()
+        logger.info('Server stopped.')
 
 
 def absolute_out(out: Optional[str], abs_source: str) -> str:

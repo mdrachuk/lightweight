@@ -17,7 +17,7 @@ class TestTheServer:
         loop = asyncio.new_event_loop()
         yield loop
         if self.server:
-            self.server.shutdown()
+            self.server.shutdown(loop=loop)
         pending = asyncio.all_tasks(loop=loop)
         loop.run_until_complete(gather(*pending, loop=loop))
         loop.close()
