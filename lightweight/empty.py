@@ -1,4 +1,4 @@
-__all__ = ['empty']
+__all__ = ['empty', 'Empty']
 
 
 class _SingletonMeta(type):
