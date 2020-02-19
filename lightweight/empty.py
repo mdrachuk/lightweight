@@ -1,3 +1,7 @@
+"""[empty] value is useful for specifying actually missing. See [`Site.copy`][lightweight.Site.copy] signature for an example.
+
+[empty] is a singleton so it can always be checked as `value is empty`.
+"""
 __all__ = ['empty', 'Empty']
 
 
@@ -11,7 +15,7 @@ class _SingletonMeta(type):
 
 
 class Empty(metaclass=_SingletonMeta):
-    """An alternative to None, when None is a legitimate option for a function argument,
+    """An alternative to `None`, when `None` is a legitimate option for a function argument,
     but it also such an argument can be omitted. See [Site.copy(...)][lightweight.site.copy]
 
     Empty is a singleton.

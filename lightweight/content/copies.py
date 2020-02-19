@@ -23,7 +23,7 @@ class DirectoryCopy(Content):
 
 @dataclass(frozen=True)
 class FileCopy(Content):
-    """Site content which is a copy fof a file from the path provided as source."""
+    """Site content which is a copy of a file from the path provided as source."""
     source: Union[Path, str]
 
     def write(self, path: GenPath, ctx: GenContext):

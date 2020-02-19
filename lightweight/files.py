@@ -1,3 +1,4 @@
+"""Lightweight utilities for working with files."""
 import os
 from contextlib import contextmanager
 from glob import glob
@@ -6,11 +7,12 @@ from typing import Union, List
 
 
 def paths(pattern: Union[str, Path]) -> List[Path]:
-    """A list of paths matching the provided [glob][1] pattern.
+    """List paths matching the provided [glob][1] pattern.
 
     ```python
     >>> print(paths('lightweight/**/__init__.py'))
     [PosixPath('lightweight/__init__.py'), PosixPath('lightweight/content/__init__.py')]
+
     >>> print(paths('lightweight/*.typed'))
     [PosixPath('lightweight/py.typed')]
     ```
@@ -24,14 +26,16 @@ def paths(pattern: Union[str, Path]) -> List[Path]:
 
 @contextmanager
 def directory(location: Union[str, Path]):
-    """Execute the following statements with provided location as "cwd" (current working directory).
+    """Execute following statements using the provided location as "cwd" (current working directory).
 
-    ```
+    ```python
     from pathlib import Path
 
     project_location = Path(__file__).absolute().parent
+
     with directory(project_location):
         site.include('index.html')
+
     ```
     """
     cwd = os.getcwd()

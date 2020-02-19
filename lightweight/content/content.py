@@ -8,7 +8,7 @@ if TYPE_CHECKING:
 
 
 class Content(ABC):
-    """An abstract content that can be included by a Site."""
+    """An abstract content that can be included by a [Site][..site.Site]."""
 
     @abstractmethod
     def write(self, path: GenPath, ctx: GenContext):

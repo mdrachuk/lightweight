@@ -1,33 +1,50 @@
+"""Lightweight [Markdown][1] toolkit.
+
+[`LwRenderer`] is an implementation of the [`mistune.Renderer`][2] adding table of contents, and overriding some elements.
+
+[1]: https://daringfireball.net/projects/markdown/
+[2]: https://github.com/lepture/mistune/tree/v1#renderer
+"""
+
 from __future__ import annotations
 
-from collections import namedtuple
-from typing import List, Dict
+from typing import List, Dict, NamedTuple
 
 from mistune import Renderer, escape, escape_link  # type: ignore # no typings
 from slugify import slugify  # type: ignore # no typings
 
-TocEntry = namedtuple('TocEntry', ['slug', 'title', 'level'])
+
+class TocEntry(NamedTuple):
+    """An entry of the [TocBuilder]."""
+    slug: str
+    title: str
+    level: int
 
 
-class TocBuilder():
+class TocBuilder:
+    """[Table of Contents][TableOfContents] builder used by [TocMixin]. """
+    entries: List[TocEntry]
+
     def __init__(self):
         self.entries: List[TocEntry] = []
 
     def append(self, entry: TocEntry):
+        """Add an item to the table of contents."""
         self.entries.append(entry)
 
     def compile(self, level) -> TableOfContents:
+        """Create a new Table of contents."""
         if not len(self.entries):
             return TableOfContents()
 
         min_level = min([entry.level for entry in self.entries])
         toc = TableOfContents(id='table-of-contents')
 
-        self.fill_empty_sections(level + min_level - 1, min_level, toc.sections)
-        self.fill_sections(level + min_level - 1, min_level, toc)
+        self._fill_empty_sections(level + min_level - 1, min_level, toc.sections)
+        self._fill_sections(level + min_level - 1, min_level, toc)
         return toc
 
-    def fill_sections(self, level, min_level, toc):
+    def _fill_sections(self, level, min_level, toc):
         for entry in self.entries:
             if entry.level > level:
                 continue
@@ -36,7 +53,7 @@ class TocBuilder():
                 sections = sections[len(sections) - 1].sections
             sections.append(Section(entry.title, entry.slug))
 
-    def fill_empty_sections(self, level, min_level, sections):
+    def _fill_empty_sections(self, level, min_level, sections):
         for i, entry in enumerate(self.entries):
             if entry.level > level:
                 continue
@@ -48,10 +65,18 @@ class TocBuilder():
 
 
 class TableOfContents:
+    """Table of contents of a Markdown document.
+
+    Composed from a list of [sections][Section].
+
+    The `id` property is set to the root `<ul>` element.
+    """
+    id: str
+    sections: List[Section]
 
     def __init__(self, id: str = None):
         self.id = id
-        self.sections: List[Section] = []
+        self.sections = []
 
     @property
     def html(self) -> str:
@@ -69,6 +94,9 @@ class TableOfContents:
 
 
 class Section(TableOfContents):
+    """[Table of contents][TableOfContents] item."""
+    title: str
+    slug: str
 
     def __init__(self, title: str, slug: str):
         super().__init__()
@@ -77,6 +105,10 @@ class Section(TableOfContents):
 
 
 class TocMixin(object):
+    """A mixin used by [LwRenderer] compiling a [table of contents][TableOfContents].
+
+    Note: requires calling [reset][TocMixin.reset] after rendering.
+    """
     toc: TocBuilder
 
     def __init__(self, **kwargs):
@@ -97,6 +129,12 @@ class TocMixin(object):
 
 
 class LwRenderer(TocMixin, Renderer):
+    """Renders Markdown overriding the following:
+    - links — allows linking to other Markdown pages by their `.md` file paths.
+    - images — adds `width=100%` to `<img/>` tags.
+
+    Also provides a way to compile a [table of contents][TableOfContents] via [`LwRenderer.table_of_contents`].
+    """
 
     def __init__(self, link_mapping: Dict[str, str]):
         super().__init__()

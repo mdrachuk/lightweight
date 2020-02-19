@@ -37,7 +37,7 @@ class GenContext:
     """A generation context.
     Contains the data useful during the generation: the site and the list of tasks to be executed in the process.
 
-    The context is created by [Site] upon starting generation
+    The context is created by a [Site] upon starting generation
     and provided to the [`Content.write(path, ctx)`][Content.write] method as a second parameter.
     """
     site: Site
@@ -198,7 +198,7 @@ class GenPath:
         return replace(self, relative_path=self.relative_path.with_name(name))
 
     def open(self, mode='r', buffering=-1, encoding=None, errors=None, newline=None) -> IO[Any]:
-        """Open the file. Same as [Path.open(...)][Path.open)]"""
+        """Open the file. Same as [Path.open(...)][Path.open]"""
         return self.real_path.open(mode=mode, buffering=buffering, encoding=encoding, errors=errors, newline=newline)
 
     def with_suffix(self, suffix: str) -> GenPath:

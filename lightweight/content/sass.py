@@ -1,4 +1,21 @@
+"""[SCSS/Sass][1] Lightweight [Content].
+
+Allows rendering single file, style directories and corresponding sourcemaps.
+
+Usage:
+```python
+from lightweight import sass
+
+...
+
+site.include('css/style.css', sass('styles/style.scss', sourcemap=False))
+```
+
+[1]: https://sass-lang.com
+"""
 from __future__ import annotations
+
+__all__ = ['Sass', 'sass']
 
 from dataclasses import dataclass
 from pathlib import Path
@@ -21,7 +38,7 @@ class Sass(Content):
 
     def write(self, path: GenPath, ctx: GenContext):
         if self.path.is_dir():
-            css_at_target = construct_relative_css_path(self.path, target=path.absolute(), ctx=ctx)
+            css_at_target = _construct_relative_css_path(self.path, target=path.absolute(), ctx=ctx)
             for p in paths(f'{self.path}/**/*.sass'):
                 _write(p, css_at_target(p), include_sourcemap=self.sourcemap)
             for p in paths(f'{self.path}/**/*.scss'):
@@ -30,7 +47,7 @@ class Sass(Content):
             _write(self.path, path, include_sourcemap=self.sourcemap)
 
 
-def construct_relative_css_path(source: Path, *, target: Path, ctx: GenContext) -> Callable[[Path], GenPath]:
+def _construct_relative_css_path(source: Path, *, target: Path, ctx: GenContext) -> Callable[[Path], GenPath]:
     start = len(source.parts)
 
     def remap(path: Path) -> GenPath:

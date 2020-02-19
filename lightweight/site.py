@@ -1,5 +1,7 @@
 from __future__ import annotations
 
+__all__ = ['Site', 'Author']
+
 import asyncio
 import os
 from abc import abstractmethod, ABC
@@ -149,7 +151,7 @@ class Site:
         """Copy files from content to location."""
 
     def include(self, location: str, content: Union[Content, Site, str, None] = None):
-        """Included the content at the location.
+        """Include the content at the location.
 
         Note the content write is executed only upon calling [`Site.generate()`][Site.generate].
 
@@ -285,7 +287,7 @@ class Site:
         return self.copy(content=content, url=self / location + '/')
 
 
-def clip_path_parts(number: int, path: Path) -> str:
+def _clip_path_parts(number: int, path: Path) -> str:
     return os.path.join(*path.parts[number:])
 
 
@@ -315,7 +317,7 @@ class Includes:
         cc = Includes()
         for ic in self.ics:
             if all(actual == expected for actual, expected in zip(ic.path.parts, target.parts)):
-                new_loc = clip_path_parts(len(target.parts), ic.path)
+                new_loc = _clip_path_parts(len(target.parts), ic.path)
                 new_ic = replace(ic, location=new_loc)
                 cc.add(new_ic)
         return cc
@@ -344,7 +346,7 @@ class IncludedContent(Included):
     Location is a string with an output path relative to generation out directory.
     It does not include a leading forward slash.
 
-    `cwd` is important for properly generating subsites.
+    `cwd` is important for proper subsite generation.
     """
     location: str
     content: Content
@@ -367,7 +369,7 @@ class IncludedSite(Included):
     Location is a string with an output path relative to generation out directory.
     It does not include a leading forward slash.
 
-    `cwd` is important for properly generating subsites.
+    `cwd` is important for proper subsite generation.
     """
     location: str
     site: Site

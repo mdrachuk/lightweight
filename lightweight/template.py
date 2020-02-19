@@ -1,3 +1,17 @@
+"""This module configures a Jinja environment to use with the app ([`jinja_env`]).
+This environment is configured to locate templates and resolve their inner references according to
+the current working directory (`cwd`).
+
+Also a [strict undefined][1] is enabled.
+This means that any operations with an undefined Jinja template parameter will result in an error.
+This is a safer approach in contrast to Jinja defaults.
+
+[`template`] is a shortcut for loading templates using this environment.
+
+[1]: https://jinja.palletsprojects.com/en/2.11.x/api/#undefined-types
+"""
+__all__ = ['template', 'jinja_env']
+
 from collections import defaultdict
 from os import getcwd, path, walk
 from pathlib import Path

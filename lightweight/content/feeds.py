@@ -1,4 +1,7 @@
+"""Generate RSS/Atom feeds from the content included by a site."""
 from __future__ import annotations
+
+__all__ = ['rss', 'atom']
 
 from abc import ABC, abstractmethod
 from dataclasses import dataclass, asdict
@@ -17,7 +20,8 @@ if TYPE_CHECKING:
 
 @dataclass(frozen=True)
 class RssFeed(Content):
-    """An immutable RSS feed content that can be saved to a file."""
+    """An immutable RSS feed content which is saved to a file."""
+
     url: str
     image_url: Optional[str]
     title: str
@@ -60,7 +64,8 @@ class RssFeed(Content):
 
 @dataclass(frozen=True)
 class AtomFeed(Content):
-    """An immutable Atom feed content that can be saved to a file."""
+    """An immutable Atom feed content which is saved to a file."""
+
     url: str
     icon_url: Optional[str]
     logo_url: Optional[str]
@@ -104,6 +109,7 @@ class AtomFeed(Content):
 
 @dataclass(frozen=True)
 class RssEntry:
+    """Empty"""
     id: str
     url: str
     title: str
@@ -134,6 +140,7 @@ class RssEntry:
 
 @dataclass(frozen=True)
 class AtomEntry:
+    """Empty"""
     id: str
     url: str
     title: str

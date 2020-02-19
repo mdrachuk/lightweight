@@ -3,7 +3,7 @@
 from __future__ import annotations
 
 import os
-from asyncio import StreamReader, StreamWriter, start_server, Event, BaseEventLoop, sleep, get_running_loop
+from asyncio import StreamReader, StreamWriter, start_server, Event, BaseEventLoop, sleep, Task
 from dataclasses import dataclass
 from datetime import datetime
 from enum import Enum
@@ -74,10 +74,10 @@ class DevServer:
         loop.stop()
     ```
     """
+    _server_task: Task
 
     def __init__(self, location: str):
         self._server = None
-        self._server_task = None
         self.working_dir = Path(os.path.abspath(location))
         check_directory(self.working_dir)
 
