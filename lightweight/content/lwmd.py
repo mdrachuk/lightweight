@@ -1,6 +1,7 @@
 """Lightweight [Markdown][1] toolkit.
 
-[`LwRenderer`] is an implementation of the [`mistune.Renderer`][2] adding table of contents, and overriding some elements.
+[`LwRenderer`][LwRenderer] is an implementation of the [`mistune.Renderer`][2] adding table of contents,
+ and overriding some elements.
 
 [1]: https://daringfireball.net/projects/markdown/
 [2]: https://github.com/lepture/mistune/tree/v1#renderer
