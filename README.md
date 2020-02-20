@@ -72,14 +72,13 @@ if __name__ == '__main__':
 
 Initialize a new project using `init` command:
 ```bash
-lw init <location>
+lw init --url https://example.org example
 ```
 
 It accepts multiple optional arguments:
 ```
 lw init -h
-usage: lw.py init [-h] [--url URL] [--title TITLE] [--authors AUTHORS]
-                  location
+usage: lw init [-h] --url URL [--title TITLE] [--authors AUTHORS] location
 
 Generate Lightweight skeleton application
 
@@ -99,9 +98,9 @@ Lightweight includes a simple static web server with live reload serving at `loc
 ```bash
 lw serve run:dev
 ```
-Here `site` is a Python module 
+Here `run` is a Python module 
 
-Host and port can be set via:
+Host and port can be changed via:
 ```bash
 lw serve run:dev --host 0.0.0.0 --port 80
 ```
@@ -117,8 +116,8 @@ The live reload can be disabled with `--no-live-reload` flag:
 lw serve run:dev --no-live-reload
 ```
 Otherwise every served HTML file will be injected with a javascript that polls `/__live_reload_id__`.
-The script reloads the page when value at that location changes.
-That happens after regenerating the site upon change in `--source` directory.
+The script triggers page reload when the value at that location changes.
+The `/__live_reload_id__` is changed after regenerating the site upon change in `--source` directory.
 
 To stop the server press `Ctrl+C` in terminal.
 
