@@ -39,11 +39,12 @@ import logging
 from .content import Content, feeds, atom, rss, markdown, jinja, from_ctx, sass
 from .files import paths, directory
 from .generation import GenPath, GenContext
-from .site import Site, Author
+from .site import Site
+from .author import Author
 from .template import template, jinja_env
 
 logging.basicConfig()
 logger = logging.getLogger('lightweight')
 logger.setLevel(logging.INFO)
 
-__version__ = '1.0.0.dev46'
+__version__ = '1.0.0.dev47'

@@ -1,60 +1,10 @@
 from __future__ import annotations
 
 from dataclasses import dataclass, replace
-from datetime import datetime
 from pathlib import Path, PurePath
-from typing import TYPE_CHECKING, Union, Tuple, Callable, IO, Any
-
-import lightweight
-
-if TYPE_CHECKING:
-    from lightweight import Site, Content
+from typing import Callable, Tuple, Union, IO, Any
 
 UrlFactory = Callable[[str], str]  # A url factory a full URL with a provided relative location.
-
-
-@dataclass(frozen=True)
-class GenTask:
-    """A task executed by [Site] during generation.
-
-    All of site’s tasks can be accessed during generation via [GenContext][GenContext.tasks].
-
-    Generation Task objects differ from the [Site’s IncludedContent][lightweight.site.IncludedContent]
-    by having the path of [GenPath] type (instead of regular Path).
-    [GenPath] has knowledge of the generation `out` directory,
-    and is passed directly to [`content.write(path, ctx)`][Content.write].
-
-    Includes `cwd` (current working directory) in which the original content was created.
-    Content [`write(...)`][Content.write] operates from this directory.
-    """
-    path: GenPath
-    ctx: GenContext
-    content: Content
-    cwd: str  # current working directory
-
-
-class GenContext:
-    """A generation context.
-    Contains the data useful during the generation: the site and the list of tasks to be executed in the process.
-
-    The context is created by a [Site] upon starting generation
-    and provided to the [`Content.write(path, ctx)`][Content.write] method as a second parameter.
-    """
-    site: Site
-    out: Path
-    tasks: Tuple[GenTask, ...]
-    generated: datetime  # UTC datetime of generation
-    version: str
-
-    def __init__(self, out: Path, site: Site):
-        self.out = out
-        self.site = site
-        self.generated = datetime.utcnow()
-        self.version = lightweight.__version__
-
-    def path(self, p: Union[Path, str]) -> GenPath:
-        """Create a new [GenPath] in this generation context from a regular path."""
-        return GenPath(Path(p), self.out, lambda location: self.site / location)
 
 
 @dataclass(frozen=True)

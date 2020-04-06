@@ -1,17 +1,15 @@
 from __future__ import annotations
 
-__all__ = ['Site', 'Author']
+__all__ = ['Site']
 
 import asyncio
 import os
-from abc import abstractmethod, ABC
 from asyncio import gather
 from collections import defaultdict
 from concurrent.futures.thread import ThreadPoolExecutor
 from dataclasses import dataclass, replace
 from datetime import datetime
 from functools import partial
-from itertools import chain
 from os import getcwd
 from os.path import abspath
 from pathlib import Path
@@ -19,6 +17,7 @@ from shutil import rmtree
 from typing import overload, Union, Optional, Collection, List, Set, Dict
 from urllib.parse import urlparse, urljoin
 
+from .author import Author
 from .content.content import Content
 from .content.copies import copy
 from .empty import Empty, empty
@@ -143,14 +142,10 @@ class Site:
         """Include the content at the provided location."""
 
     @overload
-    def include(self, location: str, content: Site):
-        """Include the content at the provided location."""
-
-    @overload
     def include(self, location: str, content: str):
         """Copy files from content to location."""
 
-    def include(self, location: str, content: Union[Content, Site, str, None] = None):
+    def include(self, location: str, content: Union[Content, str, None] = None):
         """Include the content at the location.
 
         Note the content write is executed only upon calling [`Site.generate()`][Site.generate].
@@ -171,8 +166,6 @@ class Site:
             [self._include_content(path, content_, cwd) for path, content_ in contents.items()]
         elif isinstance(content, Content):
             self._include_content(location, content, cwd)
-        elif isinstance(content, Site):
-            self._include_site(location, content, cwd)
         elif isinstance(content, str):
             source = Path(content)
             if not source.exists():
@@ -190,16 +183,7 @@ class Site:
             )
         )
 
-    def _include_site(self, location: str, site: Site, cwd: str):
-        self._include(
-            IncludedSite(
-                location=location,
-                site=site,
-                cwd=cwd
-            )
-        )
-
-    def _include(self, c: Included):
+    def _include(self, c: IncludedContent):
         if c.location in self.content:
             raise IncludedDuplicate(at=c.location)
         self.content.add(c)
@@ -287,21 +271,17 @@ class Site:
         return self.copy(content=content, url=self / location + '/')
 
 
-def _clip_path_parts(number: int, path: Path) -> str:
-    return os.path.join(*path.parts[number:])
-
-
 class Includes:
-    ics: List[Included]
-    by_cwd: Dict[str, List[Included]]
-    by_location: Dict[str, Included]
+    ics: List[IncludedContent]
+    by_cwd: Dict[str, List[IncludedContent]]
+    by_location: Dict[str, IncludedContent]
 
     def __init__(self):
         self.ics = []
         self.by_cwd = defaultdict(list)
         self.by_location = {}
 
-    def add(self, ic: Included):
+    def add(self, ic: IncludedContent):
         self.ics.append(ic)
         self.by_cwd[ic.cwd].append(ic)
         self.by_location[ic.location] = ic
@@ -323,22 +303,12 @@ class Includes:
         return cc
 
 
-# @dataclass(frozen=True) -- ABC cannot be a dataclass
-class Included(ABC):
-    location: str
-    cwd: str
-
-    @property
-    def path(self):
-        return Path(self.location)
-
-    @abstractmethod
-    def make_tasks(self, ctx: GenContext) -> List[GenTask]:
-        """"""
+def _clip_path_parts(number: int, path: Path) -> str:
+    return os.path.join(*path.parts[number:])
 
 
 @dataclass(frozen=True)
-class IncludedContent(Included):
+class IncludedContent:
     """The [content][Content] included by a [Site].
 
     Contains the site’s location and `cwd` (current working directory) of the content.
@@ -358,37 +328,3 @@ class IncludedContent(Included):
 
     def make_tasks(self, ctx: GenContext) -> List[GenTask]:
         return [GenTask(ctx.path(self.location), ctx, self.content, self.cwd)]
-
-
-@dataclass(frozen=True)
-class IncludedSite(Included):
-    """Another site included by a [Site].
-
-    Contains the relative location and `cwd` (current working directory) of the content.
-
-    Location is a string with an output path relative to generation out directory.
-    It does not include a leading forward slash.
-
-    `cwd` is important for proper subsite generation.
-    """
-    location: str
-    site: Site
-    cwd: str
-
-    @property
-    def path(self):
-        return Path(self.location)
-
-    def make_tasks(self, ctx: GenContext) -> List[GenTask]:
-        site_ctx = self.site.create_ctx(ctx.out / self.location)
-        list_of_lists = [ic.make_tasks(site_ctx) for ic in self.site.content.ics]
-        tasks = list(chain.from_iterable(list_of_lists))
-        site_ctx.tasks = tuple(tasks)
-        return tasks
-
-
-@dataclass(frozen=True)
-class Author:
-    """An author. Mostly used by RSS/Atom."""
-    name: Optional[str] = None
-    email: Optional[str] = None
