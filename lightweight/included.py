@@ -1,8 +1,7 @@
 from __future__ import annotations
 
-import os
 from collections import defaultdict
-from dataclasses import replace, dataclass
+from dataclasses import dataclass
 from pathlib import Path
 from typing import List, Dict
 
@@ -30,20 +29,6 @@ class Includes:
 
     def __iter__(self):
         return iter(self.ics)
-
-    def at_path(self, target: Path) -> Includes:
-        target = Path(target)
-        cc = Includes()
-        for ic in self.ics:
-            if all(actual == expected for actual, expected in zip(ic.path.parts, target.parts)):
-                new_loc = _clip_path_parts(len(target.parts), ic.path)
-                new_ic = replace(ic, location=new_loc)
-                cc.add(new_ic)
-        return cc
-
-
-def _clip_path_parts(number: int, path: Path) -> str:
-    return os.path.join(*path.parts[number:])
 
 
 @dataclass(frozen=True)

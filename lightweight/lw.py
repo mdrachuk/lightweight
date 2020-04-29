@@ -46,11 +46,11 @@ from logging import getLogger
 from os import getcwd
 from pathlib import Path
 from random import randint, sample
-from typing import Any, Optional, Callable, List
+from typing import Any, Optional, Callable
 
 from slugify import slugify  # type: ignore
 
-from lightweight import Site, jinja, directory, jinja_env, paths, Author, __version__
+from lightweight import Site, jinja, directory, jinja_env, paths, __version__
 from lightweight.errors import InvalidCommand
 from lightweight.server import DevServer, LiveReloadServer
 
@@ -225,7 +225,7 @@ class Color(object):
         return f'rgb({self.r}, {self.g}, {self.b})'
 
 
-def quickstart(location: str, url: str, title: Optional[str], authors: List[str]):
+def quickstart(location: str, url: str, title: Optional[str]):
     path = Path(location)
     path.mkdir(parents=True, exist_ok=True)
 
@@ -237,10 +237,7 @@ def quickstart(location: str, url: str, title: Optional[str], authors: List[str]
     template_location = Path(__file__).parent / 'project-template'
 
     with directory(template_location), custom_jinja_tags():
-        site = Site(
-            url=url, title=title,
-            authors=[Author(name=name) for name in authors if len(name)]
-        )
+        site = Site(url=url, title=title)
 
         [site.include(str(p), jinja(p)) for p in paths('_templates_/**/*.html')]
         [site.include(str(p), jinja(p)) for p in paths('*.html')]
@@ -324,11 +321,10 @@ def add_init_cli(subparsers):
     qs_parser.add_argument('location', type=str, help='the directory to initialize site generator in')
     qs_parser.add_argument('--url', type=str, help='the url of the generated site', required=True)
     qs_parser.add_argument('--title', type=str, help='the title of of the generated site')
-    qs_parser.add_argument('--authors', type=str, default='', help='comma-separated list of names')
     qs_parser.set_defaults(func=lambda args: quickstart(args.location,
                                                         url=args.url,
                                                         title=args.title,
-                                                        authors=args.authors.split(',')))
+                                                        ))
 
 
 def add_version_cli(subparsers):

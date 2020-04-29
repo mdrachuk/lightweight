@@ -6,19 +6,16 @@ import asyncio
 from asyncio import gather
 from collections import defaultdict
 from concurrent.futures.thread import ThreadPoolExecutor
-from datetime import datetime
 from functools import partial
 from os import getcwd
 from os.path import abspath
 from pathlib import Path
 from shutil import rmtree
-from typing import overload, Union, Optional, Collection, List, Set, Dict
+from typing import overload, Union, Optional, List, Dict
 from urllib.parse import urlparse, urljoin
 
-from .author import Author
 from .content.content import Content
 from .content.copies import copy
-from .empty import Empty, empty
 from .errors import AbsolutePathIncluded, IncludedDuplicate
 from .files import paths, directory
 from .generation import GenContext, GenTask
@@ -53,13 +50,6 @@ class Site:
     url: str
     content: Includes
     title: Optional[str]
-    icon_url: Optional[str]
-    logo_url: Optional[str]
-    description: Optional[str]
-    authors: Set[Author]
-    language: Optional[str]
-    copyright: Optional[str]
-    updated: Optional[datetime]
 
     def __init__(
             self,
@@ -67,15 +57,6 @@ class Site:
             *,
             content: Includes = None,
             title: Optional[str] = None,
-            icon_url: Optional[str] = None,
-            logo_url: Optional[str] = None,
-            description: Optional[str] = None,
-            author_name: Optional[str] = None,
-            author_email: Optional[str] = None,
-            authors: Collection[Author] = None,
-            language: Optional[str] = None,
-            copyright: Optional[str] = None,
-            updated: Optional[datetime] = None,
             **kwargs
     ):
         url_parts = urlparse(url)
@@ -85,52 +66,6 @@ class Site:
         self.url = url
         self.content = Includes() if not content else content
         self.title = title
-        self.icon_url = icon_url
-        self.logo_url = logo_url
-        self.description = description
-        self.author_name = author_name
-        self.author_email = author_email
-        authors = set() if authors is None else set(authors)
-        if author_name or author_email:
-            authors |= {Author(author_name, author_email)}
-        self.authors = authors
-        self.language = language
-        self.copyright = copyright
-        self.updated = updated
-        self.__post_init__(**kwargs)
-
-    def __post_init__(self, **kwargs):
-        """"""
-
-    def copy(
-            self,
-            url: Union[str, Empty] = empty,
-            content: Union[Includes, Empty] = empty,
-            title: Union[Optional[str], Empty] = empty,
-            icon_url: Union[Optional[str], Empty] = empty,
-            description: Union[Optional[str], Empty] = empty,
-            author_name: Union[Optional[str], Empty] = empty,
-            author_email: Union[Optional[str], Empty] = empty,
-            language: Union[Optional[str], Empty] = empty,
-            copyright: Union[Optional[str], Empty] = empty,
-            updated: Union[Optional[datetime], Empty] = empty,
-    ) -> Site:
-        """Creates a new Site which copies the attributes of the current one.
-
-        Some property values can be overriden, by providing them to this method.
-        """
-        return Site(
-            url=url if url is not empty else self.url,  # type: ignore
-            content=content if content is not empty else self.content,  # type: ignore
-            title=title if title is not empty else self.title,  # type: ignore
-            icon_url=icon_url if icon_url is not empty else self.icon_url,  # type: ignore
-            description=description if description is not empty else self.description,  # type: ignore
-            author_name=author_name if author_name is not empty else self.author_name,  # type: ignore
-            author_email=author_email if author_email is not empty else self.author_email,  # type: ignore
-            language=language if language is not empty else self.language,  # type: ignore
-            copyright=copyright if copyright is not empty else self.copyright,  # type: ignore
-            updated=updated if updated is not empty else self.updated,  # type: ignore
-        )
 
     @overload
     def include(self, location: str):
@@ -215,12 +150,12 @@ class Site:
         asyncio.set_event_loop(loop)
         executor = ThreadPoolExecutor()
 
-        async def schedule(func, *args, **kwargs):
-            return await loop.run_in_executor(executor, partial(func, *args, **kwargs))
+        async def schedule(task):
+            return await loop.run_in_executor(executor, partial(task.content.write, task.path, task.ctx))
 
         for cwd, _tasks in tasks.items():
             with directory(cwd):
-                writes = [schedule(task.content.write, task.path, task.ctx) for task in _tasks]
+                writes = map(schedule, _tasks)
                 loop.run_until_complete(gather(*writes, loop=loop))
         loop.close()
 
@@ -243,28 +178,3 @@ class Site:
         """
 
         return urljoin(self.url, location)
-
-    def __getitem__(self, location: str) -> Site:
-        """Get a site with a subset of the this sites content, which is included at the provided path.
-
-        ```python
-        site = Site(url='https://example.org/', ...) # site is a collection of content
-
-        site.include('index.html', <index>)
-        site.include('posts/1', <post-1>)
-        site.include('posts/2', <post-2>)
-        site.include('posts/3', <post-3>)
-        site.include('static', <static>)
-
-        posts = site['posts']
-        assert posts.url is 'https://example.org/posts'
-        assert <post-1> in posts
-        assert <post-2> in posts
-        assert <post-3> in posts
-        assert <static> not in posts
-        ```
-        """
-        content = self.content.at_path(Path(location))
-        if not content:
-            raise KeyError(f'There is no content at path "{location}"')
-        return self.copy(content=content, url=self / location + '/')

@@ -19,10 +19,6 @@ site.include('index.html', jinja('pages/index.html'))
 [site.include(f'posts/{post.source_path.stem}.html', post) for post in blog_posts('posts/**.md')]
 site.include('posts.html', jinja('pages/posts.html'))
 
-# Syndicate RSS and Atom feeds.
-site.include('posts.atom.xml', atom(site['posts']))
-site.include('posts.rss.xml', rss(site['posts']))
-
 # Render SASS to CSS.
 site.include('css/style.css', sass('styles/style.scss'))
 
@@ -36,11 +32,10 @@ site.generate()
 """
 import logging
 
-from .content import Content, feeds, atom, rss, markdown, jinja, from_ctx, sass
+from .content import Content, markdown, jinja, from_ctx, sass
 from .files import paths, directory
 from .generation import GenPath, GenContext
 from .site import Site
-from .author import Author
 from .template import template, jinja_env
 
 logging.basicConfig()

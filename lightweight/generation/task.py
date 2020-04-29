@@ -3,7 +3,6 @@ from dataclasses import dataclass
 from lightweight import Content
 
 
-# if TYPE_CHECKING:
 from .path import GenPath
 from .context import GenContext
 
