@@ -22,7 +22,7 @@ lw init --help
 
 Start a server for the project:
 ```bash
-lw serve run:dev
+lw serve website:dev
 ```
 Additional help:
 ```bash
@@ -241,7 +241,7 @@ def quickstart(location: str, url: str, title: Optional[str]):
 
         [site.include(str(p), jinja(p)) for p in paths('_templates_/**/*.html')]
         [site.include(str(p), jinja(p)) for p in paths('*.html')]
-        site.include('run.py', jinja('run.py.j2', title_slug=title_slug))
+        site.include('website.py', jinja('website.py.j2', title_slug=title_slug))
         site.include('requirements.txt', jinja('requirements.txt.j2', version=__version__))
         site.include('posts')
         [site.include(str(p), jinja(p)) for p in paths('styles/**/*css') if p.name != 'attributes.scss']
@@ -298,7 +298,7 @@ def add_server_cli(subparsers):
     server_parser.add_argument('executable', type=str,
                                help='Function accepting a host and a port and returning a Site instance '
                                     'specified as "<module>:<function>" '
-                                    '(e.g. "run:dev" to call "dev(host, port)" method of "run.py")')
+                                    '(e.g. "website:dev" to call "dev(host, port)" method of "website.py")')
     server_parser.add_argument('--source', type=str, default=getcwd(),
                                help='project location: parent directory of a "generator". Defaults to cwd.')
     server_parser.add_argument('--out', type=str, default=None, help='output directory for generation results.'

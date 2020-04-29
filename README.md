@@ -78,7 +78,7 @@ lw init --url https://example.org example
 It accepts multiple optional arguments:
 ```
 lw init -h
-usage: lw init [-h] --url URL [--title TITLE] [--authors AUTHORS] location
+usage: lw init [-h] --url URL [--title TITLE] location
 
 Generate Lightweight skeleton application
 
@@ -89,31 +89,30 @@ optional arguments:
   -h, --help         show this help message and exit
   --url URL          the url of the generated site
   --title TITLE      the title of of the generated site
-  --authors AUTHORS  comma-separated list of names
 ```
 
 ## Dev Server
 
 Lightweight includes a simple static web server with live reload serving at `localhost:8080`:
 ```bash
-lw serve run:dev
+lw serve website:dev
 ```
-Here `run` is a Python module 
+Here `website` is a Python module 
 
 Host and port can be changed via:
 ```bash
-lw serve run:dev --host 0.0.0.0 --port 80
+lw serve website:dev --host 0.0.0.0 --port 80
 ```
 
 The directory to resolve the module is provided as `--source`. It defaults to cwd.
 The source directory is watched for live reload. 
 ```bash
-lw serve run:dev --source ~/Projects/example
+lw serve website:dev --source ~/Projects/example
 ```
 
 The live reload can be disabled with `--no-live-reload` flag:
 ```bash
-lw serve run:dev --no-live-reload
+lw serve website:dev --no-live-reload
 ```
 Otherwise every served HTML file will be injected with a javascript that polls `/__live_reload_id__`.
 The script triggers page reload when the value at that location changes.

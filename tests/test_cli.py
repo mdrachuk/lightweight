@@ -35,7 +35,7 @@ class TestTheCli:
     def test_generate(self, out: Path):
         run_cli('lw init my-project --url https://example.org/')
         project = out / 'my-project'
-        assert (project / 'run.py').exists()
+        assert (project / 'website.py').exists()
         assert (project / '_templates_').exists()
         assert (project / 'img').exists()
         assert (project / 'js').exists()
@@ -49,7 +49,7 @@ class TestTheCli:
 
     def test_serve(self, unused_tcp_port, out, event_loop):
         run_cli('lw init my-project --url https://example.org/')
-        sys.argv = shlex.split(f'lw serve run:dev --source my-project --port {unused_tcp_port} --no-live-reload')
+        sys.argv = shlex.split(f'lw serve website:dev --source my-project --port {unused_tcp_port} --no-live-reload')
         args = parse_args()
         loop = event_loop
         t = Thread(target=partial(start_server,
@@ -75,7 +75,7 @@ class TestTheCli:
 
     def test_serve_live_reload(self, unused_tcp_port, out, event_loop):
         run_cli('lw init my-project --url https://example.org/')
-        sys.argv = shlex.split(f'lw serve run:dev --source my-project --port {unused_tcp_port}')
+        sys.argv = shlex.split(f'lw serve website:dev --source my-project --port {unused_tcp_port}')
         args = parse_args()
 
         loop = event_loop
@@ -150,7 +150,7 @@ class TestTheCli:
         def assert_start_server_call(executable, source, out, host, port, enable_reload):
             nonlocal called_start_server
             called_start_server = True
-            assert executable == 'run:dev'
+            assert executable == 'website:dev'
             assert source == 'my-project'
             assert port == 8080
             assert host == 'localhost'
@@ -158,7 +158,7 @@ class TestTheCli:
             assert enable_reload
 
         lw.start_server = assert_start_server_call
-        run_cli(f'lw serve run:dev --source my-project --port 8080')
+        run_cli(f'lw serve website:dev --source my-project --port 8080')
         assert called_start_server
 
 
