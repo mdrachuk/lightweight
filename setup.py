@@ -35,7 +35,6 @@ setup(
     },
     install_requires=[
         'Jinja2~=2.11',
-        'feedgen~=0.9.0',
         'libsass~=0.19.2',
         'python-frontmatter~=0.4.5',
         'python-slugify~=3.0.3',

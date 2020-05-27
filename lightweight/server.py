@@ -1,4 +1,4 @@
-# Mostly stolen from picoweb web pico-framework for Pycopy 2019 MIT
+# Mostly stolen from picoweb -- web pico-framework for Pycopy 2019 MIT
 
 from __future__ import annotations
 
