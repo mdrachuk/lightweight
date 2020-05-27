@@ -12,7 +12,7 @@ setup(
     name='lightweight',
     version=lightweight.__version__,
     packages=find_packages(exclude=('tests*',)),
-    package_data={'lightweight': ['py.typed', 'project-template/*']},
+    package_data={'lightweight': ['py.typed', 'project-template/**/**/*']},
     entry_points={
         'console_scripts': [
             'lw = lightweight.lw:main',
