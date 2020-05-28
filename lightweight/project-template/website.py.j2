@@ -1,4 +1,5 @@
-from lightweight import Site, jinja, sass, directory, template, markdown, paths, GenContext, from_ctx
+#!/usr/bin/env python
+from lightweight import Site, jinja, sass, directory, template, markdown, paths, GenContext, from_ctx, SiteCli
 
 from pathlib import Path
 
@@ -42,13 +43,6 @@ def post_tasks(ctx: GenContext):
     return [task for task in ctx.tasks if task.path.parts[0] == 'blog']
 
 
-def dev(host: str, port: int):
-    return {! title_slug !}(url=f'http://{host}:{port}/')
-
-
-def prod():
-    return {! title_slug !}(url='{! site.url !}')
-
-
 if __name__ == '__main__':
-    prod().generate()
+    cli = SiteCli({! title_slug !})
+    cli.run()

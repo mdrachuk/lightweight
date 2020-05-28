@@ -1,5 +1,13 @@
-# Mostly stolen from picoweb -- web pico-framework for Pycopy 2019 MIT
+"""
+Dev HTTP server serving static files using asyncio.
 
+Highlights:
+- Allows to drop ".html" in URLs
+    - which corresponds to nginx `try_files $uri $uri.html $uri/index.html =404;`
+- Can inject live-reload JS to HTML.
+
+Mostly stolen from picoweb -- web pico-framework for Pycopy 2019 MIT
+"""
 from __future__ import annotations
 
 import os
