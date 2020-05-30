@@ -158,7 +158,7 @@ def positional_args_count(func: Callable, *, equals: int) -> bool:
 def load_module(p: Path) -> Any:
     module_name = p.name.rsplit('.')[0]
     with sys_path_starting(with_=p.parent):
-        loader = SourceFileLoader(module_name, p)
+        loader = SourceFileLoader(module_name, str(p))
         spec = spec_from_loader(module_name, loader, is_package=False)
         module = module_from_spec(spec)
         loader.exec_module(module)
