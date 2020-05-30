@@ -55,17 +55,12 @@ class Site:
             self,
             url: str,
             *,
-            content: Includes = None,
             title: Optional[str] = None,
-            **kwargs
+            content: Optional[Includes] = None,
     ):
-        url_parts = urlparse(url)
-        assert url_parts.scheme, 'Missing scheme in Site URL.'
-        if not url.endswith('/'):
-            raise ValueError(f'Site URL ({url}) must end with a forward slash (/).')
-        self.url = url
-        self.content = Includes() if not content else content
+        self.url = _check_site_url(url)
         self.title = title
+        self.content = Includes() if not content else content
 
     @overload
     def include(self, location: str):
@@ -178,3 +173,12 @@ class Site:
         """
 
         return urljoin(self.url, location)
+
+
+def _check_site_url(url: str) -> str:
+    url_parts = urlparse(url)
+    if url_parts.scheme is None:
+        raise ValueError('Missing scheme in Site URL.')
+    if not url.endswith('/'):
+        raise ValueError(f'Site URL ({url}) must end with a forward slash (/).')
+    return url
