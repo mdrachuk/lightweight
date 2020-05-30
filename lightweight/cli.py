@@ -25,7 +25,7 @@ from pathlib import Path
 from typing import Callable, Any
 
 from .errors import InvalidCommand
-from .lw import start_server
+from .lw import start_server, FailedGeneration
 from .site import Site
 
 logger = getLogger('lightweight')
@@ -109,10 +109,18 @@ class SiteCli:
                             '(enabled by default calling the executable on every project file change)')
         func_file_path = Path(inspect.getsourcefile(self.build))
         func_name = self.build.__qualname__
-        p.set_defaults(func=lambda args: start_server(func_file_path,
-                                                      func_name,
-                                                      source=args.watch,
-                                                      out=args.out,
-                                                      host=args.host,
-                                                      port=args.port,
-                                                      enable_reload=not args.no_live_reload))
+        p.set_defaults(func=lambda args: self._run_serve(func_file_path, func_name, args))
+
+    def _run_serve(self, func_file: Path, func_name: str, args: Any):
+        try:
+            start_server(
+                func_file,
+                func_name,
+                source=args.watch,
+                out=args.out,
+                host=args.host,
+                port=args.port,
+                enable_reload=not args.no_live_reload,
+            )
+        except FailedGeneration as e:
+            pass

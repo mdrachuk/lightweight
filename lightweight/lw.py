@@ -127,6 +127,7 @@ class Generator:
             if isinstance(p.exception, InvalidCommand):
                 raise p.exception
             else:
+                logger.error(p.traceback)
                 raise FailedGeneration() from p.exception
 
     def load_executable(self):
@@ -231,7 +232,7 @@ class Color(object):
         return f'rgb({self.r}, {self.g}, {self.b})'
 
 
-def quickstart(location: str, url: str, title: Optional[str]):
+def quickstart(location: str, title: Optional[str]):
     path = Path(location)
     path.mkdir(parents=True, exist_ok=True)
 
@@ -243,7 +244,7 @@ def quickstart(location: str, url: str, title: Optional[str]):
     template_location = Path(__file__).parent / 'project-template'
 
     with directory(template_location), custom_jinja_tags():
-        site = Site(url=url, title=title)
+        site = Site(title=title)
 
         [site.include(str(p), jinja(p)) for p in paths('_templates_/**/*.html')]
         [site.include(str(p), jinja(p)) for p in paths('*.html')]
