@@ -244,7 +244,7 @@ def quickstart(location: str, title: Optional[str]):
     template_location = Path(__file__).parent / 'project-template'
 
     with directory(template_location), custom_jinja_tags():
-        site = Site(title=title)
+        site = Site(url="https://example.com/", title=title)
 
         [site.include(str(p), jinja(p)) for p in paths('_templates_/**/*.html')]
         [site.include(str(p), jinja(p)) for p in paths('*.html')]
@@ -302,12 +302,8 @@ def argument_parser():
 def add_init_cli(subparsers):
     qs_parser = subparsers.add_parser(name='init', description='Generate Lightweight skeleton application')
     qs_parser.add_argument('location', type=str, help='the directory to initialize site generator in')
-    qs_parser.add_argument('--url', type=str, help='the url of the generated site', required=True)
     qs_parser.add_argument('--title', type=str, help='the title of of the generated site')
-    qs_parser.set_defaults(func=lambda args: quickstart(args.location,
-                                                        url=args.url,
-                                                        title=args.title,
-                                                        ))
+    qs_parser.set_defaults(func=lambda args: quickstart(args.location, title=args.title))
 
 
 def add_version_cli(subparsers):
