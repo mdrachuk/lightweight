@@ -28,7 +28,7 @@ from .errors import InvalidCommand
 from .lw import start_server, FailedGeneration
 from .site import Site
 
-logger = getLogger('lightweight')
+logger = getLogger('lw')
 
 
 class SiteCli:

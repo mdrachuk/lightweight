@@ -22,7 +22,7 @@ from uuid import uuid4
 
 from watchgod import awatch  # type: ignore
 
-logger = getLogger('lightweight')
+logger = getLogger('lw.server')
 
 
 @dataclass(frozen=True)
@@ -334,4 +334,4 @@ liveReload.start();
 
 
 def now_repr():
-    return datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+    return datetime.now().strftime("%H:%M:%S")

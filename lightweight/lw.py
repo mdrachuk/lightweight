@@ -53,7 +53,7 @@ from lightweight import Site, jinja, directory, jinja_env, paths
 from lightweight.errors import InvalidCommand
 from lightweight.server import DevServer, LiveReloadServer
 
-logger = getLogger('lightweight')
+logger = getLogger('lw')
 
 
 class Process(mp.Process):

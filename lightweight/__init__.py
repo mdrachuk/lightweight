@@ -40,7 +40,7 @@ from .template import template, jinja_env
 from .cli import SiteCli
 
 logging.basicConfig()
-logger = logging.getLogger('lightweight')
+logger = logging.getLogger('lw')
 logger.setLevel(logging.INFO)
 
 __version__ = '1.0.0.dev49'
