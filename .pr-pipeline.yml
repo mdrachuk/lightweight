@@ -60,7 +60,7 @@ stages:
           - script: git checkout $(System.PullRequest.SourceBranch)
             displayName: 'Checkout branch'
 
-          - script: cd tests && pytest --cov=lightweight --cov-report=html
+          - script: cd tests && PYTHONPATH=$(Agent.BuildDirectory):$PYTHONPATH pytest --cov=lightweight --cov-report=html
             displayName: 'Test with coverage'
 
           - script: cd tests && coveralls
