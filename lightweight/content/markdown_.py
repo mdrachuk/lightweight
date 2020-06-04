@@ -22,9 +22,9 @@ import frontmatter  # type: ignore
 from jinja2 import Template
 from mistune import Markdown  # type: ignore
 
-from .content import Content
-from .jinja import _eval_if_lazy
-from .lwmd import LwRenderer, TableOfContents
+from .content_ import Content
+from .jinja_ import _eval_if_lazy
+from .lwmd_ import LwRenderer, TableOfContents
 
 if TYPE_CHECKING:
     from lightweight import GenPath, GenContext

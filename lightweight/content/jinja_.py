@@ -13,7 +13,7 @@ from typing import Dict, Any, Union, TYPE_CHECKING, Callable, TypeVar, Generic
 
 from jinja2 import Template
 
-from .content import Content
+from .content_ import Content
 from ..template import template
 
 if TYPE_CHECKING:

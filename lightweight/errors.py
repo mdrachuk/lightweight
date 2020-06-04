@@ -11,3 +11,7 @@ class IncludedDuplicate(Exception):
 
 class InvalidCommand(Exception):
     """An invalid CLI command."""
+
+
+class InvalidSiteCliUsage(Exception):
+    pass

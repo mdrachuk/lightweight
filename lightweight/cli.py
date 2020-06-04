@@ -24,7 +24,7 @@ from os import getcwd
 from pathlib import Path
 from typing import Callable, Any
 
-from .errors import InvalidCommand
+from .errors import InvalidCommand, InvalidSiteCliUsage
 from .lw import start_server, FailedGeneration
 from .site import Site
 
@@ -107,6 +107,18 @@ class SiteCli:
         p.add_argument('--no-live-reload', action='store_true', default=False,
                        help='disable live reloading '
                             '(enabled by default calling the executable on every project file change)')
+        if not inspect.isfunction(self.build):
+            raise InvalidSiteCliUsage("SiteCli first argument (<build>) must be a module-level function")
+        if inspect.ismethod(self.build):
+            raise InvalidSiteCliUsage("SiteCli first argument (<build>) must be a module-level function. "
+                                      "It cannot be a method.")
+        if self.build.__name__ == '<lambda>':
+            raise InvalidSiteCliUsage("SiteCli first argument (<build>) must be a module-level function. "
+                                      "It cannot be a lambda.")
+        if not positional_args_count(self.build, equals=1):
+            raise InvalidSiteCliUsage('SiteCli first argument (<build>) can only have 1 positional argument: '
+                                      'str representing site url (e.g. "https://localhost:80/").')
+
         func_file_path = Path(inspect.getsourcefile(self.build))
         func_name = self.build.__qualname__
         p.set_defaults(func=lambda args: self._run_serve(func_file_path, func_name, args))
@@ -116,11 +128,21 @@ class SiteCli:
             start_server(
                 func_file,
                 func_name,
-                source=args.watch,
-                out=args.out,
+                source=Path(args.watch),
+                out=Path(args.out),
                 host=args.host,
                 port=args.port,
                 enable_reload=not args.no_live_reload,
             )
         except FailedGeneration as e:
             pass
+
+
+def positional_args_count(func: Callable, *, equals: int) -> bool:
+    """
+    if not positional_args_count(func, equals=2):
+        ...
+    """
+    count = equals
+    params = inspect.signature(func).parameters
+    return len(params) >= count and all(p.default != p.empty for p in list(params.values())[count:])
