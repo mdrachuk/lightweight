@@ -98,7 +98,7 @@ class FailedGeneration(Exception):
 
 class Generator:
 
-    def __init__(self, func_file: Path, func_name: str, *, source: str, out: str, host: str, port: int):
+    def __init__(self, func_file: Path, func_name: str, *, source: Path, out: Path, host: str, port: int):
         self.func_file = func_file
         self.func_name = func_name
         self.source = source
@@ -175,8 +175,8 @@ def sys_path_starting(with_: Path):
 
 
 def start_server(func_file: Path, func_name: str,
-                 *, source: str, out: str, host: str, port: int, enable_reload: bool, loop=None):
-    source = os.path.abspath(source)
+                 *, source: Path, out: Path, host: str, port: int, enable_reload: bool, loop=None):
+    source = source.absolute()
     out = absolute_out(out, source)
 
     generator = Generator(func_file, func_name, source=source, host=host, port=port, out=out)
@@ -206,10 +206,10 @@ def start_server(func_file: Path, func_name: str,
         logger.info('Server stopped.')
 
 
-def absolute_out(out: Optional[str], abs_source: str) -> str:
+def absolute_out(out: Optional[Path], abs_source: Path) -> Path:
     if out is None:
-        return str(Path(abs_source) / 'out')
-    return os.path.abspath(out)
+        return abs_source / 'out'
+    return out.absolute()
 
 
 @dataclass(frozen=True)

@@ -35,8 +35,8 @@ class TestTheServer:
     async def test_serves_live_reload_js(self, event_loop, unused_tcp_port):
         loop = event_loop
         self.server = LiveReloadServer(
-            self.directory,
-            watch=self.directory,
+            self.dir_path,
+            watch=self.dir_path,
             regenerate=lambda: None,
             ignored=[]
         )
@@ -68,7 +68,7 @@ class TestTheServer:
                 self.called.set()
 
         regenerate = MockRegenerate()
-        self.server = LiveReloadServer(self.directory, watch=self.directory, regenerate=regenerate, ignored=[])
+        self.server = LiveReloadServer(self.dir_path, watch=self.dir_path, regenerate=regenerate, ignored=[])
         port = unused_tcp_port
         self.server.serve('127.0.0.1', port, loop=event_loop)
 
@@ -83,10 +83,10 @@ class TestTheServer:
         ignored_path = self.dir_path / 'ignore'
         ignored_path.mkdir(parents=True, exist_ok=True)
         self.server = LiveReloadServer(
-            self.directory,
-            watch=self.directory,
+            self.dir_path,
+            watch=self.dir_path,
             regenerate=lambda: None,
-            ignored=[str(ignored_path)]
+            ignored=[ignored_path]
         )
         port = unused_tcp_port
         self.server.serve('127.0.0.1', port, loop=event_loop)
@@ -100,7 +100,7 @@ class TestTheServer:
 
     @pytest.mark.asyncio
     async def test_serves_no_live_reload_js(self, event_loop, unused_tcp_port):
-        self.server = DevServer(self.directory)
+        self.server = DevServer(self.dir_path)
         port = unused_tcp_port
         self.server.serve('127.0.0.1', port, loop=event_loop)
 
@@ -113,7 +113,7 @@ class TestTheServer:
 
     @pytest.mark.asyncio
     async def test_403(self, event_loop, unused_tcp_port):
-        self.server = DevServer(self.directory)
+        self.server = DevServer(self.dir_path)
         port = unused_tcp_port
         self.server.serve('127.0.0.1', port, loop=event_loop)
 
@@ -134,7 +134,7 @@ class TestTheServer:
 
         event_loop.set_exception_handler(pass_if_matching)
 
-        self.server = BadServer(self.directory)
+        self.server = BadServer(self.dir_path)
         port = unused_tcp_port
         self.server.serve('127.0.0.1', port, loop=event_loop)
         assert '500' in await get(f'http://127.0.0.1:{port}/../..')
@@ -142,9 +142,9 @@ class TestTheServer:
 
 def test_file_not_found():
     with pytest.raises(FileNotFoundError):
-        DevServer('non-existing')
+        DevServer(Path('non-existing'))
 
 
 def test_file_not_a_directory():
     with pytest.raises(NotADirectoryError):
-        DevServer('resources/test.html')
+        DevServer(Path('resources/test.html'))

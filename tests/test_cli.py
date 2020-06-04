@@ -139,6 +139,7 @@ class TestTheCli:
     def test_exit_on_failed_generation(self, mock_start_server):
         def raise_failed(*args, **kwargs):
             raise FailedGeneration()
+
         mock = mock_start_server
         mock.doing(raise_failed)
         run_site_cli("test_cli.py serve")
@@ -160,11 +161,16 @@ class TestTheCli:
         with pytest.raises(InvalidSiteCliUsage):
             run_site_cli("test_cli.py serve", build=Some().method)
 
-    def test_serve_invalid_signature(self, caplog):
+    def test_serve_invalid_signature(self, mock_start_server):
         with pytest.raises(InvalidSiteCliUsage):
             run_site_cli("test_cli.py serve", build=build_func_no_arg)
         with pytest.raises(InvalidSiteCliUsage):
             run_site_cli("test_cli.py serve", build=build_func_2_args)
+        run_site_cli("test_cli.py serve", build=build_func_with_default)
+
+    def test_invalid_command_shows_help(self, capsys):
+        run_site_cli("test_cli.py")
+        assert "usage: test_cli.py" in capsys.readouterr().out
 
 
 def assert_help_in_out(capsys):
@@ -208,6 +214,10 @@ def build_func_no_arg():
 
 
 def build_func_2_args(a, b):
+    return Site(url='http://test-cli.py/')
+
+
+def build_func_with_default(a, b='test'):
     return Site(url='http://test-cli.py/')
 
 

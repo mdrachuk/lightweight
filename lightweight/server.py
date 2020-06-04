@@ -10,7 +10,6 @@ Mostly stolen from picoweb -- web pico-framework for Pycopy 2019 MIT
 """
 from __future__ import annotations
 
-import os
 from asyncio import StreamReader, StreamWriter, start_server, Event, BaseEventLoop, sleep, Task
 from dataclasses import dataclass
 from datetime import datetime
@@ -84,9 +83,9 @@ class DevServer:
     """
     _server_task: Task
 
-    def __init__(self, location: str):
+    def __init__(self, location: Path):
         self._server = None
-        self.working_dir = Path(os.path.abspath(location))
+        self.working_dir = location
         check_directory(self.working_dir)
 
     def serve(self, host, port, loop: BaseEventLoop):
@@ -136,7 +135,7 @@ class DevServer:
         exact = self.working_dir / location
         html = self.working_dir / f'{location}.html'
         index = self.working_dir / location / 'index.html'
-        if not os.path.abspath(exact).startswith(str(self.working_dir)):
+        if not str(exact.resolve()).startswith(str(self.working_dir)):
             raise PermissionError()
         if exact.exists() and not exact.is_dir():
             path = exact
@@ -230,15 +229,15 @@ class LiveReloadServer(DevServer):
 
     def __init__(
             self,
-            location: str,
+            location: Path,
             *,
-            watch: str,
+            watch: Path,
             regenerate: RunGenerate,
-            ignored: Collection[str] = tuple()
+            ignored: Collection[Path] = tuple()
     ):
         super().__init__(location)
         self.live_reload_id = self._new_id()
-        self.watch_location = os.path.abspath(watch)
+        self.watch_location = str(watch)
         self.regenerate = regenerate
         self.ignored = ignored
 
