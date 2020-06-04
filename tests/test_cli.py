@@ -11,7 +11,7 @@ from pytest import fixture
 
 from lightweight import directory, __version__, lw, Site, SiteCli, jinja
 from lightweight.errors import InvalidSiteCliUsage, InvalidCommand
-from lightweight.lw import FailedGeneration
+from lightweight.lw import FailedGeneration, start_server
 from tests.server_utils import get
 
 
@@ -211,6 +211,16 @@ class TestTheCli:
     def test_build_error_with_url_and_port(self, mock_start_server):
         with pytest.raises(InvalidCommand):
             run_site_cli("test_cli.py build --port 42 --url http://example.org/")
+
+    def test_run_server(self, tmp_path):
+        def raise_interrupt():
+            raise SystemExit()
+
+        loop = asyncio.new_event_loop()
+        loop.run_forever = raise_interrupt
+        with pytest.raises(SystemExit):
+            start_server(Path(__file__), 'build_func', source=tmp_path, out=tmp_path / 'out', host='localhost',
+                         port=8080, enable_reload=False, loop=loop)
 
 
 def assert_help_in_out(capsys):
