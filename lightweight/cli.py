@@ -107,11 +107,11 @@ class SiteCli:
         p.add_argument('--no-live-reload', action='store_true', default=False,
                        help='disable live reloading '
                             '(enabled by default calling the executable on every project file change)')
-        if not inspect.isfunction(self.build):
-            raise InvalidSiteCliUsage("SiteCli first argument (<build>) must be a module-level function")
         if inspect.ismethod(self.build):
             raise InvalidSiteCliUsage("SiteCli first argument (<build>) must be a module-level function. "
                                       "It cannot be a method.")
+        if not inspect.isfunction(self.build):
+            raise InvalidSiteCliUsage("SiteCli first argument (<build>) must be a module-level function")
         if self.build.__name__ == '<lambda>':
             raise InvalidSiteCliUsage("SiteCli first argument (<build>) must be a module-level function. "
                                       "It cannot be a lambda.")

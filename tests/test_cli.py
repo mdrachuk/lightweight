@@ -139,10 +139,10 @@ class TestTheCli:
     def test_exit_on_failed_generation(self, mock_start_server):
         def raise_failed(*args, **kwargs):
             raise FailedGeneration()
-
+        mock = mock_start_server
+        mock.doing(raise_failed)
         run_site_cli("test_cli.py serve")
-        mock_start_server.doing(raise_failed)
-        assert mock_start_server.run_count == 1
+        assert mock.run_count == 1
 
     def test_cant_serve_uncallable(self):
         with pytest.raises(InvalidSiteCliUsage):
