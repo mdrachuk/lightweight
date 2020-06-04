@@ -20,7 +20,7 @@ stages:
               python.version: '3.7'
         steps:
           - template: .use-python.yml
-          - script: PYTHONPATH=$(Build.Repository.LocalPath):$PYTHONPATH cd tests && pytest
+          - script: cd tests && PYTHONPATH=$(Build.Repository.LocalPath):$PYTHONPATH pytest
             displayName: 'Test'
 
       - job: Typings
@@ -81,7 +81,7 @@ stages:
           - script: git checkout master
             displayName: 'Checkout master'
 
-          - script: PYTHONPATH=$(Build.Repository.LocalPath):$PYTHONPATH cd tests && pytest --cov=lightweight --cov-report=html
+          - script: cd tests && PYTHONPATH=$(Build.Repository.LocalPath):$PYTHONPATH pytest --cov=lightweight --cov-report=html
             displayName: 'Test with coverage'
 
           - script: cd tests && coveralls
