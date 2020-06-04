@@ -1,4 +1,4 @@
-# modules are prefixed with _ to avoid name clashes with functions
+# modules are suffixed with _ to avoid name clashes with functions
 
 from .content_ import Content
 from .copies_ import copy
