@@ -9,7 +9,7 @@ UrlFactory = Callable[[str], str]  # A url factory a full URL with a provided re
 
 @dataclass(frozen=True)
 class GenPath:
-    """A path for [writing content][Content.write].
+    """A path for [writing content][lightweight.content.Content.write].
     It contains both, the relative path (as specified by `site.include(relative_path, content)`)
     and the real path (an absolute path which in site’s `out`).
 

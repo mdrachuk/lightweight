@@ -10,7 +10,6 @@ module_dir = Path(__file__).parent
 def {! title_slug !}(url):
     site = Site(
         title='{! site.title !}',
-        description='A site generated with Lightweight',
         url=url,
     )
 

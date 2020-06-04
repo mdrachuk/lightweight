@@ -2,14 +2,13 @@ from dataclasses import dataclass
 
 from lightweight import Content
 
-
 from .path import GenPath
 from .context import GenContext
 
 
 @dataclass(frozen=True)
 class GenTask:
-    """A task executed by [Site] during generation.
+    """A task executed by [Site][lightweight.Site] during generation.
 
     All of site’s tasks can be accessed during generation via [GenContext][GenContext.tasks].
 

@@ -34,6 +34,7 @@ import inspect
 import multiprocessing as mp
 import os
 import re
+import stat
 import sys
 import traceback
 from argparse import ArgumentParser
@@ -258,6 +259,9 @@ def quickstart(location: str, title: Optional[str]):
 
         site.generate(abs_out)
 
+        website_file = os.path.join(abs_out, 'website.py')
+        os.chmod(website_file, stat.S_IRWXU | stat.S_IRGRP | stat.S_IROTH)  # -rwxr--r--
+
     logger.info(f'Lightweight project initialized in: {abs_out}')
 
 
@@ -314,6 +318,7 @@ def add_version_cli(subparsers):
 def parse_args():
     args = argument_parser().parse_args()
     return args
+
 
 def lw_version():
     from lightweight import __version__

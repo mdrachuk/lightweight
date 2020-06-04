@@ -17,7 +17,7 @@ class GenContext:
     Contains the data useful during the generation: the site and the list of tasks to be executed in the process.
 
     The context is created by a [Site] upon starting generation
-    and provided to the [`Content.write(path, ctx)`][Content.write] method as a second parameter.
+    and provided to the [`Content.write(path, ctx)`][lightweight.content.Content.write] method as a second parameter.
     """
     site: Site
     out: Path
