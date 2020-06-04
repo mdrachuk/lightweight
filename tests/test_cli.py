@@ -9,8 +9,8 @@ from pathlib import Path
 import pytest
 from pytest import fixture
 
-from lightweight import directory, __version__, lw, Site, SiteCli
-from lightweight.errors import InvalidSiteCliUsage
+from lightweight import directory, __version__, lw, Site, SiteCli, jinja
+from lightweight.errors import InvalidSiteCliUsage, InvalidCommand
 from lightweight.lw import FailedGeneration
 from tests.server_utils import get
 
@@ -172,6 +172,46 @@ class TestTheCli:
         run_site_cli("test_cli.py")
         assert "usage: test_cli.py" in capsys.readouterr().out
 
+    def test_build(self, mock_start_server, tmp_path: Path):
+        with directory(tmp_path):
+            index = tmp_path / 'index'
+            index.write_text('{{ site }}')
+            run_site_cli("test_cli.py build", build=build_jinja_file)
+            result = tmp_path / 'out' / 'index'
+            assert result.read_text() == "http://localhost:8080/"
+
+    def test_build_url(self, mock_start_server, tmp_path: Path):
+        with directory(tmp_path):
+            index = tmp_path / 'index'
+            index.write_text('{{ site }}')
+            run_site_cli("test_cli.py build --url https://example.com/", build=build_jinja_file)
+            result = tmp_path / 'out' / 'index'
+            assert result.read_text() == "https://example.com/"
+
+    def test_build_out(self, mock_start_server, tmp_path: Path):
+        with directory(tmp_path):
+            index = tmp_path / 'index'
+            index.write_text('{{ site }}')
+            run_site_cli("test_cli.py build --out of-here", build=build_jinja_file)
+            result = tmp_path / 'of-here' / 'index'
+            assert result.read_text() == "http://localhost:8080/"
+
+    def test_build_host_port(self, mock_start_server, tmp_path: Path):
+        with directory(tmp_path):
+            index = tmp_path / 'index'
+            index.write_text('{{ site }}')
+            run_site_cli("test_cli.py build --host 0.0.0.0 --port 69", build=build_jinja_file)
+            result = tmp_path / 'out' / 'index'
+            assert result.read_text() == "http://0.0.0.0:69/"
+
+    def test_build_error_with_url_and_host(self, mock_start_server):
+        with pytest.raises(InvalidCommand):
+            run_site_cli("test_cli.py build --host 0.0.0.0 --url http://example.org/")
+
+    def test_build_error_with_url_and_port(self, mock_start_server):
+        with pytest.raises(InvalidCommand):
+            run_site_cli("test_cli.py build --port 42 --url http://example.org/")
+
 
 def assert_help_in_out(capsys):
     captured = capsys.readouterr()
@@ -207,6 +247,12 @@ def interrupt(loop):
 
 def build_func(url):
     return Site(url=url)
+
+
+def build_jinja_file(url):
+    site = Site(url=url)
+    site.include('index', jinja('index'))
+    return site
 
 
 def build_func_no_arg():
