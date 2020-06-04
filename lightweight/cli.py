@@ -63,7 +63,7 @@ class SiteCli:
             .parse_args(['--help'])
 
     def _argument_parser(self):
-        parser = ArgumentParser(description="https://drach.uk/ -- lightweight static site")
+        parser = ArgumentParser(description="lightweight static site")
         self._add_commands(parser.add_subparsers())
         return parser
 
