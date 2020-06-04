@@ -9,7 +9,7 @@
 
 from __future__ import annotations
 
-from typing import List, Dict, NamedTuple
+from typing import List, Dict, NamedTuple, Optional
 
 from mistune import Renderer, escape, escape_link  # type: ignore # no typings
 from slugify import slugify  # type: ignore # no typings
@@ -72,7 +72,7 @@ class TableOfContents:
 
     The `id` property is set to the root `<ul>` element.
     """
-    id: str
+    id: Optional[str]
     sections: List[Section]
 
     def __init__(self, id: str = None):
