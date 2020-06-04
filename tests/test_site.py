@@ -40,3 +40,20 @@ def test_site_include_duplicate():
     site.include('page', 'resources/test.html')
     with pytest.raises(IncludedDuplicate):
         site.include('page', 'site/index.html')
+
+
+def test_str():
+    site = Site(url='https://drach.uk/')
+    assert str(site) == 'https://drach.uk/'
+
+
+def test_repr():
+    site = Site(url='https://drach.uk/')
+    assert repr(site).startswith('<Site title=None url=https://drach.uk/ at')
+
+
+def test_url_check():
+    with pytest.raises(ValueError):
+        Site(url='lightweight.site/')
+    with pytest.raises(ValueError):
+        Site(url='https://lightweight.site')

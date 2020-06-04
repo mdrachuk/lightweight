@@ -158,6 +158,9 @@ class Site:
         """Override for custom context types."""
         return GenContext(out=out, site=self)
 
+    def __str__(self):
+        return self.url
+
     def __repr__(self):
         return f'<{type(self).__name__} title={self.title} url={self.url} at 0x{id(self):02x}>'
 
@@ -171,13 +174,13 @@ class Site:
         print(url) # https://example.org/resource/images/photo-1.jpeg
         ```
         """
-
+        # TODO:mdrachuk:04.06.2020: replace with <SiteUrl> which can be added a / further and checks file existence
         return urljoin(self.url, location)
 
 
 def _check_site_url(url: str) -> str:
     url_parts = urlparse(url)
-    if url_parts.scheme is None:
+    if url_parts.scheme == '':
         raise ValueError('Missing scheme in Site URL.')
     if not url.endswith('/'):
         raise ValueError(f'Site URL ({url}) must end with a forward slash (/).')
