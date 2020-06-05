@@ -1,3 +1,16 @@
+"""Lightweight [Markdown][1] [Content].
+
+Usage:
+```
+from lightweight import markdown, template
+
+...
+
+site.include('hello.html', markdown('posts/hello.md', template('templates/post.html')))
+```
+
+[1]: https://daringfireball.net/projects/markdown/
+"""
 from __future__ import annotations
 
 from dataclasses import dataclass
@@ -9,8 +22,8 @@ import frontmatter  # type: ignore
 from jinja2 import Template
 from mistune import Markdown  # type: ignore
 
-from .content import Content
-from .jinja import eval_if_lazy
+from .content_abc import Content
+from .jinja_doc import _eval_if_lazy
 from .lwmd import LwRenderer, TableOfContents
 
 if TYPE_CHECKING:
@@ -35,7 +48,7 @@ class MarkdownPage(Content):
     front_matter: Dict[str, Any]
     props: Dict[str, Any]
 
-    def write(self, path: 'GenPath', ctx: 'GenContext'):
+    def write(self, path: GenPath, ctx: GenContext):
         """Writes a rendered Jinja template with rendered Markdown, parameters from front-matter and code
         to the file provided path."""
         # TODO:mdrachuk:06.01.2020: warn if site, ctx, source are in props or front matter!
@@ -48,13 +61,13 @@ class MarkdownPage(Content):
             **self._evaluated_props(ctx),
         ))
 
-    def render(self, ctx: 'GenContext'):
+    def render(self, ctx: GenContext) -> RenderedMarkdown:
         """Render Markdown to html, extracting the ToC."""
-        link_mapping = self.map_links(ctx)
+        link_mapping = self._map_links(ctx)
         renderer = self.renderer(link_mapping)
         html = Markdown(renderer).render(self.text)
         toc = renderer.table_of_contents(level=3)
-        preview_html = self.extract_preview(html)
+        preview_html = self._extract_preview(html)
         return RenderedMarkdown(
             html=html,
             preview_html=preview_html,
@@ -62,7 +75,7 @@ class MarkdownPage(Content):
         )
 
     @staticmethod
-    def map_links(ctx: 'GenContext'):
+    def _map_links(ctx: GenContext):
         """Map links allowing in Markdown to reference other Markdown pages by their ".md" files
         and using relative paths for other files."""
         link_mapping = {str(task.path): task.path.url for task in ctx.tasks}
@@ -74,22 +87,22 @@ class MarkdownPage(Content):
         return link_mapping
 
     @staticmethod
-    def extract_preview(html):
+    def _extract_preview(html):
         preview_split = html.split('<!--preview-->', maxsplit=1)
         preview_html = preview_split[0] if len(preview_split) == 2 else None
         return preview_html
 
     def _evaluated_props(self, ctx) -> Dict[str, Any]:
-        return {key: eval_if_lazy(value, ctx) for key, value in self.props.items()}
+        return {key: _eval_if_lazy(value, ctx) for key, value in self.props.items()}
 
 
 def markdown(md_path: Union[str, Path], template: Union[Template], *, renderer=LwRenderer, **kwargs) -> MarkdownPage:
     """Create a markdown page that can be included by a Site.
-    Markdown page is compiled from a markdown file at path (*.md) and a [Jinja Template][lightweight.template.template].
+    Markdown page is compiled from a markdown file at path (*.md) and a [Jinja Template][lightweight.template].
 
     Provided key-word arguments are passed as props to the template on render.
     Such props can also be lazily evaluated from [GenContext]
-    by using the [from_ctx(func) decorator][lightweight.content.jinja.from_ctx].
+    by using the [from_ctx(func) decorator][lightweight.content.jinja_doc.from_ctx].
     """
     path = Path(md_path)
     source = path.read_text(encoding='utf-8')
@@ -123,7 +136,7 @@ def markdown(md_path: Union[str, Path], template: Union[Template], *, renderer=L
 
 @dataclass(frozen=True)
 class RenderedMarkdown:
-    """The result of parsing and rendering markdown."""
+    """The result of parsing and rendering Markdown."""
     html: str
     preview_html: str
     toc: TableOfContents

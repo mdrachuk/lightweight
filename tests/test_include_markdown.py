@@ -65,18 +65,6 @@ def test_render_markdown_link(tmp_path: Path):
         assert (test_out / out_location).read_text() == expected.read()
 
 
-def test_resolves_sub_site_markdown_template_by_cwd(tmp_path: Path):
-    site = Site('https://example.org/')
-    with directory('site'):
-        subsite = Site('https://example.org/')
-        subsite.include('markdown.html', markdown('text.md', template=template('markdown.html')))
-    site.include('subsite', subsite)
-    site.generate(out=tmp_path)
-
-    with open('expected/subsite/markdown.html') as expected:
-        assert (tmp_path / 'subsite' / 'markdown.html').read_text() == expected.read()
-
-
 def test_lazy_params(tmp_path: Path):
     src_location = 'resources/md/collection/post-1.md'
     out_location = 'lazy.html'

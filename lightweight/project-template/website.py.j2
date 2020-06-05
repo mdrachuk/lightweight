@@ -1,4 +1,5 @@
-from lightweight import Site, jinja, sass, directory, template, markdown, paths, atom, rss, GenContext, from_ctx, Author
+#!/usr/bin/env python
+from lightweight import Site, jinja, sass, directory, template, markdown, paths, GenContext, from_ctx, SiteCli
 
 from pathlib import Path
 
@@ -9,16 +10,7 @@ module_dir = Path(__file__).parent
 def {! title_slug !}(url):
     site = Site(
         title='{! site.title !}',
-        description='A site generated with Lightweight',
         url=url,
-        {? if site.authors ?}
-        authors=[
-            {?- for author in site.authors -?}
-            Author(name='{! author.name !}', email='{! author.email !}')
-            {?- if not loop.last ?}, {? endif -?}
-            {? endfor -?}
-        ],
-        {? endif ?}
     )
 
     with directory(module_dir):
@@ -30,10 +22,6 @@ def {! title_slug !}(url):
         # Render markdown blog posts.
         [site.include(f'blog/{post.source_path.stem}.html', post) for post in blog_posts('posts/**.md')]
         site.include('blog.html', jinja('blog.html', posts=from_ctx(post_tasks)))
-
-        # Syndicate RSS and Atom feeds.
-        site.include('blog.atom.xml', atom(site['blog']))
-        site.include('blog.rss.xml', rss(site['blog']))
 
         # Render SASS to CSS.
         site.include('css/global.css', sass('styles/global.scss'))
@@ -54,13 +42,6 @@ def post_tasks(ctx: GenContext):
     return [task for task in ctx.tasks if task.path.parts[0] == 'blog']
 
 
-def dev(host: str, port: int):
-    return {! title_slug !}(url=f'http://{host}:{port}/')
-
-
-def prod():
-    return {! title_slug !}(url='{! site.url !}')
-
-
 if __name__ == '__main__':
-    prod().generate()
+    cli = SiteCli({! title_slug !})
+    cli.run()

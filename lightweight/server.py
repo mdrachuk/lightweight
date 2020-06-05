@@ -1,21 +1,27 @@
-# Mostly stolen from picoweb web pico-framework for Pycopy 2019 MIT
+"""
+Dev HTTP server serving static files using asyncio.
 
+Highlights:
+- Allows to drop ".html" in URLs
+    - which corresponds to nginx `try_files $uri $uri.html $uri/index.html =404;`
+- Can inject live-reload JS to HTML.
+
+Mostly stolen from picoweb -- web pico-framework for Pycopy 2019 MIT
+"""
 from __future__ import annotations
 
-import os
-from asyncio import StreamReader, StreamWriter, start_server, Task, Event, BaseEventLoop, sleep
+from asyncio import StreamReader, StreamWriter, start_server, Event, BaseEventLoop, sleep, Task
 from dataclasses import dataclass
 from datetime import datetime
 from enum import Enum
 from logging import getLogger
 from pathlib import Path
-from threading import Thread
 from typing import Dict, Collection, Callable
 from uuid import uuid4
 
 from watchgod import awatch  # type: ignore
 
-logger = getLogger('lightweight')
+logger = getLogger('lw.server')
 
 
 @dataclass(frozen=True)
@@ -65,7 +71,6 @@ def u(string: str) -> bytes:
 class DevServer:
     """A server serving static files from the provided directory.
 
-    @example
     ```python
     server = DevServer('app/static')
     loop = asyncio.get_event_loop()
@@ -78,25 +83,35 @@ class DevServer:
     """
     _server_task: Task
 
-    def __init__(self, location: str):
-        self.working_dir = Path(os.path.abspath(location))
+    def __init__(self, location: Path):
+        self._server = None
+        self.working_dir = location
         check_directory(self.working_dir)
 
     def serve(self, host, port, loop: BaseEventLoop):
         """Creates an asyncio coroutine, that serves requests on the provided host and port.
 
-        @example
         ```python
         loop = asyncio.get_event_loop()
         server.serve('localhost', 8080, loop=loop)
         loop.run_forever()
         ```
         """
-        self._server_task = loop.create_task(start_server(self.respond, host, port, loop=loop))
 
-    def shutdown(self):
+        async def _serve():
+            self._server = await start_server(self.respond, host, port, loop=loop, start_serving=False)
+            return await self._server.serve_forever()
+
+        self._server_task = loop.create_task(_serve())
+
+    def shutdown(self, loop):
         """"""
+
+        async def await_shutdown():
+            await self._server.wait_closed()
+
         self._server_task.cancel()
+        loop.run_until_complete(await_shutdown())
 
     def handle(self, writer: StreamWriter, request: HttpRequest):
         """Handle the request and write the response."""
@@ -120,7 +135,7 @@ class DevServer:
         exact = self.working_dir / location
         html = self.working_dir / f'{location}.html'
         index = self.working_dir / location / 'index.html'
-        if not os.path.abspath(exact).startswith(str(self.working_dir)):
+        if not str(exact.resolve()).startswith(str(self.working_dir)):
             raise PermissionError()
         if exact.exists() and not exact.is_dir():
             path = exact
@@ -214,25 +229,25 @@ class LiveReloadServer(DevServer):
 
     def __init__(
             self,
-            location: str,
+            location: Path,
             *,
-            watch: str,
+            watch: Path,
             regenerate: RunGenerate,
-            ignored: Collection[str] = tuple()
+            ignored: Collection[Path] = tuple()
     ):
         super().__init__(location)
         self.live_reload_id = self._new_id()
-        self.watch_location = os.path.abspath(watch)
+        self.watch_location = str(watch)
         self.regenerate = regenerate
         self.ignored = ignored
 
     def serve(self, host, port, loop):
         super().serve(host, port, loop)
-        self.stopped = Event()
+        self.stopped = Event(loop=loop)
         loop.create_task(self.watch_source())
 
-    def shutdown(self):
-        super().shutdown()
+    def shutdown(self, loop):
+        super().shutdown(loop)
         self.stopped.set()
 
     def handle(self, writer: StreamWriter, request: HttpRequest):
@@ -263,16 +278,13 @@ class LiveReloadServer(DevServer):
                     self.on_source_changed()
 
     def _is_ignored_location(self, location) -> bool:
-        return len(self.ignored) != 0 and all(location.startswith(path) for path in self.ignored)
+        return len(self.ignored) != 0 and all(location.startswith(str(path.resolve())) for path in self.ignored)
 
     def on_source_changed(self):
         logger.info('Source change. Live reload triggered.')
         self.live_reload_id = self._new_id()
         try:
-            # Running in thread to isolate asyncio loops.
-            t = Thread(target=self.regenerate)
-            t.start()
-            t.join()
+            self.regenerate()
         except Exception as e:
             logger.exception('Exception when generating the site: ', exc_info=e)
 
@@ -321,4 +333,4 @@ liveReload.start();
 
 
 def now_repr():
-    return datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+    return datetime.now().strftime("%H:%M:%S")

@@ -1,6 +1,5 @@
 """Lightweight is a "Code over configuration" static site generator.
 
-@example
 ```python
 from lightweight import Site, markdown, paths, jinja, template, rss, atom, sass
 
@@ -20,10 +19,6 @@ site.include('index.html', jinja('pages/index.html'))
 [site.include(f'posts/{post.source_path.stem}.html', post) for post in blog_posts('posts/**.md')]
 site.include('posts.html', jinja('pages/posts.html'))
 
-# Syndicate RSS and Atom feeds.
-site.include('posts.atom.xml', atom(site['posts']))
-site.include('posts.rss.xml', rss(site['posts']))
-
 # Render SASS to CSS.
 site.include('css/style.css', sass('styles/style.scss'))
 
@@ -37,14 +32,15 @@ site.generate()
 """
 import logging
 
-from .content import Content, feeds, atom, rss, markdown, jinja, from_ctx, sass
+from .content import Content, markdown, jinja, from_ctx, sass
 from .files import paths, directory
 from .generation import GenPath, GenContext
-from .site import Site, Author
-from .template import template, jinja_env
+from .site import Site
+from .templates import template, jinja_env
+from .cli import SiteCli
 
 logging.basicConfig()
-logger = logging.getLogger('lightweight')
+logger = logging.getLogger('lw')
 logger.setLevel(logging.INFO)
 
-__version__ = '1.0.0.dev45'
+__version__ = '1.0.0.dev50'

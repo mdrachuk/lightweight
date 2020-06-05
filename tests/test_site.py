@@ -2,7 +2,7 @@ from pathlib import Path
 
 import pytest
 
-from lightweight import Site, Author
+from lightweight import Site
 from lightweight.errors import AbsolutePathIncluded, IncludedDuplicate
 
 
@@ -35,45 +35,25 @@ def test_site_location(tmp_path: Path):
     assert site / '/foo/bar' == 'https://example.org/foo/bar'
 
 
-def test_site_single_author():
-    name = 'Test'
-    email = 'test@example.org'
-    site = Site(url='https://example.org/', author_name=name, author_email=email)
-    assert site.authors == {Author(name, email)}
-
-
-def test_site_multiple_authors():
-    site = Site(url='https://example.org/', authors=[
-        Author('a', 'a@example.org'),
-        Author('b', 'b@example.org'),
-        Author('c', 'c@example.org')
-    ])
-    assert site.authors == {Author('a', 'a@example.org'),
-                            Author('b', 'b@example.org'),
-                            Author('c', 'c@example.org')}
-
-
-def test_site_authors_combination():
-    name = 'Test'
-    email = 'test@example.org'
-    site = Site(
-        url='https://example.org/',
-        author_name=name,
-        author_email=email,
-        authors=[
-            Author('a', 'a@example.org'),
-            Author('b', 'b@example.org'),
-            Author('c', 'c@example.org')
-        ]
-    )
-    assert site.authors == {Author(name, email),
-                            Author('a', 'a@example.org'),
-                            Author('b', 'b@example.org'),
-                            Author('c', 'c@example.org')}
-
-
 def test_site_include_duplicate():
     site = Site(url='https://example.org/')
     site.include('page', 'resources/test.html')
     with pytest.raises(IncludedDuplicate):
         site.include('page', 'site/index.html')
+
+
+def test_str():
+    site = Site(url='https://drach.uk/')
+    assert str(site) == 'https://drach.uk/'
+
+
+def test_repr():
+    site = Site(url='https://drach.uk/')
+    assert repr(site).startswith('<Site title=None url=https://drach.uk/ at')
+
+
+def test_url_check():
+    with pytest.raises(ValueError):
+        Site(url='lightweight.site/')
+    with pytest.raises(ValueError):
+        Site(url='https://lightweight.site')

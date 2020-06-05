@@ -1,13 +1,20 @@
+"""Render [Jinja templates][1] in place of Lightweight [Content].
+
+[1]: https://jinja.palletsprojects.com/en/2.11.x/
+"""
+
 from __future__ import annotations
+
+__all__ = ['JinjaPage', 'jinja', 'from_ctx']
 
 from dataclasses import dataclass
 from pathlib import Path
-from typing import Dict, Any, Union, TYPE_CHECKING, Callable
+from typing import Dict, Any, Union, TYPE_CHECKING, Callable, TypeVar, Generic
 
 from jinja2 import Template
 
-from .content import Content
-from ..template import template
+from .content_abc import Content
+from ..templates import template
 
 if TYPE_CHECKING:
     from lightweight import GenPath, GenContext
@@ -15,13 +22,13 @@ if TYPE_CHECKING:
 
 @dataclass(frozen=True)
 class JinjaPage(Content):
-    """A file rendered from a Jinja Template."""
+    """Content rendered from a Jinja Template."""
 
     template: Template
     source_path: Path
     props: Dict[str, Any]
 
-    def write(self, path: 'GenPath', ctx: 'GenContext'):
+    def write(self, path: GenPath, ctx: GenContext):
         path.create(self.render(ctx))
 
     def render(self, ctx):
@@ -34,7 +41,7 @@ class JinjaPage(Content):
         )
 
     def _evaluated_props(self, ctx) -> Dict[str, Any]:
-        props = {key: eval_if_lazy(value, ctx) for key, value in self.props.items()}
+        props = {key: _eval_if_lazy(value, ctx) for key, value in self.props.items()}
         return props
 
 
@@ -51,21 +58,22 @@ def jinja(template_path: Union[str, Path], **props) -> JinjaPage:
     )
 
 
-class LazyContextParameter:
+T = TypeVar('T')
+
+
+class LazyContextParameter(Generic[T]):
     """A decorator for Jinja template parameters lazily evaluated from [context][GenContext] during render. """
 
-    def __init__(self, func: Callable[['GenContext'], Any]):
+    def __init__(self, func: Callable[[GenContext], T]):
         self.func = func
 
-    def eval(self, ctx: 'GenContext') -> Any:
+    def __call__(self, ctx: GenContext) -> T:
         return self.func(ctx)  # type: ignore
 
 
-def from_ctx(func: Callable[['GenContext'], Any]):
-    """Mark a function with a decorator for its result to be evaluated lazily from context at the point of render
-     and used as a Jinja template parameter.
+def from_ctx(func: Callable[[GenContext], T]) -> Callable[[GenContext], T]:
+    """Evaluate the provided function lazily from context at the point of generation.
 
-    @example
     ```python
     from lightweight import jinja, from_ctx
 
@@ -82,9 +90,10 @@ def from_ctx(func: Callable[['GenContext'], Any]):
     return LazyContextParameter(func)
 
 
-def eval_if_lazy(o: Any, ctx: 'GenContext') -> Any:
+def _eval_if_lazy(o: Any, ctx: GenContext) -> Any:
     """If passed a [lazy parameter][LazyContextParameter] the result of its evaluation.
     Otherwise, returns the provided value."""
+
     if isinstance(o, LazyContextParameter):
-        return o.eval(ctx)
+        return o(ctx)
     return o

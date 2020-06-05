@@ -1,26 +1,25 @@
 from __future__ import annotations
 
+__all__ = ['Site']
+
 import asyncio
-import os
-from abc import abstractmethod, ABC
 from asyncio import gather
 from collections import defaultdict
-from dataclasses import dataclass, replace
-from datetime import datetime
-from itertools import chain
+from concurrent.futures.thread import ThreadPoolExecutor
+from functools import partial
 from os import getcwd
 from os.path import abspath
 from pathlib import Path
 from shutil import rmtree
-from typing import overload, Union, Optional, Collection, List, Set, Dict
+from typing import overload, Union, Optional, List, Dict
 from urllib.parse import urlparse, urljoin
 
-from .content.content import Content
+from .content.content_abc import Content
 from .content.copies import copy
-from .empty import Empty, empty
 from .errors import AbsolutePathIncluded, IncludedDuplicate
 from .files import paths, directory
-from .generation import GenContext, GenTask, schedule
+from .generation import GenContext, GenTask
+from .included import Includes, IncludedContent
 
 
 class Site:
@@ -31,7 +30,6 @@ class Site:
 
     The only required parameter is the URL of the site. Other parameters may be useful for different content types.
 
-    @example
     The following code output to the `out` directory the following content:
     - two rendered Jinja 2 HTML templates;
     - CSS rendered from SCSS;
@@ -52,84 +50,17 @@ class Site:
     url: str
     content: Includes
     title: Optional[str]
-    icon_url: Optional[str]
-    logo_url: Optional[str]
-    description: Optional[str]
-    authors: Set[Author]
-    language: Optional[str]
-    copyright: Optional[str]
-    updated: Optional[datetime]
 
     def __init__(
             self,
             url: str,
             *,
-            content: Includes = None,
             title: Optional[str] = None,
-            icon_url: Optional[str] = None,
-            logo_url: Optional[str] = None,
-            description: Optional[str] = None,
-            author_name: Optional[str] = None,
-            author_email: Optional[str] = None,
-            authors: Collection[Author] = None,
-            language: Optional[str] = None,
-            copyright: Optional[str] = None,
-            updated: Optional[datetime] = None,
-            **kwargs
+            content: Optional[Includes] = None,
     ):
-        url_parts = urlparse(url)
-        assert url_parts.scheme, 'Missing scheme in Site URL.'
-        if not url.endswith('/'):
-            raise ValueError(f'Site URL ({url}) must end with a forward slash (/).')
-        self.url = url
-        self.content = Includes() if not content else content
+        self.url = _check_site_url(url)
         self.title = title
-        self.icon_url = icon_url
-        self.logo_url = logo_url
-        self.description = description
-        self.author_name = author_name
-        self.author_email = author_email
-        authors = set() if authors is None else set(authors)
-        if author_name or author_email:
-            authors |= {Author(author_name, author_email)}
-        self.authors = authors
-        self.language = language
-        self.copyright = copyright
-        self.updated = updated
-        self.__post_init__(**kwargs)
-
-    def __post_init__(self, **kwargs):
-        """"""
-
-    def copy(
-            self,
-            url: Union[str, Empty] = empty,
-            content: Union[Includes, Empty] = empty,
-            title: Union[Optional[str], Empty] = empty,
-            icon_url: Union[Optional[str], Empty] = empty,
-            description: Union[Optional[str], Empty] = empty,
-            author_name: Union[Optional[str], Empty] = empty,
-            author_email: Union[Optional[str], Empty] = empty,
-            language: Union[Optional[str], Empty] = empty,
-            copyright: Union[Optional[str], Empty] = empty,
-            updated: Union[Optional[datetime], Empty] = empty,
-    ) -> Site:
-        """Creates a new Site which copies the attributes of the current one.
-
-        Some property values can be overriden, by providing them to this method.
-        """
-        return Site(
-            url=url if url is not empty else self.url,  # type: ignore
-            content=content if content is not empty else self.content,  # type: ignore
-            title=title if title is not empty else self.title,  # type: ignore
-            icon_url=icon_url if icon_url is not empty else self.icon_url,  # type: ignore
-            description=description if description is not empty else self.description,  # type: ignore
-            author_name=author_name if author_name is not empty else self.author_name,  # type: ignore
-            author_email=author_email if author_email is not empty else self.author_email,  # type: ignore
-            language=language if language is not empty else self.language,  # type: ignore
-            copyright=copyright if copyright is not empty else self.copyright,  # type: ignore
-            updated=updated if updated is not empty else self.updated,  # type: ignore
-        )
+        self.content = Includes() if not content else content
 
     @overload
     def include(self, location: str):
@@ -140,15 +71,11 @@ class Site:
         """Include the content at the provided location."""
 
     @overload
-    def include(self, location: str, content: Site):
-        """Include the content at the provided location."""
-
-    @overload
     def include(self, location: str, content: str):
         """Copy files from content to location."""
 
-    def include(self, location: str, content: Union[Content, Site, str, None] = None):
-        """Included the content at the location.
+    def include(self, location: str, content: Union[Content, str, None] = None):
+        """Include the content at the location.
 
         Note the content write is executed only upon calling [`Site.generate()`][Site.generate].
 
@@ -168,8 +95,6 @@ class Site:
             [self._include_content(path, content_, cwd) for path, content_ in contents.items()]
         elif isinstance(content, Content):
             self._include_content(location, content, cwd)
-        elif isinstance(content, Site):
-            self._include_site(location, content, cwd)
         elif isinstance(content, str):
             source = Path(content)
             if not source.exists():
@@ -187,16 +112,7 @@ class Site:
             )
         )
 
-    def _include_site(self, location: str, site: Site, cwd: str):
-        self._include(
-            IncludedSite(
-                location=location,
-                site=site,
-                cwd=cwd
-            )
-        )
-
-    def _include(self, c: Included):
+    def _include(self, c: IncludedContent):
         if c.location in self.content:
             raise IncludedDuplicate(at=c.location)
         self.content.add(c)
@@ -227,9 +143,14 @@ class Site:
 
         loop = asyncio.new_event_loop()
         asyncio.set_event_loop(loop)
+        executor = ThreadPoolExecutor()
+
+        async def schedule(task):
+            return await loop.run_in_executor(executor, partial(task.content.write, task.path, task.ctx))
+
         for cwd, _tasks in tasks.items():
             with directory(cwd):
-                writes = [schedule(task.content.write, task.path, ctx) for task in _tasks]
+                writes = map(schedule, _tasks)
                 loop.run_until_complete(gather(*writes, loop=loop))
         loop.close()
 
@@ -237,148 +158,30 @@ class Site:
         """Override for custom context types."""
         return GenContext(out=out, site=self)
 
+    def __str__(self):
+        return self.url
+
     def __repr__(self):
         return f'<{type(self).__name__} title={self.title} url={self.url} at 0x{id(self):02x}>'
 
     def __truediv__(self, location: str) -> str:
         """Create a URL for the location at site.
 
-        @example
+        ```python
         site = Site('https://example.org/')
 
         url = site / 'resource/images/photo-1.jpeg'
         print(url) # https://example.org/resource/images/photo-1.jpeg
-        """
-
-        return urljoin(self.url, location)
-
-    def __getitem__(self, location: str) -> Site:
-        """Get a site with a subset of the this sites content, which is included at the provided path.
-
-        @example
-        ```python
-        site = Site(url='https://example.org/', ...) # site is a collection of content
-
-        site.include('index.html', <index>)
-        site.include('posts/1', <post-1>)
-        site.include('posts/2', <post-2>)
-        site.include('posts/3', <post-3>)
-        site.include('static', <static>)
-
-        posts = site['posts']
-        assert posts.url is 'https://example.org/posts'
-        assert <post-1> in posts
-        assert <post-2> in posts
-        assert <post-3> in posts
-        assert <static> not in posts
         ```
         """
-        content = self.content.at_path(Path(location))
-        if not content:
-            raise KeyError(f'There is no content at path "{location}"')
-        return self.copy(content=content, url=self / location + '/')
+        # TODO:mdrachuk:04.06.2020: replace with <SiteUrl> which can be added a / further and checks file existence
+        return urljoin(self.url, location)
 
 
-def clip_path_parts(number: int, path: Path) -> str:
-    return os.path.join(*path.parts[number:])
-
-
-class Includes:
-    ics: List[Included]
-    by_cwd: Dict[str, List[Included]]
-    by_location: Dict[str, Included]
-
-    def __init__(self):
-        self.ics = []
-        self.by_cwd = defaultdict(list)
-        self.by_location = {}
-
-    def add(self, ic: Included):
-        self.ics.append(ic)
-        self.by_cwd[ic.cwd].append(ic)
-        self.by_location[ic.location] = ic
-
-    def __contains__(self, location: str) -> bool:
-        return location in self.by_location
-
-    def __iter__(self):
-        return iter(self.ics)
-
-    def at_path(self, target: Path) -> Includes:
-        target = Path(target)
-        cc = Includes()
-        for ic in self.ics:
-            if all(actual == expected for actual, expected in zip(ic.path.parts, target.parts)):
-                new_loc = clip_path_parts(len(target.parts), ic.path)
-                new_ic = replace(ic, location=new_loc)
-                cc.add(new_ic)
-        return cc
-
-
-# @dataclass(frozen=True) -- ABC cannot be a dataclass
-class Included(ABC):
-    location: str
-    cwd: str
-
-    @property
-    def path(self):
-        return Path(self.location)
-
-    @abstractmethod
-    def make_tasks(self, ctx: GenContext) -> List[GenTask]:
-        """"""
-
-
-@dataclass(frozen=True)
-class IncludedContent(Included):
-    """The [content][Content] included by a [Site].
-
-    Contains the site’s location and `cwd` (current working directory) of the content.
-
-    Location is a string with an output path relative to generation out directory.
-    It does not include a leading forward slash.
-
-    `cwd` is important for properly generating subsites.
-    """
-    location: str
-    content: Content
-    cwd: str
-
-    @property
-    def path(self):
-        return Path(self.location)
-
-    def make_tasks(self, ctx: GenContext) -> List[GenTask]:
-        return [GenTask(ctx.path(self.location), self.content, self.cwd)]
-
-
-@dataclass(frozen=True)
-class IncludedSite(Included):
-    """Another site included by a [Site].
-
-    Contains the relative location and `cwd` (current working directory) of the content.
-
-    Location is a string with an output path relative to generation out directory.
-    It does not include a leading forward slash.
-
-    `cwd` is important for properly generating subsites.
-    """
-    location: str
-    site: Site
-    cwd: str
-
-    @property
-    def path(self):
-        return Path(self.location)
-
-    def make_tasks(self, ctx: GenContext) -> List[GenTask]:
-        list_of_lists = [ic.make_tasks(ctx) for ic in self.site.content.ics]
-        tasks = list(chain.from_iterable(list_of_lists))
-        return [replace(task, path=ctx.path(self.path / task.path.relative_path)) for task in tasks]
-
-
-@dataclass(frozen=True)
-class Author:
-    """An author. Mostly used by RSS/Atom."""
-    name: Optional[str] = None
-    email: Optional[str] = None
+def _check_site_url(url: str) -> str:
+    url_parts = urlparse(url)
+    if url_parts.scheme == '':
+        raise ValueError('Missing scheme in Site URL.')
+    if not url.endswith('/'):
+        raise ValueError(f'Site URL ({url}) must end with a forward slash (/).')
+    return url

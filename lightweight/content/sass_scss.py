@@ -1,4 +1,21 @@
+"""[SCSS/Sass][1] Lightweight [Content].
+
+Allows rendering single file, style directories and corresponding sourcemaps.
+
+Usage:
+```python
+from lightweight import sass
+
+...
+
+site.include('css/style.css', sass('styles/style.scss', sourcemap=False))
+```
+
+[1]: https://sass-lang.com
+"""
 from __future__ import annotations
+
+__all__ = ['Sass', 'sass']
 
 from dataclasses import dataclass
 from pathlib import Path
@@ -7,7 +24,7 @@ from typing import TYPE_CHECKING, Callable
 from sass import compile  # type: ignore # missing annotations
 
 from lightweight.files import paths
-from .content import Content
+from .content_abc import Content
 
 if TYPE_CHECKING:
     from lightweight import GenPath, GenContext
@@ -19,9 +36,9 @@ class Sass(Content):
     path: Path
     sourcemap: bool
 
-    def write(self, path: 'GenPath', ctx: 'GenContext'):
+    def write(self, path: GenPath, ctx: GenContext):
         if self.path.is_dir():
-            css_at_target = construct_relative_css_path(self.path, target=path.absolute(), ctx=ctx)
+            css_at_target = _construct_relative_css_path(self.path, target=path.absolute(), ctx=ctx)
             for p in paths(f'{self.path}/**/*.sass'):
                 _write(p, css_at_target(p), include_sourcemap=self.sourcemap)
             for p in paths(f'{self.path}/**/*.scss'):
@@ -30,17 +47,17 @@ class Sass(Content):
             _write(self.path, path, include_sourcemap=self.sourcemap)
 
 
-def construct_relative_css_path(source: Path, *, target: Path, ctx: 'GenContext') -> Callable[[Path], 'GenPath']:
+def _construct_relative_css_path(source: Path, *, target: Path, ctx: GenContext) -> Callable[[Path], GenPath]:
     start = len(source.parts)
 
-    def remap(path: Path) -> 'GenPath':
+    def remap(path: Path) -> GenPath:
         relative_parts = path.parts[start:]
         return ctx.path(Path(*target.parts, *relative_parts)).with_suffix('.css')
 
     return remap
 
 
-def _write(source: Path, target: 'GenPath', *, include_sourcemap: bool):
+def _write(source: Path, target: GenPath, *, include_sourcemap: bool):
     sourcemap_path = target.with_name(target.name + '.map')
     result, sourcemap = compile(
         filename=str(source),
@@ -58,7 +75,6 @@ def _write(source: Path, target: 'GenPath', *, include_sourcemap: bool):
 def sass(location: str, *, sourcemap: bool = True) -> Sass:
     """Run Sass/SCSS compiler on files at location. Can be a file name or a directory.
 
-    @example
     Sourcemaps are written under "<location>.map".
 
     ```python

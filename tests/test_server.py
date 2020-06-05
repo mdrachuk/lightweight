@@ -1,5 +1,6 @@
 import asyncio
 from asyncio import gather
+from multiprocessing import Event
 from pathlib import Path
 
 import pytest
@@ -16,7 +17,7 @@ class TestTheServer:
         loop = asyncio.new_event_loop()
         yield loop
         if self.server:
-            self.server.shutdown()
+            self.server.shutdown(loop=loop)
         pending = asyncio.all_tasks(loop=loop)
         loop.run_until_complete(gather(*pending, loop=loop))
         loop.close()
@@ -34,8 +35,8 @@ class TestTheServer:
     async def test_serves_live_reload_js(self, event_loop, unused_tcp_port):
         loop = event_loop
         self.server = LiveReloadServer(
-            self.directory,
-            watch=self.directory,
+            self.dir_path,
+            watch=self.dir_path,
             regenerate=lambda: None,
             ignored=[]
         )
@@ -61,13 +62,13 @@ class TestTheServer:
     @pytest.mark.asyncio
     async def test_live_reload_regenerate(self, event_loop, unused_tcp_port):
         class MockRegenerate:
-            called = False
+            called = Event()
 
             def __call__(self):
-                self.called = True
+                self.called.set()
 
         regenerate = MockRegenerate()
-        self.server = LiveReloadServer(self.directory, watch=self.directory, regenerate=regenerate, ignored=[])
+        self.server = LiveReloadServer(self.dir_path, watch=self.dir_path, regenerate=regenerate, ignored=[])
         port = unused_tcp_port
         self.server.serve('127.0.0.1', port, loop=event_loop)
 
@@ -75,17 +76,17 @@ class TestTheServer:
         with (self.dir_path / 'new-file').open('w') as f:
             f.write('Test file changes')
         await asyncio.sleep(0.5)  # wait for file change to get picked up
-        assert regenerate.called
+        assert regenerate.called.is_set()
 
     @pytest.mark.asyncio
     async def test_live_reload_ignore(self, event_loop, unused_tcp_port):
         ignored_path = self.dir_path / 'ignore'
         ignored_path.mkdir(parents=True, exist_ok=True)
         self.server = LiveReloadServer(
-            self.directory,
-            watch=self.directory,
+            self.dir_path,
+            watch=self.dir_path,
             regenerate=lambda: None,
-            ignored=[str(ignored_path)]
+            ignored=[ignored_path]
         )
         port = unused_tcp_port
         self.server.serve('127.0.0.1', port, loop=event_loop)
@@ -99,7 +100,7 @@ class TestTheServer:
 
     @pytest.mark.asyncio
     async def test_serves_no_live_reload_js(self, event_loop, unused_tcp_port):
-        self.server = DevServer(self.directory)
+        self.server = DevServer(self.dir_path)
         port = unused_tcp_port
         self.server.serve('127.0.0.1', port, loop=event_loop)
 
@@ -112,7 +113,7 @@ class TestTheServer:
 
     @pytest.mark.asyncio
     async def test_403(self, event_loop, unused_tcp_port):
-        self.server = DevServer(self.directory)
+        self.server = DevServer(self.dir_path)
         port = unused_tcp_port
         self.server.serve('127.0.0.1', port, loop=event_loop)
 
@@ -133,7 +134,7 @@ class TestTheServer:
 
         event_loop.set_exception_handler(pass_if_matching)
 
-        self.server = BadServer(self.directory)
+        self.server = BadServer(self.dir_path)
         port = unused_tcp_port
         self.server.serve('127.0.0.1', port, loop=event_loop)
         assert '500' in await get(f'http://127.0.0.1:{port}/../..')
@@ -141,9 +142,9 @@ class TestTheServer:
 
 def test_file_not_found():
     with pytest.raises(FileNotFoundError):
-        DevServer('non-existing')
+        DevServer(Path('non-existing'))
 
 
 def test_file_not_a_directory():
     with pytest.raises(NotADirectoryError):
-        DevServer('resources/test.html')
+        DevServer(Path('resources/test.html'))

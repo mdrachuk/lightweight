@@ -1,73 +1,15 @@
 from __future__ import annotations
 
-from asyncio import get_event_loop
-from concurrent.futures.thread import ThreadPoolExecutor
 from dataclasses import dataclass, replace
-from datetime import datetime
-from functools import partial
 from pathlib import Path, PurePath
-from typing import TYPE_CHECKING, Union, Tuple, Callable, TypeVar, IO, Any
+from typing import Callable, Tuple, Union, IO, Any
 
-import lightweight
-
-if TYPE_CHECKING:
-    from lightweight import Site, Content
-
-V = TypeVar('V')
 UrlFactory = Callable[[str], str]  # A url factory a full URL with a provided relative location.
-default_executor = ThreadPoolExecutor()
-
-
-async def schedule(func: Callable[..., V], *args, **kwargs) -> V:
-    return await get_event_loop().run_in_executor(default_executor, partial(func, *args, **kwargs))
-
-
-@dataclass(frozen=True)
-class GenTask:
-    """A task executed by [Site] during generation.
-
-    All of site’s tasks can be accessed during generation via [GenContext][GenContext.tasks].
-
-    Generation Task objects differ from the [Site’s IncludedContent][lightweight.site.IncludedContent]
-    by having the path of [GenPath] type (instead of regular Path).
-    [GenPath] has knowledge of the generation `out` directory,
-    and is passed directly to [`content.write(path, ctx)`][Content.write].
-
-    Includes `cwd` (current working directory) in which the original content was created.
-    Content [`write(...)`][Content.write] operates from this directory.
-    """
-    path: GenPath
-    content: 'Content'
-    cwd: str  # current working directory
-
-
-class GenContext:
-    """A generation context.
-    Contains the data useful during the generation: the site and the list of tasks to be executed in the process.
-
-    The context is created by [Site] upon starting generation
-    and provided to the [`Content.write(path, ctx)`][Content.write] method as a second parameter.
-    """
-    site: 'Site'
-    out: Path
-    tasks: Tuple[GenTask, ...]
-    generated: datetime  # UTC datetime of generation
-    version: str
-
-    def __init__(self, out: Path, site: 'Site'):
-        self.out = out
-        self.site = site
-        self.generated = datetime.utcnow()
-        self.version = lightweight.__version__
-
-    def path(self, p: Union[Path, str]) -> GenPath:
-        """Create a new [GenPath] in this generation context from a regular path."""
-        return GenPath(Path(p), self.out, lambda location: self.site / location)
 
 
 @dataclass(frozen=True)
 class GenPath:
-    """A path for [writing content][Content.write)].
+    """A path for [writing content][lightweight.content.Content.write].
     It contains both, the relative path (as specified by `site.include(relative_path, content)`)
     and the real path (an absolute path which in site’s `out`).
 
@@ -76,7 +18,6 @@ class GenPath:
 
     Also, proper URL can be obtained from [generation path][GenPath]
 
-    @example
     ```
     site = Site('https://example.org/')
     resources = GenPath(Path('resources'), out='/tmp/out', url_factory=lambda location: site/location)
@@ -130,7 +71,6 @@ class GenPath:
 
         URL is created by a URL factory. By default this would
 
-        @example
         ```
         site = Site('https://example.org/')
         url_factory = lambda location: site/location
@@ -185,7 +125,6 @@ class GenPath:
     def __truediv__(self, other: Union[GenPath, PurePath, str]) -> GenPath:
         """A child generation path can be created from an existing one by using division operator.
 
-        @example
         ```python
         parent = GenPath(Path('something/', 'tmp/out, ...))
         child = parent / 'child'
@@ -209,7 +148,7 @@ class GenPath:
         return replace(self, relative_path=self.relative_path.with_name(name))
 
     def open(self, mode='r', buffering=-1, encoding=None, errors=None, newline=None) -> IO[Any]:
-        """Open the file. Same as [Path.open(...)][Path.open)]"""
+        """Open the file. Same as [Path.open(...)][Path.open]"""
         return self.real_path.open(mode=mode, buffering=buffering, encoding=encoding, errors=errors, newline=newline)
 
     def with_suffix(self, suffix: str) -> GenPath:

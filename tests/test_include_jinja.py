@@ -61,18 +61,6 @@ class TestWorkingDirectory:
             jinja('templates/test.html')
 
 
-def test_resolves_sub_site_template_by_cwd(tmp_path: Path):
-    site = Site('https://example.org/')
-    with directory('site'):
-        subsite = Site('https://example.org/')
-        subsite.include('page.html', jinja('page.html'))
-    site.include('subsite', subsite)
-    site.generate(out=tmp_path)
-
-    with open('expected/subsite/page.html') as expected:
-        assert (tmp_path / 'subsite' / 'page.html').read_text() == expected.read()
-
-
 def test_lazy_params(tmp_path: Path):
     src_location = 'resources/jinja/lazy.html'
     out_location = 'lazy.html'
