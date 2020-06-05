@@ -13,8 +13,8 @@ from typing import Dict, Any, Union, TYPE_CHECKING, Callable, TypeVar, Generic
 
 from jinja2 import Template
 
-from .content_ import Content
-from ..template import template
+from .content_abc import Content
+from ..templates import template
 
 if TYPE_CHECKING:
     from lightweight import GenPath, GenContext

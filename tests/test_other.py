@@ -1,6 +1,6 @@
 from jinja2.utils import LRUCache
 
-from lightweight.template import LruCachePerCwd
+from lightweight.templates import LruCachePerCwd
 
 
 def test_package():

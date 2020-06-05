@@ -36,7 +36,7 @@ from .content import Content, markdown, jinja, from_ctx, sass
 from .files import paths, directory
 from .generation import GenPath, GenContext
 from .site import Site
-from .template import template, jinja_env
+from .templates import template, jinja_env
 from .cli import SiteCli
 
 logging.basicConfig()

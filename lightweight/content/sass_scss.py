@@ -24,7 +24,7 @@ from typing import TYPE_CHECKING, Callable
 from sass import compile  # type: ignore # missing annotations
 
 from lightweight.files import paths
-from .content_ import Content
+from .content_abc import Content
 
 if TYPE_CHECKING:
     from lightweight import GenPath, GenContext

@@ -5,7 +5,7 @@ from pathlib import Path
 from shutil import copy as shcopy, copytree
 from typing import TYPE_CHECKING, Union
 
-from .content_ import Content
+from .content_abc import Content
 
 if TYPE_CHECKING:
     from lightweight import GenPath, GenContext

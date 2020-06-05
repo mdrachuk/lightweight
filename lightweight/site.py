@@ -14,8 +14,8 @@ from shutil import rmtree
 from typing import overload, Union, Optional, List, Dict
 from urllib.parse import urlparse, urljoin
 
-from .content.content_ import Content
-from .content.copies_ import copy
+from .content.content_abc import Content
+from .content.copies import copy
 from .errors import AbsolutePathIncluded, IncludedDuplicate
 from .files import paths, directory
 from .generation import GenContext, GenTask

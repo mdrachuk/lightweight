@@ -1,7 +1,5 @@
-# modules are suffixed with _ to avoid name clashes with functions
-
-from .content_ import Content
-from .copies_ import copy
-from .jinja_ import jinja, from_ctx
-from .markdown_ import markdown
-from .sass_ import sass
+from .content_abc import Content
+from .copies import copy
+from .jinja_doc import jinja, from_ctx
+from .md_doc import markdown
+from .sass_scss import sass

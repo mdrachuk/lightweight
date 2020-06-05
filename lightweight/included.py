@@ -33,7 +33,7 @@ class Includes:
 
 @dataclass(frozen=True)
 class IncludedContent:
-    """The [content][Content] included by a [Site].
+    """The [content][Content] included by a [lightweight.Site].
 
     Contains the site’s location and `cwd` (current working directory) of the content.
 

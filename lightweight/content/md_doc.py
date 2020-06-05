@@ -22,9 +22,9 @@ import frontmatter  # type: ignore
 from jinja2 import Template
 from mistune import Markdown  # type: ignore
 
-from .content_ import Content
-from .jinja_ import _eval_if_lazy
-from .lwmd_ import LwRenderer, TableOfContents
+from .content_abc import Content
+from .jinja_doc import _eval_if_lazy
+from .lwmd import LwRenderer, TableOfContents
 
 if TYPE_CHECKING:
     from lightweight import GenPath, GenContext
@@ -98,11 +98,11 @@ class MarkdownPage(Content):
 
 def markdown(md_path: Union[str, Path], template: Union[Template], *, renderer=LwRenderer, **kwargs) -> MarkdownPage:
     """Create a markdown page that can be included by a Site.
-    Markdown page is compiled from a markdown file at path (*.md) and a [Jinja Template][lightweight.template.template].
+    Markdown page is compiled from a markdown file at path (*.md) and a [Jinja Template][lightweight.template].
 
     Provided key-word arguments are passed as props to the template on render.
     Such props can also be lazily evaluated from [GenContext]
-    by using the [from_ctx(func) decorator][lightweight.content.jinja.from_ctx].
+    by using the [from_ctx(func) decorator][lightweight.content.jinja_doc.from_ctx].
     """
     path = Path(md_path)
     source = path.read_text(encoding='utf-8')

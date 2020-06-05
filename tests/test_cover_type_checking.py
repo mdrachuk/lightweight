@@ -9,12 +9,12 @@ from importlib import reload
 from multiprocessing.context import Process
 
 import lightweight.cli
-import lightweight.content.content_
-import lightweight.content.copies_
-import lightweight.content.jinja_
-import lightweight.content.lwmd_
-import lightweight.content.markdown_
-import lightweight.content.sass_
+import lightweight.content.content_abc
+import lightweight.content.copies
+import lightweight.content.jinja_doc
+import lightweight.content.lwmd
+import lightweight.content.md_doc
+import lightweight.content.sass_scss
 import lightweight.errors
 import lightweight.files
 import lightweight.generation.context
@@ -24,19 +24,19 @@ import lightweight.included
 import lightweight.lw
 import lightweight.server
 import lightweight.site
-import lightweight.template
+import lightweight.templates
 
 
 def cover_type_checking():
     import typing
     typing.TYPE_CHECKING = True
 
-    reload(lightweight.content.content_)
-    reload(lightweight.content.copies_)
-    reload(lightweight.content.jinja_)
-    reload(lightweight.content.lwmd_)
-    reload(lightweight.content.markdown_)
-    reload(lightweight.content.sass_)
+    reload(lightweight.content.content_abc)
+    reload(lightweight.content.copies)
+    reload(lightweight.content.jinja_doc)
+    reload(lightweight.content.lwmd)
+    reload(lightweight.content.md_doc)
+    reload(lightweight.content.sass_scss)
 
     reload(lightweight.generation.context)
     reload(lightweight.generation.path)
