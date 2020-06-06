@@ -176,7 +176,10 @@ class DevServer:
         path: str
         proto: str
         method, path, proto = first_line.decode().split()
-        logger.info(f'{now_repr()}: {method} {path} Requested')
+        if path != '/__live_reload_id__':
+            logger.info(f'{now_repr()}: {method} {path} Requested')
+        else:
+            logger.debug(f'{now_repr()}: {method} {path} Requested')
         try:
             if '?' in path:
                 path, qs = path.split('?', 1)
@@ -199,7 +202,10 @@ class DevServer:
             writer.close()
             await sleep(0.01)
             await writer.wait_closed()
-            logger.info(f'{now_repr()}: {method} {path} Done')
+            if path != '/__live_reload_id__':
+                logger.info(f'{now_repr()}: {method} {path} Done')
+            else:
+                logger.debug(f'{now_repr()}: {method} {path} Done')
 
     @staticmethod
     async def _parse_headers(reader: StreamReader):
