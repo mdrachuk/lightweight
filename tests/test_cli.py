@@ -10,7 +10,7 @@ import pytest
 from pytest import fixture
 
 from lightweight import directory, __version__, lw, Site, SiteCli, jinja
-from lightweight.errors import InvalidSiteCliUsage, InvalidCommand
+from lightweight.errors import InvalidCommand
 from lightweight.lw import FailedGeneration, start_server
 from tests.server_utils import get
 
@@ -145,28 +145,33 @@ class TestTheCli:
         run_site_cli("test_cli.py serve")
         assert mock.run_count == 1
 
-    def test_cant_serve_uncallable(self):
-        with pytest.raises(InvalidSiteCliUsage):
-            run_site_cli("test_cli.py serve", build='a')
+    def test_cant_serve_uncallable(self, caplog):
+        run_site_cli("test_cli.py serve", build='a')
+        assert "InvalidSiteCliUsage" in caplog.text
 
-    def test_serve_wrong_callable(self):
-        with pytest.raises(InvalidSiteCliUsage):
-            run_site_cli("test_cli.py serve", build=lambda: None)
+    def test_serve_wrong_callable(self, caplog):
+        run_site_cli("test_cli.py serve", build=lambda: None)
+        assert "InvalidSiteCliUsage" in caplog.text
 
-    def test_cant_serve_method(self):
+    def test_cant_serve_method(self, caplog):
         class Some:
             def method(self):
                 pass
 
-        with pytest.raises(InvalidSiteCliUsage):
-            run_site_cli("test_cli.py serve", build=Some().method)
+        run_site_cli("test_cli.py serve", build=Some().method)
+        assert "InvalidSiteCliUsage" in caplog.text
 
-    def test_serve_invalid_signature(self, mock_start_server):
-        with pytest.raises(InvalidSiteCliUsage):
-            run_site_cli("test_cli.py serve", build=build_func_no_arg)
-        with pytest.raises(InvalidSiteCliUsage):
-            run_site_cli("test_cli.py serve", build=build_func_2_args)
+    def test_serve_invalid_signature_no_args(self, caplog):
+        run_site_cli("test_cli.py serve", build=build_func_no_arg)
+        assert "InvalidSiteCliUsage" in caplog.text
+
+    def test_serve_invalid_signature_2_args(self, caplog):
+        run_site_cli("test_cli.py serve", build=build_func_2_args)
+        assert "InvalidSiteCliUsage" in caplog.text
+
+    def test_serve_with_default(self, mock_start_server):
         run_site_cli("test_cli.py serve", build=build_func_with_default)
+        assert mock_start_server.run_count == 1
 
     def test_invalid_command_shows_help(self, capsys):
         run_site_cli("test_cli.py")

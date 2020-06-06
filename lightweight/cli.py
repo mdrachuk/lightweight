@@ -52,11 +52,14 @@ class SiteCli:
         self.default_out = default_out if default_out is not None else Path(getcwd()) / 'out'
 
     def run(self):
-        args = self._argument_parser().parse_args()
-        if hasattr(args, 'func'):
-            args.func(args)
-        else:
-            self.help()
+        try:
+            args = self._argument_parser().parse_args()
+            if hasattr(args, 'func'):
+                args.func(args)
+            else:
+                self.help()
+        except InvalidSiteCliUsage as e:
+            logger.error(f"{type(e).__name__}: {e}")
 
     def help(self):
         self._argument_parser() \
@@ -91,6 +94,7 @@ class SiteCli:
             host = args.host if args.host is not None else self.default_host
             port = args.port if args.port is not None else self.default_port
             url = f'http://{host}:{port}/'
+        logger.info(f' Starting building "{url}"')
         self.build(url).generate(args.out)
 
     def _add_server_cli(self, subparsers):
