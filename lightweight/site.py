@@ -87,7 +87,7 @@ class Site:
         The [content’s write][Content.write] will be executed from this directory.
 
         Check overloads for alternative signatures."""
-        logger.info(f'Adding "{location}"')
+        self.info(f'Adding "{location}"')
         cwd = getcwd()
         if location.startswith('/'):
             raise AbsolutePathIncluded()
@@ -127,13 +127,15 @@ class Site:
 
         If the out directory already exists – it will be deleted with all of it contents.
         """
+        self.info(f"STARTED GENERATION")
         out = Path(abspath(out))
-        logger.info(f"Using out: {out}")
+        self.info(f"OUT: {out}")
         if out.exists():
-            logger.info(f"Out exists: deleting all of its contents.")
+            self.info(f"Deleting existing OUT")
             rmtree(out)
         out.mkdir(parents=True, exist_ok=True)
         self._generate(out)
+        self.info(f"COMPLETED GENERATION")
 
     def _generate(self, out: Path):
         ctx = self.create_ctx(out)
@@ -181,6 +183,13 @@ class Site:
         """
         # TODO:mdrachuk:04.06.2020: replace with <SiteUrl> which can be added a / further and checks file existence
         return urljoin(self.url, location)
+
+    # ------------ LOGGER ------------
+    def info(self, text):
+        logger.info(f'{self.title or self.url} {text}')
+
+    def debug(self, text):
+        logger.debug(f'{self.title or self.url} {text}')
 
 
 def _check_site_url(url: str) -> str:

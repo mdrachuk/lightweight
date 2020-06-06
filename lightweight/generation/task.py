@@ -28,6 +28,6 @@ class GenTask:
     cwd: str  # current working directory
 
     def execute(self):
-        logger.info(f'Writing "{self.path}"')
-        logger.debug(f'{self.path}: CWD={self.cwd} CONTENT={self.content}')
+        self.ctx.site.info(f'Writing "{self.path}"')
+        self.ctx.site.debug(f'{self.path}: CWD={self.cwd} CONTENT={self.content}')
         self.content.write(self.path, self.ctx)

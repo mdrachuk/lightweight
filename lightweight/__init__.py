@@ -39,7 +39,7 @@ from .site import Site
 from .templates import template, jinja_env
 from .cli import SiteCli
 
-logging.basicConfig(format="%(levelname)s:%(name)s: %(message)s")
+logging.basicConfig()
 logger = logging.getLogger('lw')
 logger.setLevel(logging.INFO)
 
