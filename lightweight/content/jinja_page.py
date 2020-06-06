@@ -7,7 +7,7 @@ from __future__ import annotations
 
 __all__ = ['JinjaPage', 'jinja', 'from_ctx']
 
-from dataclasses import dataclass
+from dataclasses import dataclass, field
 from pathlib import Path
 from typing import Dict, Any, Union, TYPE_CHECKING, Callable, TypeVar, Generic
 
@@ -24,9 +24,9 @@ if TYPE_CHECKING:
 class JinjaPage(Content):
     """Content rendered from a Jinja Template."""
 
-    template: Template
+    template: Template = field(repr=False)
     source_path: Path
-    props: Dict[str, Any]
+    props: Dict[str, Any] = field(repr=False)
 
     def write(self, path: GenPath, ctx: GenContext):
         path.create(self.render(ctx))

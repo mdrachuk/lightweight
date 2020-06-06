@@ -39,8 +39,8 @@ from .site import Site
 from .templates import template, jinja_env
 from .cli import SiteCli
 
-logging.basicConfig()
+logging.basicConfig(format="%(levelname)s:%(name)s: %(message)s")
 logger = logging.getLogger('lw')
 logger.setLevel(logging.INFO)
 
-__version__ = '1.0.0.dev50'
+__version__ = '1.0.0.dev51'

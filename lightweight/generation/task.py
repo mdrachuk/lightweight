@@ -1,9 +1,11 @@
 from dataclasses import dataclass
+from logging import getLogger
 
 from lightweight import Content
-
-from .path import GenPath
 from .context import GenContext
+from .path import GenPath
+
+logger = getLogger('lw')
 
 
 @dataclass(frozen=True)
@@ -24,3 +26,8 @@ class GenTask:
     ctx: GenContext
     content: Content
     cwd: str  # current working directory
+
+    def execute(self):
+        logger.info(f'Writing "{self.path}"')
+        logger.debug(f'{self.path}: CWD={self.cwd} CONTENT={self.content}')
+        self.content.write(self.path, self.ctx)

@@ -6,7 +6,7 @@ import asyncio
 from asyncio import gather
 from collections import defaultdict
 from concurrent.futures.thread import ThreadPoolExecutor
-from functools import partial
+from logging import getLogger
 from os import getcwd
 from os.path import abspath
 from pathlib import Path
@@ -20,6 +20,8 @@ from .errors import AbsolutePathIncluded, IncludedDuplicate
 from .files import paths, directory
 from .generation import GenContext, GenTask
 from .included import Includes, IncludedContent
+
+logger = getLogger('lw')
 
 
 class Site:
@@ -85,6 +87,7 @@ class Site:
         The [content’s write][Content.write] will be executed from this directory.
 
         Check overloads for alternative signatures."""
+        logger.info(f'Collecting "{location}"')
         cwd = getcwd()
         if location.startswith('/'):
             raise AbsolutePathIncluded()
@@ -125,7 +128,9 @@ class Site:
         If the out directory already exists – it will be deleted with all of it contents.
         """
         out = Path(abspath(out))
+        logger.info(f"Using out: {out}")
         if out.exists():
+            logger.info(f"Out exists: deleting all of its contents.")
             rmtree(out)
         out.mkdir(parents=True, exist_ok=True)
         self._generate(out)
@@ -145,12 +150,12 @@ class Site:
         asyncio.set_event_loop(loop)
         executor = ThreadPoolExecutor()
 
-        async def schedule(task):
-            return await loop.run_in_executor(executor, partial(task.content.write, task.path, task.ctx))
+        async def scheduled(task):
+            return await loop.run_in_executor(executor, task.execute)
 
         for cwd, _tasks in tasks.items():
             with directory(cwd):
-                writes = map(schedule, _tasks)
+                writes = map(scheduled, _tasks)
                 loop.run_until_complete(gather(*writes, loop=loop))
         loop.close()
 
