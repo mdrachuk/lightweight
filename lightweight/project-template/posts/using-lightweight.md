@@ -29,22 +29,22 @@ def blog_posts(source: str):
 site = Site(url='http://example.org', title='The Example')
 
 # Render an index page from Jinja2 template.
-site.include('index.html', jinja('index.html', generated=datetime.now()))
+site.add('index.html', jinja('index.html', generated=datetime.now()))
 
 # Render markdown blog posts.
-[site.include(f'blog/{post.source_path.stem}.html', post) for post in blog_posts('posts/**.md')]
-site.include('blog.html', jinja('blog.html'))
+[site.add(f'blog/{post.source_path.stem}.html', post) for post in blog_posts('posts/**.md')]
+site.add('blog.html', jinja('blog.html'))
 
 # Syndicate RSS and Atom feeds.
-site.include('blog.atom.xml', atom(site['blog']))
-site.include('blog.rss.xml', rss(site['blog']))
+site.add('blog.atom.xml', atom(site['blog']))
+site.add('blog.rss.xml', rss(site['blog']))
 
 # Render SASS to CSS.
-site.include('lightweight.css', sass('styles/lightweight.scss'))
+site.add('lightweight.css', sass('styles/lightweight.scss'))
 
 # Include directory with its contents.
-site.include('js')
-site.include('images')
+site.add('js')
+site.add('images')
 
 site.generate(out='generated/')
 ``` 
@@ -71,14 +71,14 @@ The beauty is in the fact that every line ends up having
 the source, the target and the transformation from former to latter:
 
 ```python
-site.include(<output location>, <transformation>(<source location>, **options))
+site.add(<output location>, <transformation>(<source location>, **options))
 ```  
 
 ### `jinja(location) -> JinjaPage`
 ```python
 from lightweight import jinja
 
-site.include('index.html', jinja('pages/index.html', generated=datetime.now()))
+site.add('index.html', jinja('pages/index.html', generated=datetime.now()))
 ```
 
 Here `jinja(template_location, **params)` takes a Jinja2 template location, 
@@ -105,7 +105,7 @@ def blog_posts(glob: str):
     post_template = template('posts/_template.html')
     return (markdown(path, post_template) for path in paths(glob))
 
-[site.include(f'posts/{post.path.stem}.html', post) for post in blog_posts('posts/**.md')]
+[site.add(f'posts/{post.path.stem}.html', post) for post in blog_posts('posts/**.md')]
 ```
 
 Each file matching `posts/**.md` is passed to `markdown(...)`.
@@ -122,8 +122,8 @@ A great example is how Atom and RSS feeds are created from everything included u
 ```python
 from lightweight import atom, rss
 
-site.include('posts.atom.xml', atom(site['posts']))
-site.include('posts.rss.xml', rss(site['posts']))
+site.add('posts.atom.xml', atom(site['posts']))
+site.add('posts.rss.xml', rss(site['posts']))
 ```
 
 ### `sass(location) -> Sass`
@@ -132,14 +132,14 @@ Why would someone use CSS when there is Sass?
 ```python
 from lightweight import sass
 
-site.include('lightweight.css', sass('styles/lightweight.scss')) 
+site.add('lightweight.css', sass('styles/lightweight.scss')) 
 ```
 
 ### `site.include(glob)`
 A single parameter `.include(...)` shorthand adds all files matching a glob:
 ```python
-site.include('js')
-site.include('images')
+site.add('js')
+site.add('images')
 ```
 
 ### `site.render()`

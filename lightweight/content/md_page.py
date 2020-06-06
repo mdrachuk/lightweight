@@ -6,7 +6,7 @@ from lightweight import markdown, template
 
 ...
 
-site.include('hello.html', markdown('posts/hello.md', template('templates/post.html')))
+site.add('hello.html', markdown('posts/hello.md', template('templates/post.html')))
 ```
 
 [1]: https://daringfireball.net/projects/markdown/

@@ -8,7 +8,7 @@ from lightweight import sass
 
 ...
 
-site.include('css/style.css', sass('styles/style.scss', sourcemap=False))
+site.add('css/style.css', sass('styles/style.scss', sourcemap=False))
 ```
 
 [1]: https://sass-lang.com
@@ -78,7 +78,7 @@ def sass(location: str, *, sourcemap: bool = True) -> Sass:
     Sourcemaps are written under "<location>.map".
 
     ```python
-    site.include('css/style.css', sass('styles/style.scss'))
+    site.add('css/style.css', sass('styles/style.scss'))
     ```
     Creates 2 files: `css/styles.css` and `css/styles.css.map`.
     """

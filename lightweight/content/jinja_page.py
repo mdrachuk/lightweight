@@ -84,7 +84,7 @@ def from_ctx(func: Callable[[GenContext], T]) -> Callable[[GenContext], T]:
 
     ...
 
-    site.include('posts', jinja('posts.html', posts=from_ctx(post_tasks)))
+    site.add('posts', jinja('posts.html', posts=from_ctx(post_tasks)))
     ```
     """
     return LazyContextParameter(func)

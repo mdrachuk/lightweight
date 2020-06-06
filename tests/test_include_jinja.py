@@ -15,7 +15,7 @@ def test_render_jinja(tmp_path: Path):
     test_out = tmp_path / 'out'
     site = Site(url='https://example.org/')
 
-    site.include(out_location, jinja(src_location, title='99 reasons lightweight rules'))
+    site.add(out_location, jinja(src_location, title='99 reasons lightweight rules'))
     site.generate(test_out)
 
     assert (test_out / out_location).exists()
@@ -30,7 +30,7 @@ def test_render_jinja_file(tmp_path: Path):
     test_out = tmp_path / 'out'
     site = Site(url='https://example.org/')
 
-    site.include(out_location, jinja(src_location))
+    site.add(out_location, jinja(src_location))
     site.generate(test_out)
 
     assert (test_out / out_location).exists()
@@ -68,7 +68,7 @@ def test_lazy_params(tmp_path: Path):
     test_out = tmp_path / 'out'
     site = Site(url='https://example.org/')
 
-    site.include(out_location, jinja(src_location, lazy=from_ctx(lambda ctx: f'Hello there! {ctx.tasks[0].path}')))
+    site.add(out_location, jinja(src_location, lazy=from_ctx(lambda ctx: f'Hello there! {ctx.tasks[0].path}')))
     site.generate(test_out)
 
     assert (test_out / out_location).exists()

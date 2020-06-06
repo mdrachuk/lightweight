@@ -16,7 +16,7 @@ def assert_site_render(src_location, content, tmp_path):
         src_content = f.read()
     test_out = tmp_path / 'out'
     site = Site(url='https://example.org/')
-    site.include(content)
+    site.add(content)
     site.generate(test_out)
     assert (test_out / src_location).exists()
     assert (test_out / src_location).read_text() == src_content
@@ -25,7 +25,7 @@ def assert_site_render(src_location, content, tmp_path):
 def test_absolute_includes_not_allowed():
     site = Site('https://example.org/')
     with pytest.raises(AbsolutePathIncluded):
-        site.include('/etc')
+        site.add('/etc')
 
 
 def test_site_location(tmp_path: Path):
@@ -37,9 +37,9 @@ def test_site_location(tmp_path: Path):
 
 def test_site_include_duplicate():
     site = Site(url='https://example.org/')
-    site.include('page', 'resources/test.html')
+    site.add('page', 'resources/test.html')
     with pytest.raises(IncludedDuplicate):
-        site.include('page', 'site/index.html')
+        site.add('page', 'site/index.html')
 
 
 def test_str():

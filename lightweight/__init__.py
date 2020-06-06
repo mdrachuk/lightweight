@@ -13,18 +13,18 @@ def blog_posts(source):
 site = Site(url='https://example.org/')
 
 # Render an index page from Jinja2 template.
-site.include('index.html', jinja('pages/index.html'))
+site.add('index.html', jinja('pages/index.html'))
 
 # Render markdown blog posts.
-[site.include(f'posts/{post.source_path.stem}.html', post) for post in blog_posts('posts/**.md')]
-site.include('posts.html', jinja('pages/posts.html'))
+[site.add(f'posts/{post.source_path.stem}.html', post) for post in blog_posts('posts/**.md')]
+site.add('posts.html', jinja('pages/posts.html'))
 
 # Render SASS to CSS.
-site.include('css/style.css', sass('styles/style.scss'))
+site.add('css/style.css', sass('styles/style.scss'))
 
 # Include a copy of a directory.
-site.include('img')
-site.include('js')
+site.add('img')
+site.add('js')
 
 # Execute all included content.
 site.generate()

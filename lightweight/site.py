@@ -40,11 +40,11 @@ class Site:
     ```
     site = Site('https://example.org/')
 
-    site.include('index.html', jinja('index.html'))
-    site.include('about.html', jinja('about.html'))
-    site.include('css/style.css', sass('styles/main.scss'))
-    site.include('img')
-    site.include('js')
+    site.add('index.html', jinja('index.html'))
+    site.add('about.html', jinja('about.html'))
+    site.add('css/style.css', sass('styles/main.scss'))
+    site.add('img')
+    site.add('js')
 
     site.generate(out='out')
     ```
@@ -65,29 +65,29 @@ class Site:
         self.content = Includes() if not content else content
 
     @overload
-    def include(self, location: str):
+    def add(self, location: str):
         """Include a file, a directory, or multiple files with a glob pattern."""
 
     @overload
-    def include(self, location: str, content: Content):
+    def add(self, location: str, content: Content):
         """Include the content at the provided location."""
 
     @overload
-    def include(self, location: str, content: str):
+    def add(self, location: str, content: str):
         """Copy files from content to location."""
 
-    def include(self, location: str, content: Union[Content, str, None] = None):
+    def add(self, location: str, content: Union[Content, str, None] = None):
         """Include the content at the location.
 
         Note the content write is executed only upon calling [`Site.generate()`][Site.generate].
 
         The location cannot be absolute. It cannot start with a forward slash.
 
-        During the include the `cwd` (current working directory) is recorded.
+        During the add the `cwd` (current working directory) is recorded.
         The [content’s write][Content.write] will be executed from this directory.
 
         Check overloads for alternative signatures."""
-        logger.info(f'Collecting "{location}"')
+        logger.info(f'Adding "{location}"')
         cwd = getcwd()
         if location.startswith('/'):
             raise AbsolutePathIncluded()
@@ -104,7 +104,7 @@ class Site:
                 raise FileNotFoundError(f'File does not exist: {content}')
             self._include_content(location, copy(source), cwd)
         else:
-            raise ValueError('Content, str, or None types are accepted as include parameter')
+            raise ValueError('Content, str, or None types are accepted as add parameter')
 
     def _include_content(self, location: str, content: Content, cwd: str):
         self._include(

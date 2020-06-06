@@ -247,15 +247,15 @@ def quickstart(location: str, title: Optional[str]):
     with directory(template_location), custom_jinja_tags():
         site = Site(url="https://example.com/", title=title)
 
-        [site.include(str(p), jinja(p)) for p in paths('_templates_/**/*.html')]
-        [site.include(str(p), jinja(p)) for p in paths('*.html')]
-        site.include('website.py', jinja('website.py.j2', title_slug=title_slug))
-        site.include('requirements.txt', jinja('requirements.txt.j2', version=lw_version()))
-        site.include('posts')
-        [site.include(str(p), jinja(p)) for p in paths('styles/**/*css') if p.name != 'attributes.scss']
-        site.include('styles/attributes.scss', jinja('styles/attributes.scss', accent=Color.bright()))
-        site.include('js')
-        site.include('img')
+        [site.add(str(p), jinja(p)) for p in paths('_templates_/**/*.html')]
+        [site.add(str(p), jinja(p)) for p in paths('*.html')]
+        site.add('website.py', jinja('website.py.j2', title_slug=title_slug))
+        site.add('requirements.txt', jinja('requirements.txt.j2', version=lw_version()))
+        site.add('posts')
+        [site.add(str(p), jinja(p)) for p in paths('styles/**/*css') if p.name != 'attributes.scss']
+        site.add('styles/attributes.scss', jinja('styles/attributes.scss', accent=Color.bright()))
+        site.add('js')
+        site.add('img')
 
         site.generate(abs_out)
 

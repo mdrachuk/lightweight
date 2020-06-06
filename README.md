@@ -16,8 +16,6 @@ Code over configuration.
 - [x] Jinja2 templates
 - [x] Markdown rendering with YAML frontmatter
 - [x] Sass/SCSS rendering
-- [x] RSS/Atom feeds (basic implementation with ability to pass only plaintext to feeds)
-- [x] Site nesting
 - [x] Dev server
 - [x] Template project
 - [x] Clean extensible API 
@@ -32,7 +30,7 @@ pip install lightweight
 
 ## Quick Example
 ```python
-from lightweight import Site, markdown, paths, jinja, template, rss, atom, sass
+from lightweight import Site, SiteCli, markdown, paths, jinja, template, sass
 
 
 def blog_posts(source):
@@ -44,28 +42,30 @@ def example(url):
     site = Site(url)
     
     # Render an index page from Jinja2 template.
-    site.include('index.html', jinja('index.html'))
+    site.add('index.html', jinja('index.html'))
     
     # Render markdown blog posts.
-    [site.include(f'blog/{post.source_path.stem}.html', post) for post in blog_posts('posts/**.md')]
-    site.include('blog.html', jinja('posts.html'))
-    
-    # Syndicate RSS and Atom feeds.
-    site.include('blog.atom.xml', atom(site['blog']))
-    site.include('blog.rss.xml', rss(site['blog']))
+    [site.add(f'blog/{post.source_path.stem}.html', post) for post in blog_posts('posts/**.md')]
+    site.add('blog.html', jinja('posts.html'))
     
     # Render SASS to CSS.
-    site.include('css/global.css', sass('styles/main.scss'))
+    site.add('css/global.css', sass('styles/main.scss'))
     
     # Include a copy of a directory.
-    site.include('img')
-    site.include('js')
+    site.add('img')
+    site.add('fonts')
+    site.add('js')
     
     return site   
 
+def generate_prod():
+    example(url='https://example.org/').generate(out='out')
+
+
 if __name__ == '__main__':
-    # Create a site and generate by writing all of it’s content. 
-    example(url='https://example.org/').generate()
+    # Run CLI with `build` and `serve` commands. 
+    SiteCli(build=example).run()
+
 ```
 
 ## Create a new project
@@ -78,41 +78,34 @@ lw init --url https://example.org example
 It accepts multiple optional arguments:
 ```
 lw init -h
-usage: lw init [-h] --url URL [--title TITLE] location
+usage: lw init [-h] [--title TITLE] location
 
 Generate Lightweight skeleton application
 
 positional arguments:
-  location           the directory to initialize site generator in
+  location       the directory to initialize site generator in
 
 optional arguments:
-  -h, --help         show this help message and exit
-  --url URL          the url of the generated site
-  --title TITLE      the title of of the generated site
+  -h, --help     show this help message and exit
+  --title TITLE  the title of of the generated site
 ```
 
 ## Dev Server
 
 Lightweight includes a simple static web server with live reload serving at `localhost:8080`:
 ```bash
-lw serve website:dev
+python -m website serve
 ```
 Here `website` is a Python module 
 
 Host and port can be changed via:
 ```bash
-lw serve website:dev --host 0.0.0.0 --port 80
-```
-
-The directory to resolve the module is provided as `--source`. It defaults to cwd.
-The source directory is watched for live reload. 
-```bash
-lw serve website:dev --source ~/Projects/example
+python -m website serve --host 0.0.0.0 --port 80
 ```
 
 The live reload can be disabled with `--no-live-reload` flag:
 ```bash
-lw serve website:dev --no-live-reload
+python -m website serve --no-live-reload
 ```
 Otherwise every served HTML file will be injected with a javascript that polls `/__live_reload_id__`.
 The script triggers page reload when the value at that location changes.

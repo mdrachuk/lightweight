@@ -261,7 +261,7 @@ def build_func(url):
 
 def build_jinja_file(url):
     site = Site(url=url)
-    site.include('index', jinja('index'))
+    site.add('index', jinja('index'))
     return site
 
 
