@@ -25,7 +25,7 @@ from pathlib import Path
 from typing import Callable, Any
 
 from .errors import InvalidCommand, InvalidSiteCliUsage
-from .lw import start_server, FailedGeneration
+from .lw import start_server, FailedGeneration, set_log_level, add_log_arguments
 from .site import Site
 
 logger = getLogger('lw')
@@ -55,6 +55,7 @@ class SiteCli:
         try:
             args = self._argument_parser().parse_args()
             if hasattr(args, 'func'):
+                set_log_level(args)
                 args.func(args)
             else:
                 self.help()
@@ -75,13 +76,14 @@ class SiteCli:
         self._add_server_cli(subparsers)
 
     def _add_build_cli(self, subparsers):
-        p = subparsers.add_parser(name='build', description='')
+        p = subparsers.add_parser(name='build', description='Generate site to the out directory')
         p.add_argument('--out', type=str, default=self.default_out,
                        help='output directory for generation results.Defaults to cwd / "out"')
         p.add_argument('--host', type=str, default=None, help=f'defaults to "{self.default_host}"')
         p.add_argument('--port', type=int, default=None, help=f'defaults to "{self.default_port}"')
         p.add_argument('--url', type=str, default=None,
                        help=f'defaults to "http://{self.default_host}:{self.default_port}/"')
+        add_log_arguments(p)
         p.set_defaults(func=self._run_build)
 
     def _run_build(self, args: Any):
@@ -111,6 +113,7 @@ class SiteCli:
         p.add_argument('--no-live-reload', action='store_true', default=False,
                        help='disable live reloading '
                             '(enabled by default calling the executable on every project file change)')
+        add_log_arguments(p)
         if inspect.ismethod(self.build):
             raise InvalidSiteCliUsage("SiteCli first argument (<build>) must be a module-level function. "
                                       "It cannot be a method.")
