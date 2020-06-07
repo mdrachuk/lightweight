@@ -12,7 +12,7 @@ def test_render_scss_file(tmp_path: Path):
     test_out = tmp_path / 'out'
     site = Site(url='https://example.org/')
 
-    site.include(out_location, sass(src_location))
+    site.add(out_location, sass(src_location))
     site.generate(test_out)
 
     assert (test_out / out_location).exists()
@@ -27,7 +27,7 @@ def test_render_scss_directory(tmp_path: Path):
     test_out = tmp_path / 'out'
     site = Site(url='https://example.org/')
 
-    site.include(out_location, sass(src_location))
+    site.add(out_location, sass(src_location))
     site.generate(test_out)
 
     assert (test_out / out_location).exists()
@@ -44,7 +44,7 @@ def test_render_sass_directory(tmp_path: Path):
     test_out = tmp_path / 'out'
     site = Site(url='https://example.org/')
 
-    site.include(out_location, sass(src_location))
+    site.add(out_location, sass(src_location))
     site.generate(test_out)
 
     assert (test_out / out_location).exists()
@@ -59,7 +59,7 @@ def test_nonexistent(tmp_path: Path):
     site = Site(url='https://example.org/')
 
     with pytest.raises(FileNotFoundError):
-        site.include('', sass(src_location))
+        site.add('', sass(src_location))
 
 
 def test_render_scss_file_sourcemaps(tmp_path: Path):
@@ -69,7 +69,7 @@ def test_render_scss_file_sourcemaps(tmp_path: Path):
     test_out = tmp_path / 'out'
     site = Site(url='https://example.org/')
 
-    site.include(out_location, sass(src_location))
+    site.add(out_location, sass(src_location))
     site.generate(test_out)
 
     with open('expected/scss/style.css.map') as expected:
@@ -83,7 +83,7 @@ def test_render_scss_directory_sourcemaps(tmp_path: Path):
     test_out = tmp_path / 'out'
     site = Site(url='https://example.org/')
 
-    site.include(out_location, sass(src_location))
+    site.add(out_location, sass(src_location))
     site.generate(test_out)
 
     with open('expected/scss/nested/test1.css.map') as expected:

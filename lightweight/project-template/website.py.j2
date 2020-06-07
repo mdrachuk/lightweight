@@ -15,20 +15,20 @@ def {! title_slug !}(url):
 
     with directory(module_dir):
         # Render an index page from Jinja2 template.
-        site.include('index.html', jinja('index.html'))
+        site.add('index.html', jinja('index.html'))
 
-        site.include('labs.html', jinja('labs.html'))
+        site.add('labs.html', jinja('labs.html'))
 
         # Render markdown blog posts.
-        [site.include(f'blog/{post.source_path.stem}.html', post) for post in blog_posts('posts/**.md')]
-        site.include('blog.html', jinja('blog.html', posts=from_ctx(post_tasks)))
+        [site.add(f'blog/{post.source_path.stem}.html', post) for post in blog_posts('posts/**.md')]
+        site.add('blog.html', jinja('blog.html', posts=from_ctx(post_tasks)))
 
         # Render SASS to CSS.
-        site.include('css/global.css', sass('styles/global.scss'))
+        site.add('css/global.css', sass('styles/global.scss'))
 
         # Include directory with all of its contents.
-        site.include('js')
-        site.include('img')
+        site.add('js')
+        site.add('img')
 
     return site
 

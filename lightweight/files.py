@@ -34,7 +34,7 @@ def directory(location: Union[str, Path]):
     project_location = Path(__file__).absolute().parent
 
     with directory(project_location):
-        site.include('index.html')
+        site.add('index.html')
 
     ```
     """

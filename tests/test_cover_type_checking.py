@@ -11,9 +11,9 @@ from multiprocessing.context import Process
 import lightweight.cli
 import lightweight.content.content_abc
 import lightweight.content.copies
-import lightweight.content.jinja_doc
+import lightweight.content.jinja_page
 import lightweight.content.lwmd
-import lightweight.content.md_doc
+import lightweight.content.md_page
 import lightweight.content.sass_scss
 import lightweight.errors
 import lightweight.files
@@ -33,9 +33,9 @@ def cover_type_checking():
 
     reload(lightweight.content.content_abc)
     reload(lightweight.content.copies)
-    reload(lightweight.content.jinja_doc)
+    reload(lightweight.content.jinja_page)
     reload(lightweight.content.lwmd)
-    reload(lightweight.content.md_doc)
+    reload(lightweight.content.md_page)
     reload(lightweight.content.sass_scss)
 
     reload(lightweight.generation.context)

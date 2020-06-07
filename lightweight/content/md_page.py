@@ -6,14 +6,14 @@ from lightweight import markdown, template
 
 ...
 
-site.include('hello.html', markdown('posts/hello.md', template('templates/post.html')))
+site.add('hello.html', markdown('posts/hello.md', template('templates/post.html')))
 ```
 
 [1]: https://daringfireball.net/projects/markdown/
 """
 from __future__ import annotations
 
-from dataclasses import dataclass
+from dataclasses import dataclass, field
 from datetime import datetime, timezone
 from pathlib import Path
 from typing import Optional, Union, TYPE_CHECKING, Type, Dict, Any
@@ -23,7 +23,7 @@ from jinja2 import Template
 from mistune import Markdown  # type: ignore
 
 from .content_abc import Content
-from .jinja_doc import _eval_if_lazy
+from .jinja_page import _eval_if_lazy
 from .lwmd import LwRenderer, TableOfContents
 
 if TYPE_CHECKING:
@@ -36,17 +36,17 @@ class MarkdownPage(Content):
 
     template: Template  # Jinja2 template
     source_path: Path  # path to the markdown file
-    text: str  # the contents of a markdown file
+    text: str = field(repr=False)  # the contents of a markdown file
 
-    renderer: Type[LwRenderer]
+    renderer: Type[LwRenderer] = field(repr=False)
 
     title: Optional[str]
-    summary: Optional[str]
-    created: Optional[datetime]
-    updated: Optional[datetime]
+    summary: Optional[str] = field(repr=False)
+    created: Optional[datetime] = field(repr=False)
+    updated: Optional[datetime] = field(repr=False)
 
-    front_matter: Dict[str, Any]
-    props: Dict[str, Any]
+    front_matter: Dict[str, Any] = field(repr=False)
+    props: Dict[str, Any] = field(repr=False)
 
     def write(self, path: GenPath, ctx: GenContext):
         """Writes a rendered Jinja template with rendered Markdown, parameters from front-matter and code
@@ -102,7 +102,7 @@ def markdown(md_path: Union[str, Path], template: Union[Template], *, renderer=L
 
     Provided key-word arguments are passed as props to the template on render.
     Such props can also be lazily evaluated from [GenContext]
-    by using the [from_ctx(func) decorator][lightweight.content.jinja_doc.from_ctx].
+    by using the [from_ctx(func) decorator][lightweight.content.jinja_page.from_ctx].
     """
     path = Path(md_path)
     source = path.read_text(encoding='utf-8')

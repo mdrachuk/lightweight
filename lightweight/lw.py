@@ -43,7 +43,7 @@ from contextlib import contextmanager
 from dataclasses import dataclass
 from importlib.machinery import SourceFileLoader
 from importlib.util import module_from_spec, spec_from_loader
-from logging import getLogger
+from logging import getLogger, DEBUG, INFO, ERROR, WARNING
 from pathlib import Path
 from random import randint, sample
 from typing import Any, Optional, Callable
@@ -247,22 +247,22 @@ def quickstart(location: str, title: Optional[str]):
     with directory(template_location), custom_jinja_tags():
         site = Site(url="https://example.com/", title=title)
 
-        [site.include(str(p), jinja(p)) for p in paths('_templates_/**/*.html')]
-        [site.include(str(p), jinja(p)) for p in paths('*.html')]
-        site.include('website.py', jinja('website.py.j2', title_slug=title_slug))
-        site.include('requirements.txt', jinja('requirements.txt.j2', version=lw_version()))
-        site.include('posts')
-        [site.include(str(p), jinja(p)) for p in paths('styles/**/*css') if p.name != 'attributes.scss']
-        site.include('styles/attributes.scss', jinja('styles/attributes.scss', accent=Color.bright()))
-        site.include('js')
-        site.include('img')
+        [site.add(str(p), jinja(p)) for p in paths('_templates_/**/*.html')]
+        [site.add(str(p), jinja(p)) for p in paths('*.html')]
+        site.add('website.py', jinja('website.py.j2', title_slug=title_slug))
+        site.add('requirements.txt', jinja('requirements.txt.j2', version=lw_version()))
+        site.add('posts')
+        [site.add(str(p), jinja(p)) for p in paths('styles/**/*css') if p.name != 'attributes.scss']
+        site.add('styles/attributes.scss', jinja('styles/attributes.scss', accent=Color.bright()))
+        site.add('js')
+        site.add('img')
 
         site.generate(abs_out)
 
         website_file = os.path.join(abs_out, 'website.py')
         os.chmod(website_file, stat.S_IRWXU | stat.S_IRGRP | stat.S_IROTH)  # -rwxr--r--
 
-    logger.info(f'Lightweight project initialized in: {abs_out}')
+    logger.info(f' Project initialized in: {abs_out}')
 
 
 @contextmanager
@@ -308,6 +308,30 @@ def add_init_cli(subparsers):
     qs_parser.add_argument('location', type=str, help='the directory to initialize site generator in')
     qs_parser.add_argument('--title', type=str, help='the title of of the generated site')
     qs_parser.set_defaults(func=lambda args: quickstart(args.location, title=args.title))
+    add_log_arguments(qs_parser)
+
+
+def add_log_arguments(parser):
+    parser.add_argument('--log', default='info', type=str,
+                        help='Set log level, options: debug, info, warning, error')
+
+
+def set_log_level(args):
+    if hasattr(args, 'log') and args.log:
+        logger.setLevel(parse_log_level(args.log))
+
+
+def parse_log_level(value: str):
+    levels = {
+        'debug': DEBUG,
+        'info': INFO,
+        'warning': WARNING,
+        'error': ERROR,
+    }
+    name = value.lower()
+    if name not in levels:
+        raise InvalidCommand(f'Unrecognized log level "{name}", expecting one of {list(levels.keys())}')
+    return levels[name]
 
 
 def add_version_cli(subparsers):
@@ -329,6 +353,7 @@ def main():
     args = parse_args()
     if hasattr(args, 'func'):
         try:
+            set_log_level(args)
             args.func(args)
         except InvalidCommand as error:
             logger.error(f'{type(error).__name__}: {str(error)}')
