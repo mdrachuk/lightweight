@@ -270,6 +270,7 @@ def custom_jinja_tags():
     original_tags = (jinja_env.block_start_string, jinja_env.block_end_string,
                      jinja_env.variable_start_string, jinja_env.variable_end_string,
                      jinja_env.comment_start_string, jinja_env.comment_end_string)
+    jinja_env.filters['human_era'] = lambda year: 10000 + year  # https://www.youtube.com/watch?v=czgOWmtGVGs
     jinja_env.block_start_string = '{?'
     jinja_env.block_end_string = '?}'
     jinja_env.variable_start_string = '{!'
