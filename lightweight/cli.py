@@ -80,7 +80,7 @@ class SiteCli:
     def _add_build_cli(self, subparsers):
         p = subparsers.add_parser(name='build', description='Generate site to the out directory')
         p.add_argument('--out', type=str, default=self.default_out,
-                       help='output directory for generation results.Defaults to cwd / "out"')
+                       help='output directory for generation results. Defaults to cwd / "out"')
         p.add_argument('--host', type=str, default=None, help=f'defaults to "{self.default_host}"')
         p.add_argument('--port', type=int, default=None, help=f'defaults to "{self.default_port}"')
         p.add_argument('--url', type=str, default=None,
