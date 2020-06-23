@@ -43,4 +43,4 @@ logging.basicConfig()
 logger = logging.getLogger('lw')
 logger.setLevel(logging.INFO)
 
-__version__ = '1.0.0.dev51'
+__version__ = '1.0.0.dev52'
