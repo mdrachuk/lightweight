@@ -49,7 +49,10 @@ class MimeType(Enum):
     """Mime-type of the file written to response Content-Type."""
     html = 'text/html'
     css = 'text/css'
-    image = 'image'
+    jpeg = 'image/jpeg'
+    png = 'image/png'
+    gif = 'image/gif'
+    svg = 'image/svg+xml'
     plaintext = 'text/plain'
 
     @classmethod
@@ -58,8 +61,14 @@ class MimeType(Enum):
             return cls.html
         if path.suffix == '.css':
             return cls.css
-        if path.suffix == '.png' or path.suffix == '.jpg' or path.suffix == '.jpeg' or path.suffix == '.gif':
-            return cls.image
+        if path.suffix == '.jpg' or path.suffix == '.jpeg':
+            return cls.jpeg
+        if path.suffix == '.png':
+            return cls.png
+        if path.suffix == '.gif':
+            return cls.gif
+        if path.suffix == '.svg':
+            return cls.svg
         return cls.plaintext
 
 

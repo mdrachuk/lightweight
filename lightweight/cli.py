@@ -22,6 +22,7 @@ from argparse import ArgumentParser
 from logging import getLogger
 from os import getcwd
 from pathlib import Path
+from shutil import rmtree
 from typing import Callable, Any
 
 from .errors import InvalidCommand, InvalidSiteCliUsage
@@ -73,12 +74,13 @@ class SiteCli:
 
     def _add_commands(self, subparsers):
         self._add_build_cli(subparsers)
+        self._add_clean_cli(subparsers)
         self._add_server_cli(subparsers)
 
     def _add_build_cli(self, subparsers):
         p = subparsers.add_parser(name='build', description='Generate site to the out directory')
         p.add_argument('--out', type=str, default=self.default_out,
-                       help='output directory for generation results.Defaults to cwd / "out"')
+                       help='output directory for generation results. Defaults to cwd / "out"')
         p.add_argument('--host', type=str, default=None, help=f'defaults to "{self.default_host}"')
         p.add_argument('--port', type=int, default=None, help=f'defaults to "{self.default_port}"')
         p.add_argument('--url', type=str, default=None,
@@ -98,6 +100,18 @@ class SiteCli:
             url = f'http://{host}:{port}/'
         logger.info(f' Starting building "{url}"')
         self.build(url).generate(args.out)
+
+    def _add_clean_cli(self, subparsers):
+        p = subparsers.add_parser(name='clean', description='Remove the out directory')
+        p.add_argument('--out', type=str, default=self.default_out,
+                       help='output directory for generation results. Defaults to cwd / "out"')
+        add_log_arguments(p)
+        p.set_defaults(func=self._run_clean)
+
+    def _run_clean(self, args: Any):
+        out = Path(args.out).absolute()
+        logger.info(f'Removing files at {str(out)}')
+        rmtree(out)
 
     def _add_server_cli(self, subparsers):
         p = subparsers.add_parser(name='serve',

@@ -177,6 +177,22 @@ class TestTheCli:
         run_site_cli("test_cli.py")
         assert "usage: test_cli.py" in capsys.readouterr().out
 
+    def test_clean(self, tmp_path: Path):
+        with directory(tmp_path):
+            out = tmp_path / 'out'
+            out.mkdir(parents=True)
+            (out / 'file').touch()
+            run_site_cli("test_cli.py clean")
+            assert not out.exists()
+
+    def test_specific_clean(self, tmp_path: Path):
+        with directory(tmp_path):
+            out = tmp_path / 'generated'
+            out.mkdir(parents=True)
+            (out / 'file').touch()
+            run_site_cli("test_cli.py clean --out generated")
+            assert not out.exists()
+
     def test_build(self, mock_start_server, tmp_path: Path):
         with directory(tmp_path):
             index = tmp_path / 'index'
