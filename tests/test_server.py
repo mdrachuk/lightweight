@@ -19,7 +19,7 @@ class TestTheServer:
         if self.server:
             self.server.shutdown(loop=loop)
         pending = asyncio.all_tasks(loop=loop)
-        loop.run_until_complete(gather(*pending, loop=loop))
+        loop.run_until_complete(gather(*pending))
         loop.close()
 
     @pytest.fixture(autouse=True)

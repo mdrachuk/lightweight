@@ -158,7 +158,7 @@ class Site:
         for cwd, _tasks in tasks.items():
             with directory(cwd):
                 writes = map(scheduled, _tasks)
-                loop.run_until_complete(gather(*writes, loop=loop))
+                loop.run_until_complete(gather(*writes))
         loop.close()
 
     def create_ctx(self, out: Path) -> GenContext:

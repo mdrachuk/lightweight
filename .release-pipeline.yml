@@ -16,8 +16,8 @@ stages:
           vmImage: 'Ubuntu-16.04'
         strategy:
           matrix:
-            Python37:
-              python.version: '3.7'
+            Python310:
+              python.version: '3.10'
         steps:
           - template: .use-python.yml
           - script: cd tests && PYTHONPATH=$(Build.Repository.LocalPath):$PYTHONPATH pytest
@@ -28,8 +28,8 @@ stages:
           vmImage: 'Ubuntu-16.04'
         strategy:
           matrix:
-            Python37:
-              python.version: '3.7'
+            Python310:
+              python.version: '3.10'
         steps:
           - template: .use-python.yml
           - script: mypy lightweight
@@ -40,8 +40,8 @@ stages:
           vmImage: 'Ubuntu-16.04'
         strategy:
           matrix:
-            Python37:
-              python.version: '3.7'
+            Python310:
+              python.version: '3.10'
         steps:
           - template: .use-python.yml
           - script: cv lightweight --dev
@@ -54,8 +54,8 @@ stages:
           vmImage: 'Ubuntu-16.04'
         strategy:
           matrix:
-            Python37:
-              python.version: '3.7'
+            Python310:
+              python.version: '3.10'
         steps:
           - template: .use-python.yml
           - script: |
@@ -73,8 +73,8 @@ stages:
           vmImage: 'Ubuntu-16.04'
         strategy:
           matrix:
-            Python37:
-              python.version: '3.7'
+            Python310:
+              python.version: '3.10'
         steps:
           - template: .use-python.yml
 

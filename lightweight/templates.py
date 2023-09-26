@@ -54,8 +54,8 @@ class CwdLoader(BaseLoader):
             for filename in filenames:
                 template = (
                     path.join(dirpath, filename)[len(searchpath):]
-                        .strip(path.sep)
-                        .replace(path.sep, "/")
+                    .strip(path.sep)
+                    .replace(path.sep, "/")
                 )
                 if template[:2] == "./":
                     template = template[2:]
@@ -150,7 +150,7 @@ class LruCachePerCwd:
         return self.instance().__copy__(*args, **kwargs)
 
 
-jinja_env.cache = LruCachePerCwd(250)
+jinja_env.cache = LruCachePerCwd(250)  # type: ignore
 
 
 def template(location: Union[str, Path]) -> Template:

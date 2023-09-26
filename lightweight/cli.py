@@ -34,12 +34,12 @@ logger = getLogger('lw')
 
 class SiteCli:
     def __init__(
-            self,
-            build: Callable[[str], Site],
-            *,
-            default_host: str = 'localhost',
-            default_port: int = 8080,
-            default_out: str = None
+        self,
+        build: Callable[[str], Site],
+        *,
+        default_host: str = 'localhost',
+        default_port: int = 8080,
+        default_out: str | None = None
     ):
         """
         @param build: a module level function that receives the site’s URL `str` and returns a collected [Site]

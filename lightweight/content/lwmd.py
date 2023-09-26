@@ -75,7 +75,7 @@ class TableOfContents:
     id: Optional[str]
     sections: List[Section]
 
-    def __init__(self, id: str = None):
+    def __init__(self, id: str | None = None):
         self.id = id
         self.sections = []
 

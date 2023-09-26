@@ -10,7 +10,7 @@ Mostly stolen from picoweb -- web pico-framework for Pycopy 2019 MIT
 """
 from __future__ import annotations
 
-from asyncio import StreamReader, StreamWriter, start_server, Event, BaseEventLoop, sleep, Task
+from asyncio import StreamReader, StreamWriter, start_server, Event, sleep, Task, AbstractEventLoop
 from dataclasses import dataclass
 from datetime import datetime
 from enum import Enum
@@ -97,7 +97,7 @@ class DevServer:
         self.working_dir = location
         check_directory(self.working_dir)
 
-    def serve(self, host, port, loop: BaseEventLoop):
+    def serve(self, host, port, loop: AbstractEventLoop):
         """Creates an asyncio coroutine, that serves requests on the provided host and port.
 
         ```python
@@ -108,7 +108,7 @@ class DevServer:
         """
 
         async def _serve():
-            self._server = await start_server(self.respond, host, port, loop=loop, start_serving=False)
+            self._server = await start_server(self.respond, host, port, start_serving=False)
             return await self._server.serve_forever()
 
         self._server_task = loop.create_task(_serve())
@@ -165,7 +165,7 @@ class DevServer:
     def start_response(writer: StreamWriter,
                        content_type: str = "text/html; charset=utf-8",
                        status: str = "200",
-                       headers: Dict[str, str] = None):
+                       headers: Dict[str, str] | None = None):
         writer.write(u(f'HTTP/1.0 {status} NA\r\n'))
         writer.write(u(f'Content-Type: {content_type}'))
         if headers:
@@ -243,12 +243,12 @@ class LiveReloadServer(DevServer):
     stopped: Event
 
     def __init__(
-            self,
-            location: Path,
-            *,
-            watch: Path,
-            regenerate: RunGenerate,
-            ignored: Collection[Path] = tuple()
+        self,
+        location: Path,
+        *,
+        watch: Path,
+        regenerate: RunGenerate,
+        ignored: Collection[Path] = tuple()
     ):
         super().__init__(location)
         self.live_reload_id = self._new_id()
@@ -258,7 +258,7 @@ class LiveReloadServer(DevServer):
 
     def serve(self, host, port, loop):
         super().serve(host, port, loop)
-        self.stopped = Event(loop=loop)
+        self.stopped = Event()
         loop.create_task(self.watch_source())
 
     def shutdown(self, loop):
@@ -276,8 +276,8 @@ class LiveReloadServer(DevServer):
             self.start_response(writer, file.mime_type.value, '200')
             writer.write(u(
                 file.read()
-                    .decode('utf8')
-                    .replace('</body>', f'{LIVE_RELOAD_JS}</body>')
+                .decode('utf8')
+                .replace('</body>', f'{LIVE_RELOAD_JS}</body>')
             ))
         else:
             super().sendfile(writer, file)
@@ -288,7 +288,7 @@ class LiveReloadServer(DevServer):
 
     async def watch_source(self):
         async for changes in awatch(str(self.watch_location), stop_event=self.stopped):
-            for change, location in changes:
+            for change, location in changes:  # type: ignore # the type here is invalid
                 if not self._is_ignored_location(location):
                     self.on_source_changed()
 

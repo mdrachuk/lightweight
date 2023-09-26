@@ -111,17 +111,17 @@ class Generator:
     def url(self) -> str:
         return f'http://{self.host}:{self.port}/'
 
+    def __call__(self):
+        func = self.load_executable()
+
+        site = func(self.url)
+        if not hasattr(site, 'generate') or not positional_args_count(site.generate, equals=1):
+            raise InvalidCommand(f'"{self.func_name}" did not return an instance of Site '
+                                 f'with a "site.generate(out)" method.')
+        site.generate(self.out)
+
     def generate(self):
-        def worker():
-            func = self.load_executable()
-
-            site = func(self.url)
-            if not hasattr(site, 'generate') or not positional_args_count(site.generate, equals=1):
-                raise InvalidCommand(f'"{self.func_name}" did not return an instance of Site '
-                                     f'with a "site.generate(out)" method.')
-            site.generate(self.out)
-
-        p = Process(target=worker)
+        p = Process(target=self)
         p.start()
         p.join()
         if p.exception:
@@ -161,6 +161,8 @@ def load_module(p: Path) -> Any:
     with sys_path_starting(with_=p.parent):
         loader = SourceFileLoader(module_name, str(p))
         spec = spec_from_loader(module_name, loader, is_package=False)
+        if spec is None:
+            raise RuntimeError("Failed to load module")
         module = module_from_spec(spec)
         loader.exec_module(module)
     return module
@@ -201,7 +203,7 @@ def start_server(func_file: Path, func_name: str,
         logger.info('Stopping the server.')
         server.shutdown(loop)
         pending = asyncio.all_tasks(loop=loop)
-        loop.run_until_complete(gather(*pending, loop=loop))
+        loop.run_until_complete(gather(*pending))
         loop.stop()
         logger.info('Server stopped.')
 
