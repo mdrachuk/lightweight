@@ -52,7 +52,7 @@ class TestTheServer:
 
         with (self.dir_path / 'new-file').open('w') as f:
             f.write('Test file changes')
-        await asyncio.sleep(0.5)  # wait for file change to get picked up
+        await asyncio.sleep(1)  # wait for file change to get picked up
         new_identifier = self.server.live_reload_id
         assert new_identifier in await get(f'http://127.0.0.1:{port}/__live_reload_id__')
         assert identifier != new_identifier
