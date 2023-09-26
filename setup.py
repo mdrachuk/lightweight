@@ -36,7 +36,7 @@ setup(
     install_requires=[
         'Jinja2==3.1.2',
         'libsass==0.22.0',
-        'MarkupSafe==2.0.1'
+        'MarkupSafe==2.0.1',
         'python-frontmatter~=0.4.5',
         'python-slugify~=3.0.3',
         'mistune==0.8.4',
