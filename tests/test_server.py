@@ -43,6 +43,8 @@ class TestTheServer:
         port = unused_tcp_port
         self.server.serve('127.0.0.1', port, loop=loop)
 
+        await asyncio.sleep(0.5)
+
         assert 'liveReload.start();' in await get(f'http://127.0.0.1:{port}')
         assert LIVE_RELOAD_JS in await get(f'http://127.0.0.1:{port}')
         assert LIVE_RELOAD_JS in await get(f'http://127.0.0.1:{port}/index')
