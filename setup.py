@@ -34,7 +34,7 @@ setup(
         'Issues': 'https://github.com/mdrachuk/lightweight/issues',
     },
     install_requires=[
-        'Jinja2==3.1.2',
+        'Jinja2==3.1.3',
         'libsass==0.22.0',
         'MarkupSafe==2.0.1',
         'python-frontmatter~=0.4.5',
